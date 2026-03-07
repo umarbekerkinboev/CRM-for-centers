@@ -1,0 +1,63 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout.tsx';
+import GroupsPage from './pages/GroupsPage.tsx';
+import StudentsPage from './pages/StudentsPage.tsx';
+import EmployeesPage from './pages/EmployeesPage.tsx';
+import EmployeeTypesPage from './pages/EmployeeTypesPage.tsx';
+import CoursesPage from './pages/CoursesPage.tsx';
+import RoomsPage from './pages/RoomsPage.tsx';
+import TimetablePage from './pages/TimetablePage.tsx';
+import LoginPage from './pages/LoginPage.tsx';
+import AnalyticsPage from './pages/AnalyticsPage.tsx';
+import AddEmployeePage from './pages/AddEmployeePage.tsx';
+import AddStudentPage from './pages/AddStudentPage.tsx';
+import AddGroupPage from './pages/AddGroupPage.tsx';
+import AddCoursePage from './pages/AddCoursePage.tsx';
+import AddRoomPage from './pages/AddRoomPage.tsx';
+import { ThemeProvider } from './components/ThemeProvider.tsx';
+
+export default function App() {
+  const { t } = useTranslation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <ThemeProvider defaultTheme="dark">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
+    );
+  }
+
+  return (
+    <ThemeProvider defaultTheme="dark">
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/groups" replace />} />
+            <Route path="/timetable" element={<TimetablePage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/add" element={<AddGroupPage />} />
+            <Route path="/students" element={<StudentsPage />} />
+            <Route path="/students/add" element={<AddStudentPage />} />
+            <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/employees/types" element={<EmployeeTypesPage />} />
+            <Route path="/employees/add" element={<AddEmployeePage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses/add" element={<AddCoursePage />} />
+            <Route path="/rooms" element={<RoomsPage />} />
+            <Route path="/rooms/add" element={<AddRoomPage />} />
+            <Route path="*" element={<div className="text-zinc-400 dark:text-zinc-500">Page not found</div>} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
