@@ -1,26 +1,51 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown, MoreVertical, LayoutGrid, Check } from 'lucide-react';
+import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
-
-const mockEmployees = [
-  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023' },
-  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023' },
-  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023' },
-  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023' },
-];
+import { useEmployees, Employee } from '../lib/mockData.ts';
 
 type SortConfig = {
-  key: keyof typeof mockEmployees[0];
+  key: keyof Employee;
   direction: 'asc' | 'desc';
 } | null;
 
 export default function EmployeesPage() {
   const { t } = useTranslation();
+  const { items: employees, addItem, updateItem, deleteItem } = useEmployees();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [editItem, setEditItem] = useState<Employee | null>(null);
+  const [detailsItem, setDetailsItem] = useState<Employee | null>(null);
+  const [formData, setFormData] = useState({ name: '', phone: '', qualification: '', gender: '', exp: 0, dob: '', joined: '' });
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editItem) {
+      updateItem(editItem.id, formData);
+      setEditItem(null);
+    }
+  };
+
+  const handleDuplicate = (employee: Employee) => {
+    addItem({
+      ...employee,
+      name: `${employee.name} (Copy)`
+    });
+    setActiveMenu(null);
+  };
+
+  const openEditModal = (item: Employee) => {
+    setFormData({ name: item.name, phone: item.phone, qualification: item.qualification, gender: item.gender, exp: item.exp, dob: item.dob, joined: item.joined });
+    setEditItem(item);
+    setActiveMenu(null);
+  };
+
+  const openDetailsModal = (item: Employee) => {
+    setDetailsItem(item);
+    setActiveMenu(null);
+  };
 
   const columns = [
     { key: 'name', label: t('full_name') },
@@ -36,7 +61,7 @@ export default function EmployeesPage() {
     columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
   );
 
-  const handleSort = (key: keyof typeof mockEmployees[0]) => {
+  const handleSort = (key: keyof Employee) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -45,7 +70,7 @@ export default function EmployeesPage() {
   };
 
   const sortedEmployees = useMemo(() => {
-    let sortableItems = [...mockEmployees];
+    let sortableItems = [...employees];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -58,7 +83,7 @@ export default function EmployeesPage() {
       });
     }
     return sortableItems;
-  }, [sortConfig]);
+  }, [sortConfig, employees]);
 
   const toggleColumn = (key: string) => {
     setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
@@ -79,28 +104,31 @@ export default function EmployeesPage() {
             </button>
             
             {isViewMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
-                <div className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Toggle columns
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                    Toggle columns
+                  </div>
+                  {columns.map(col => (
+                    <button
+                      key={col.key}
+                      onClick={() => toggleColumn(col.key)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                    >
+                      <div className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                        visibleColumns[col.key] 
+                          ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
+                          : "border-zinc-700"
+                      )}>
+                        {visibleColumns[col.key] && <Check className="w-3 h-3" />}
+                      </div>
+                      {col.label}
+                    </button>
+                  ))}
                 </div>
-                {columns.map(col => (
-                  <button
-                    key={col.key}
-                    onClick={() => toggleColumn(col.key)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <div className={cn(
-                      "w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                      visibleColumns[col.key] 
-                        ? "bg-zinc-900 border-zinc-900 dark:bg-zinc-100 dark:border-zinc-100 text-white dark:text-zinc-900" 
-                        : "border-zinc-300 dark:border-zinc-700"
-                    )}>
-                      {visibleColumns[col.key] && <Check className="w-3 h-3" />}
-                    </div>
-                    {col.label}
-                  </button>
-                ))}
-              </div>
+              </>
             )}
           </div>
           <Link to="/employees/add" className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors">
@@ -109,23 +137,23 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/30 border-b border-zinc-200 dark:border-zinc-800/50">
+          <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
             <tr>
-              <th className="px-6 py-4 font-medium">#</th>
+              <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
               {columns.map(col => visibleColumns[col.key] && (
-                <th key={col.key} className="px-6 py-4 font-medium">
+                <th key={col.key} className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300"
-                    onClick={() => handleSort(col.key as keyof typeof mockEmployees[0])}
+                    onClick={() => handleSort(col.key as keyof Employee)}
                   >
                     {col.label}
                     <ChevronsUpDown className="w-3 h-3" />
                   </div>
                 </th>
               ))}
-              <th className="px-6 py-4"></th>
+              <th className="px-6 py-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -141,18 +169,21 @@ export default function EmployeesPage() {
                 {visibleColumns.joined && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
                 <td className="px-6 py-4 text-right relative">
                   <button 
-                    onClick={() => setActiveMenu(activeMenu === employee.id ? null : employee.id)}
+                    onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === employee.id ? null : employee.id); }}
                     className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </button>
                   
                   {activeMenu === employee.id && (
-                    <div className="absolute right-8 top-10 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-10">
-                      <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('details')}</button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('edit_details')}</button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('delete')}</button>
-                    </div>
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                      <div className="absolute right-8 top-10 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                        <button onClick={(e) => { e.stopPropagation(); openDetailsModal(employee); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('details')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); openEditModal(employee); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('edit_details')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteItem(employee.id); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
+                      </div>
+                    </>
                   )}
                 </td>
               </tr>
@@ -160,6 +191,71 @@ export default function EmployeesPage() {
           </tbody>
         </table>
       </div>
+
+      {detailsItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+            <button 
+              onClick={() => setDetailsItem(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('details')}</h2>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('full_name')}</label>
+                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.name}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('phone')}</label>
+                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.phone}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('qualification')}</label>
+                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.qualification}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('years_of_experience')}</label>
+                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.exp}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+            <button 
+              onClick={() => setEditItem(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+            </div>
+            <form className="space-y-6" onSubmit={handleEditSubmit}>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('full_name')}</label>
+                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+                <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
+                <input required value={formData.qualification} onChange={e => setFormData({...formData, qualification: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

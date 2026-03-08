@@ -55,6 +55,49 @@ export default function TimetablePage() {
   const [detailsEventId, setDetailsEventId] = useState<number | null>(null);
   const [editEventId, setEditEventId] = useState<number | null>(null);
 
+  // Form states
+  const [formData, setFormData] = useState({
+    title: '',
+    teacher: '',
+    room: '',
+    start: '',
+    end: '',
+    day: 'odd',
+    track: 0
+  });
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newEvent = {
+      id: Math.max(0, ...events.map(e => e.id)) + 1,
+      ...formData
+    };
+    setEvents([...events, newEvent]);
+    setIsAddModalOpen(false);
+    setFormData({ title: '', teacher: '', room: '', start: '', end: '', day: 'odd', track: 0 });
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editEventId !== null) {
+      setEvents(events.map(ev => ev.id === editEventId ? { ...ev, ...formData } : ev));
+      setEditEventId(null);
+    }
+  };
+
+  const openEditModal = (event: typeof initialMockEvents[0]) => {
+    setFormData({
+      title: event.title,
+      teacher: event.teacher,
+      room: event.room,
+      start: event.start,
+      end: event.end,
+      day: event.day,
+      track: event.track
+    });
+    setEditEventId(event.id);
+  };
+
   const oddEvents = events.filter(e => e.day === 'odd');
   const evenEvents = events.filter(e => e.day === 'even');
 
@@ -65,46 +108,50 @@ export default function TimetablePage() {
   const evenHeight = (maxEvenTrack + 1) * 120 + 32;
 
   const handleDelete = (id: number) => {
-    if (window.confirm(t('delete') + '?')) {
-      setEvents(events.filter(e => e.id !== id));
-      setActiveMenu(null);
-    }
+    setEvents(events.filter(e => e.id !== id));
+    setActiveMenu(null);
   };
 
   const renderEvent = (event: typeof initialMockEvents[0]) => (
     <div 
       key={event.id}
-      className="absolute bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex flex-col items-center justify-center text-center group transition-colors hover:border-zinc-300 dark:hover:border-zinc-700"
+      className={cn(
+        "absolute bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex flex-col items-center justify-center text-center group transition-colors hover:border-zinc-300 dark:hover:border-zinc-700",
+        activeMenu === event.id ? "z-50" : "z-10"
+      )}
       style={getEventStyle(event.start, event.end, event.track)}
     >
       <button 
-        onClick={() => setActiveMenu(activeMenu === event.id ? null : event.id)}
+        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === event.id ? null : event.id); }}
         className="absolute top-2 right-2 text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-zinc-900 dark:hover:text-zinc-300"
       >
         <MoreVertical className="w-4 h-4" />
       </button>
       
       {activeMenu === event.id && (
-        <div className="absolute top-8 right-2 w-32 bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
-          <button 
-            onClick={() => { setDetailsEventId(event.id); setActiveMenu(null); }}
-            className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-          >
-            {t('details')}
-          </button>
-          <button 
-            onClick={() => { setEditEventId(event.id); setActiveMenu(null); }}
-            className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-          >
-            {t('edit')}
-          </button>
-          <button 
-            onClick={() => handleDelete(event.id)}
-            className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-          >
-            {t('delete')}
-          </button>
-        </div>
+        <>
+          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+          <div className="absolute top-8 right-2 w-32 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setDetailsEventId(event.id); setActiveMenu(null); }}
+              className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+            >
+              {t('details')}
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); openEditModal(event); setActiveMenu(null); }}
+              className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+            >
+              {t('edit')}
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleDelete(event.id); }}
+              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300"
+            >
+              {t('delete')}
+            </button>
+          </div>
+        </>
       )}
 
       <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{event.title}</div>
@@ -131,11 +178,14 @@ export default function TimetablePage() {
               <ChevronDown className="w-4 h-4" />
             </button>
             {isFilterOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
-                <button onClick={() => { setFilter('all'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('odd_even_days')}</button>
-                <button onClick={() => { setFilter('odd'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('odd_days')}</button>
-                <button onClick={() => { setFilter('even'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('even_days')}</button>
-              </div>
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)} />
+                <div className="absolute right-0 mt-2 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                  <button onClick={() => { setFilter('all'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('odd_even_days')}</button>
+                  <button onClick={() => { setFilter('odd'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('odd_days')}</button>
+                  <button onClick={() => { setFilter('even'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('even_days')}</button>
+                </div>
+              </>
             )}
           </div>
           <button 
@@ -206,32 +256,44 @@ export default function TimetablePage() {
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Add Entry</h2>
             </div>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleAddSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
-                <input type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
-                <input type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Room</label>
-                <input type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Start Time</label>
-                  <input type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">End Time</label>
-                  <input type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Day</label>
+                  <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                    <option value="odd">Odd</option>
+                    <option value="even">Even</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Track</label>
+                  <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
               <button 
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
+                type="submit"
                 className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-4"
               >
                 {t('save')}
@@ -293,32 +355,44 @@ export default function TimetablePage() {
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit')}</h2>
             </div>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
-                <input type="text" defaultValue={editEvent.title} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
-                <input type="text" defaultValue={editEvent.teacher} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Room</label>
-                <input type="text" defaultValue={editEvent.room} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Start Time</label>
-                  <input type="time" defaultValue={editEvent.start} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">End Time</label>
-                  <input type="time" defaultValue={editEvent.end} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Day</label>
+                  <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                    <option value="odd">Odd</option>
+                    <option value="even">Even</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Track</label>
+                  <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
               <button 
-                type="button"
-                onClick={() => setEditEventId(null)}
+                type="submit"
                 className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-4"
               >
                 {t('save')}

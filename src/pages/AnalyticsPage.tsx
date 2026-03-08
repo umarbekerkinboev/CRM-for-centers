@@ -1,15 +1,20 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users, GraduationCap, Contact2, BookOpen, TrendingUp, DollarSign } from 'lucide-react';
+import { useGroups, useStudents, useEmployees, useCourses } from '../lib/mockData.ts';
 
 export default function AnalyticsPage() {
   const { t } = useTranslation();
+  const { items: groups } = useGroups();
+  const { students } = useStudents();
+  const { items: employees } = useEmployees();
+  const { items: courses } = useCourses();
 
   const stats = [
-    { label: t('total_groups'), value: '24', icon: Users, trend: '+12%', color: 'bg-blue-500' },
-    { label: t('total_students'), value: '342', icon: GraduationCap, trend: '+5%', color: 'bg-emerald-500' },
-    { label: t('total_employees'), value: '18', icon: Contact2, trend: '0%', color: 'bg-amber-500' },
-    { label: t('active_courses'), value: '8', icon: BookOpen, trend: '+2', color: 'bg-purple-500' },
+    { label: t('total_groups'), value: groups.length.toString(), icon: Users, trend: '+12%', color: 'bg-blue-500' },
+    { label: t('total_students'), value: students.length.toString(), icon: GraduationCap, trend: '+5%', color: 'bg-emerald-500' },
+    { label: t('total_employees'), value: employees.length.toString(), icon: Contact2, trend: '0%', color: 'bg-amber-500' },
+    { label: t('active_courses'), value: courses.length.toString(), icon: BookOpen, trend: '+2', color: 'bg-purple-500' },
   ];
 
   return (

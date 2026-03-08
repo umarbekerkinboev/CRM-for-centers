@@ -210,36 +210,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {isProfileOpen && (
-            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800/50 flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-md bg-zinc-200 dark:bg-[#1a1a1a] flex items-center justify-center text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                  UE
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
+              <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
+                <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xs font-bold text-zinc-100">
+                    UE
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-zinc-100">Umarbek Erkinboev</div>
+                    <div className="text-xs text-zinc-400">{t('admin')}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Umarbek Erkinboev</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('admin')}</div>
-                </div>
+                
+                <button onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 transition-colors">
+                  <CheckCircle2 className="w-4 h-4 text-zinc-400" />
+                  {t('account')}
+                </button>
+                <button onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 transition-colors">
+                  <Bell className="w-4 h-4 text-zinc-400" />
+                  {t('notifications')}
+                </button>
+                
+                <div className="h-px bg-zinc-800/50 my-2"></div>
+                
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-800/50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4 text-zinc-400" />
+                  {t('logout')}
+                </button>
               </div>
-              
-              <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                <CheckCircle2 className="w-4 h-4 text-zinc-400" />
-                {t('account')}
-              </button>
-              <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                <Bell className="w-4 h-4 text-zinc-400" />
-                {t('notifications')}
-              </button>
-              
-              <div className="h-px bg-zinc-200 dark:bg-zinc-800/50 my-2"></div>
-              
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
-              >
-                <LogOut className="w-4 h-4 text-zinc-400" />
-                {t('logout')}
-              </button>
-            </div>
+            </>
           )}
         </div>
       </aside>
@@ -272,26 +275,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </button>
               
               {isLangOpen && (
-                <div className="absolute left-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
-                  <button 
-                    onClick={() => changeLanguage('en')}
-                    className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
-                  >
-                    English
-                  </button>
-                  <button 
-                    onClick={() => changeLanguage('ru')}
-                    className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
-                  >
-                    Русский
-                  </button>
-                  <button 
-                    onClick={() => changeLanguage('uz')}
-                    className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
-                  >
-                    O'zbek
-                  </button>
-                </div>
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsLangOpen(false)} />
+                  <div className="absolute left-0 mt-2 w-32 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                    <button 
+                      onClick={() => changeLanguage('en')}
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                    >
+                      English
+                    </button>
+                    <button 
+                      onClick={() => changeLanguage('ru')}
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                    >
+                      Русский
+                    </button>
+                    <button 
+                      onClick={() => changeLanguage('uz')}
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                    >
+                      O'zbek
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>

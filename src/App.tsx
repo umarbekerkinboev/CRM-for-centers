@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.tsx';
 import GroupsPage from './pages/GroupsPage.tsx';
+import GroupDetailsPage from './pages/GroupDetailsPage.tsx';
 import StudentsPage from './pages/StudentsPage.tsx';
+import StudentDetailsPage from './pages/StudentDetailsPage.tsx';
+import StudentPaymentPage from './pages/StudentPaymentPage.tsx';
 import EmployeesPage from './pages/EmployeesPage.tsx';
 import EmployeeTypesPage from './pages/EmployeeTypesPage.tsx';
 import CoursesPage from './pages/CoursesPage.tsx';
@@ -45,8 +48,11 @@ export default function App() {
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/add" element={<AddGroupPage />} />
+            <Route path="/groups/:id" element={<GroupDetailsPage />} />
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/students/add" element={<AddStudentPage />} />
+            <Route path="/students/:id" element={<StudentDetailsPage />} />
+            <Route path="/students/:id/payment" element={<StudentPaymentPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/types" element={<EmployeeTypesPage />} />
             <Route path="/employees/add" element={<AddEmployeePage />} />

@@ -3,24 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
-
-const mockRooms = [
-  { id: 1, name: 'Room D', size: 16 },
-  { id: 2, name: 'Room C', size: 16 },
-  { id: 3, name: 'Room A', size: 22 },
-  { id: 4, name: 'Room B', size: 16 },
-];
+import { useRooms, Room } from '../lib/mockData.ts';
 
 type SortConfig = {
-  key: keyof typeof mockRooms[0];
+  key: keyof Room;
   direction: 'asc' | 'desc';
 } | null;
 
 export default function RoomsPage() {
   const { t } = useTranslation();
+  const { items: rooms, addItem, deleteItem } = useRooms();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+  const handleDuplicate = (room: Room) => {
+    addItem({
+      ...room,
+      name: `${room.name} (Copy)`
+    });
+    setActiveMenu(null);
+  };
 
   const columns = [
     { key: 'name', label: t('room_name') },
@@ -31,7 +34,7 @@ export default function RoomsPage() {
     columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
   );
 
-  const handleSort = (key: keyof typeof mockRooms[0]) => {
+  const handleSort = (key: keyof Room) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -40,7 +43,7 @@ export default function RoomsPage() {
   };
 
   const sortedRooms = useMemo(() => {
-    let sortableItems = [...mockRooms];
+    let sortableItems = [...rooms];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -53,7 +56,7 @@ export default function RoomsPage() {
       });
     }
     return sortableItems;
-  }, [sortConfig]);
+  }, [sortConfig, rooms]);
 
   const toggleColumn = (key: string) => {
     setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
@@ -74,28 +77,31 @@ export default function RoomsPage() {
             </button>
             
             {isViewMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
-                <div className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Toggle columns
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                    Toggle columns
+                  </div>
+                  {columns.map(col => (
+                    <button
+                      key={col.key}
+                      onClick={() => toggleColumn(col.key)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                    >
+                      <div className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                        visibleColumns[col.key] 
+                          ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
+                          : "border-zinc-700"
+                      )}>
+                        {visibleColumns[col.key] && <Check className="w-3 h-3" />}
+                      </div>
+                      {col.label}
+                    </button>
+                  ))}
                 </div>
-                {columns.map(col => (
-                  <button
-                    key={col.key}
-                    onClick={() => toggleColumn(col.key)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <div className={cn(
-                      "w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                      visibleColumns[col.key] 
-                        ? "bg-zinc-900 border-zinc-900 dark:bg-zinc-100 dark:border-zinc-100 text-white dark:text-zinc-900" 
-                        : "border-zinc-300 dark:border-zinc-700"
-                    )}>
-                      {visibleColumns[col.key] && <Check className="w-3 h-3" />}
-                    </div>
-                    {col.label}
-                  </button>
-                ))}
-              </div>
+              </>
             )}
           </div>
           <Link to="/rooms/add" className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors">
@@ -104,23 +110,23 @@ export default function RoomsPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/30 border-b border-zinc-200 dark:border-zinc-800/50">
+          <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
             <tr>
-              <th className="px-6 py-4 font-medium">#</th>
+              <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
               {columns.map(col => visibleColumns[col.key] && (
-                <th key={col.key} className="px-6 py-4 font-medium">
+                <th key={col.key} className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300"
-                    onClick={() => handleSort(col.key as keyof typeof mockRooms[0])}
+                    onClick={() => handleSort(col.key as keyof Room)}
                   >
                     {col.label}
                     <ChevronsUpDown className="w-3 h-3" />
                   </div>
                 </th>
               ))}
-              <th className="px-6 py-4"></th>
+              <th className="px-6 py-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -131,18 +137,21 @@ export default function RoomsPage() {
                 {visibleColumns.size && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{room.size}</td>}
                 <td className="px-6 py-4 text-right relative">
                   <button 
-                    onClick={() => setActiveMenu(activeMenu === room.id ? null : room.id)}
+                    onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === room.id ? null : room.id); }}
                     className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </button>
                   
                   {activeMenu === room.id && (
-                    <div className="absolute right-8 top-10 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-10">
-                      <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('details')}</button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('edit_details')}</button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50">{t('delete')}</button>
-                    </div>
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                      <div className="absolute right-8 top-10 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                        <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('edit_details')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDuplicate(room); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('duplicate')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteItem(room.id); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
+                      </div>
+                    </>
                   )}
                 </td>
               </tr>
