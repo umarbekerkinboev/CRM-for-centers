@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { useStudents } from '../lib/mockData.ts';
+import { useStudents, useGroups, useCourses } from '../lib/mockData.ts';
 
 export default function AddStudentPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { addStudent } = useStudents();
+  const { items: groups } = useGroups();
+  const { items: courses } = useCourses();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,7 +18,11 @@ export default function AddStudentPage() {
     phone: '',
     address: '',
     parentName: '',
-    parentPhone: ''
+    parentPhone: '',
+    courseRegistrationDate: new Date().toISOString().split('T')[0],
+    coursePrice: '',
+    course: '',
+    group: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,15 +30,16 @@ export default function AddStudentPage() {
     addStudent({
       name: `${formData.firstName} ${formData.lastName}`,
       phone: formData.phone,
-      courses: '',
+      courses: formData.course,
+      group: formData.group,
       gender: formData.gender,
       parent: formData.parentName,
       parentPhone: formData.parentPhone,
       dob: formData.dob,
       address: formData.address,
       balance: 0,
-      price: '0 UZS',
-      registration: new Date().toLocaleDateString('en-GB').replace(/\//g, '-')
+      price: formData.coursePrice ? `${parseInt(formData.coursePrice).toLocaleString()} UZS` : '0 UZS',
+      registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
     });
     navigate(-1);
   };
@@ -89,6 +96,31 @@ export default function AddStudentPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course</label>
+              <select 
+                value={formData.course}
+                onChange={e => setFormData({...formData, course: e.target.value})}
+                className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+              >
+                <option value="">Select course</option>
+                {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Group</label>
+              <select 
+                value={formData.group}
+                onChange={e => setFormData({...formData, group: e.target.value})}
+                className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+              >
+                <option value="">Select group</option>
+                {groups.filter(g => !formData.course || g.courses === formData.course).map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
               <input 
                 type="date" 
@@ -133,6 +165,29 @@ export default function AddStudentPage() {
               onChange={e => setFormData({...formData, address: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder="12B Street, City, Uzbekistan"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course registration date</label>
+            <input 
+              type="date" 
+              required
+              value={formData.courseRegistrationDate}
+              onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})}
+              className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors [color-scheme:dark]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course price</label>
+            <input 
+              type="number" 
+              required
+              value={formData.coursePrice}
+              onChange={e => setFormData({...formData, coursePrice: e.target.value})}
+              className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+              placeholder="450000"
             />
           </div>
 

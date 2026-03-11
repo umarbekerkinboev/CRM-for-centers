@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, MoreVertical, Plus, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreVertical, Plus, X, Filter, Search, Check } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
+import { useTimetableEvents, useGroups, useEmployees, useRooms, TimetableEvent } from '../lib/mockData.ts';
 
 const timeSlots = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', 
@@ -33,8 +34,8 @@ const getEventStyle = (start: string, end: string, track: number) => {
   const startTotal = startH + startM / 60;
   const endTotal = endH + endM / 60;
   
-  const left = ((startTotal - 9) / 11) * 100;
-  const width = ((endTotal - startTotal) / 11) * 100;
+  const left = ((startTotal - 9) / 11.5) * 100;
+  const width = ((endTotal - startTotal) / 11.5) * 100;
   
   return {
     left: `${left}%`,
@@ -46,10 +47,20 @@ const getEventStyle = (start: string, end: string, track: number) => {
 
 export default function TimetablePage() {
   const { t } = useTranslation();
-  const [events, setEvents] = useState(initialMockEvents);
+  const { items: events, addItem, updateItem, deleteItem } = useTimetableEvents();
+  const { items: groups } = useGroups();
+  const { items: employees } = useEmployees();
+  const { items: rooms } = useRooms();
   const [filter, setFilter] = useState<'all' | 'odd' | 'even'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
+
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [teacherSearch, setTeacherSearch] = useState('');
+  const [roomSearch, setRoomSearch] = useState('');
+  const [expandedFilter, setExpandedFilter] = useState<'teachers' | 'rooms' | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [detailsEventId, setDetailsEventId] = useState<number | null>(null);
@@ -68,11 +79,7 @@ export default function TimetablePage() {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newEvent = {
-      id: Math.max(0, ...events.map(e => e.id)) + 1,
-      ...formData
-    };
-    setEvents([...events, newEvent]);
+    addItem(formData);
     setIsAddModalOpen(false);
     setFormData({ title: '', teacher: '', room: '', start: '', end: '', day: 'odd', track: 0 });
   };
@@ -80,12 +87,12 @@ export default function TimetablePage() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editEventId !== null) {
-      setEvents(events.map(ev => ev.id === editEventId ? { ...ev, ...formData } : ev));
+      updateItem(editEventId, formData);
       setEditEventId(null);
     }
   };
 
-  const openEditModal = (event: typeof initialMockEvents[0]) => {
+  const openEditModal = (event: TimetableEvent) => {
     setFormData({
       title: event.title,
       teacher: event.teacher,
@@ -98,8 +105,16 @@ export default function TimetablePage() {
     setEditEventId(event.id);
   };
 
-  const oddEvents = events.filter(e => e.day === 'odd');
-  const evenEvents = events.filter(e => e.day === 'even');
+  const filteredEvents = useMemo(() => {
+    return events.filter(e => {
+      if (selectedTeachers.length > 0 && !selectedTeachers.includes(e.teacher)) return false;
+      if (selectedRooms.length > 0 && !selectedRooms.includes(e.room)) return false;
+      return true;
+    });
+  }, [events, selectedTeachers, selectedRooms]);
+
+  const oddEvents = filteredEvents.filter(e => e.day === 'odd');
+  const evenEvents = filteredEvents.filter(e => e.day === 'even');
 
   const maxOddTrack = Math.max(...oddEvents.map(e => e.track), 0);
   const maxEvenTrack = Math.max(...evenEvents.map(e => e.track), 0);
@@ -108,11 +123,11 @@ export default function TimetablePage() {
   const evenHeight = (maxEvenTrack + 1) * 120 + 32;
 
   const handleDelete = (id: number) => {
-    setEvents(events.filter(e => e.id !== id));
+    deleteItem(id);
     setActiveMenu(null);
   };
 
-  const renderEvent = (event: typeof initialMockEvents[0]) => (
+  const renderEvent = (event: TimetableEvent) => (
     <div 
       key={event.id}
       className={cn(
@@ -164,11 +179,131 @@ export default function TimetablePage() {
   const detailsEvent = events.find(e => e.id === detailsEventId);
   const editEvent = events.find(e => e.id === editEventId);
 
+  const toggleTeacher = (teacherName: string) => {
+    setSelectedTeachers(prev => 
+      prev.includes(teacherName) ? prev.filter(t => t !== teacherName) : [...prev, teacherName]
+    );
+  };
+
+  const toggleRoom = (roomName: string) => {
+    setSelectedRooms(prev => 
+      prev.includes(roomName) ? prev.filter(r => r !== roomName) : [...prev, roomName]
+    );
+  };
+
+  const filteredTeachersList = employees.filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase()));
+  const filteredRoomsList = rooms.filter(r => r.name.toLowerCase().includes(roomSearch.toLowerCase()));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('timetable')}</h1>
         <div className="flex items-center gap-3">
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-lg border transition-colors",
+                (selectedTeachers.length > 0 || selectedRooms.length > 0)
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                  : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              )}
+            >
+              <Filter className="w-5 h-5" />
+            </button>
+            {isFilterMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsFilterMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50 max-h-[80vh] overflow-y-auto">
+                  
+                  {/* Teachers Filter */}
+                  <div className="border-b border-zinc-200 dark:border-zinc-800/50 last:border-0">
+                    <button 
+                      onClick={() => setExpandedFilter(expandedFilter === 'teachers' ? null : 'teachers')}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    >
+                      Filter by teachers
+                      {expandedFilter === 'teachers' ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+                    {expandedFilter === 'teachers' && (
+                      <div className="px-4 pb-3 space-y-3">
+                        <div className="relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            value={teacherSearch}
+                            onChange={(e) => setTeacherSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                          />
+                        </div>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {filteredTeachersList.map(teacher => (
+                            <label key={teacher.id} className="flex items-center gap-3 py-1.5 cursor-pointer group" onClick={(e) => { e.preventDefault(); toggleTeacher(teacher.name); }}>
+                              <div className={cn(
+                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                selectedTeachers.includes(teacher.name)
+                                  ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900"
+                                  : "border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-400 dark:group-hover:border-zinc-600"
+                              )}>
+                                {selectedTeachers.includes(teacher.name) && <Check className="w-3 h-3" />}
+                              </div>
+                              <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">
+                                {teacher.name}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Rooms Filter */}
+                  <div className="border-b border-zinc-200 dark:border-zinc-800/50 last:border-0">
+                    <button 
+                      onClick={() => setExpandedFilter(expandedFilter === 'rooms' ? null : 'rooms')}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    >
+                      Filter by rooms
+                      {expandedFilter === 'rooms' ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+                    {expandedFilter === 'rooms' && (
+                      <div className="px-4 pb-3 space-y-3">
+                        <div className="relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            value={roomSearch}
+                            onChange={(e) => setRoomSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                          />
+                        </div>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {filteredRoomsList.map(room => (
+                            <label key={room.id} className="flex items-center gap-3 py-1.5 cursor-pointer group" onClick={(e) => { e.preventDefault(); toggleRoom(room.name); }}>
+                              <div className={cn(
+                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                selectedRooms.includes(room.name)
+                                  ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900"
+                                  : "border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-400 dark:group-hover:border-zinc-600"
+                              )}>
+                                {selectedRooms.includes(room.name) && <Check className="w-3 h-3" />}
+                              </div>
+                              <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">
+                                {room.name}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </>
+            )}
+          </div>
           <div className="relative">
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -357,16 +492,31 @@ export default function TimetablePage() {
             </div>
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
-                <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Group</label>
+                <select required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                  <option value="">Select group</option>
+                  {groups.map(g => (
+                    <option key={g.id} value={g.name}>{g.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
-                <input required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <select required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                  <option value="">Select teacher</option>
+                  {employees.map(e => (
+                    <option key={e.id} value={e.name}>{e.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Room</label>
-                <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <select required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                  <option value="">Select room</option>
+                  {rooms.map(r => (
+                    <option key={r.id} value={r.name}>{r.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

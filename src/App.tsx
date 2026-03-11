@@ -8,6 +8,7 @@ import StudentsPage from './pages/StudentsPage.tsx';
 import StudentDetailsPage from './pages/StudentDetailsPage.tsx';
 import StudentPaymentPage from './pages/StudentPaymentPage.tsx';
 import EmployeesPage from './pages/EmployeesPage.tsx';
+import EmployeeDetailsPage from './pages/EmployeeDetailsPage.tsx';
 import EmployeeTypesPage from './pages/EmployeeTypesPage.tsx';
 import CoursesPage from './pages/CoursesPage.tsx';
 import RoomsPage from './pages/RoomsPage.tsx';
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/students/:id" element={<StudentDetailsPage />} />
             <Route path="/students/:id/payment" element={<StudentPaymentPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
             <Route path="/employees/types" element={<EmployeeTypesPage />} />
             <Route path="/employees/add" element={<AddEmployeePage />} />
             <Route path="/courses" element={<CoursesPage />} />

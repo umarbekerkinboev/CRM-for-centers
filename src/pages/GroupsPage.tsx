@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
-import { useGroups, Group } from '../lib/mockData.ts';
+import { useGroups, Group, useStudents } from '../lib/mockData.ts';
 
 type SortConfig = {
   key: keyof Group;
@@ -13,10 +13,23 @@ type SortConfig = {
 export default function GroupsPage() {
   const { t } = useTranslation();
   const { items: groups, addItem, updateItem, deleteItem } = useGroups();
+  const { students: allStudents } = useStudents();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [editItem, setEditItem] = useState<Group | null>(null);
+
+  useEffect(() => {
+    if (editItem) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [editItem]);
+
   const [formData, setFormData] = useState({ name: '', students: 0, teachers: '' });
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -25,6 +38,12 @@ export default function GroupsPage() {
       updateItem(editItem.id, formData);
       setEditItem(null);
     }
+  };
+
+  const getGroupStats = (groupName: string) => {
+    const groupStudents = allStudents.filter(s => s.group === groupName);
+    const balance = groupStudents.reduce((sum, s) => sum + s.balance, 0);
+    return { count: groupStudents.length, balance };
   };
 
   const handleDuplicate = (group: Group) => {
@@ -44,6 +63,7 @@ export default function GroupsPage() {
   const columns = [
     { key: 'name', label: t('group_name') },
     { key: 'students', label: t('number_of_students') },
+    { key: 'balance', label: 'Group balance' },
     { key: 'teachers', label: t('teachers') },
     { key: 'courses', label: t('courses') },
     { key: 'rooms', label: t('rooms') },
@@ -106,17 +126,17 @@ export default function GroupsPage() {
                     <button
                       key={col.key}
                       onClick={() => toggleColumn(col.key)}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
                     >
                       <div className={cn(
-                        "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                        "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
                         visibleColumns[col.key] 
                           ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
                           : "border-zinc-700"
                       )}>
                         {visibleColumns[col.key] && <Check className="w-3 h-3" />}
                       </div>
-                      {col.label}
+                      <span className="flex-1">{col.label}</span>
                     </button>
                   ))}
                 </div>
@@ -131,11 +151,11 @@ export default function GroupsPage() {
 
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
+          <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
             <tr>
-              <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+              <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
               {columns.map(col => visibleColumns[col.key] && (
-                <th key={col.key} className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">
+                <th key={col.key} className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300"
                     onClick={() => handleSort(col.key as keyof Group)}
@@ -149,11 +169,14 @@ export default function GroupsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
-            {sortedGroups.map((group, index) => (
+            {sortedGroups.map((group, index) => {
+              const stats = getGroupStats(group.name);
+              return (
               <tr key={group.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group">
                 <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{group.name}</td>}
-                {visibleColumns.students && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.students}</td>}
+                {visibleColumns.students && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{stats.count}</td>}
+                {visibleColumns.balance && <td className={cn("px-6 py-4 font-medium", stats.balance < 0 ? "text-red-500" : "text-emerald-500")}>{stats.balance.toLocaleString()} UZS</td>}
                 {visibleColumns.teachers && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.teachers}</td>}
                 {visibleColumns.courses && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.courses}</td>}
                 {visibleColumns.rooms && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.rooms}</td>}
@@ -177,7 +200,8 @@ export default function GroupsPage() {
                   )}
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
 import { useEmployees, Employee } from '../lib/mockData.ts';
 
@@ -13,37 +13,82 @@ type SortConfig = {
 export default function EmployeesPage() {
   const { t } = useTranslation();
   const { items: employees, addItem, updateItem, deleteItem } = useEmployees();
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [editItem, setEditItem] = useState<Employee | null>(null);
   const [detailsItem, setDetailsItem] = useState<Employee | null>(null);
-  const [formData, setFormData] = useState({ name: '', phone: '', qualification: '', gender: '', exp: 0, dob: '', joined: '' });
+  const [formData, setFormData] = useState({ 
+    firstName: '', 
+    lastName: '', 
+    phone: '', 
+    qualification: '', 
+    gender: '', 
+    exp: 0, 
+    dob: '', 
+    joined: '', 
+    username: '', 
+    password: '',
+    employeeType: '',
+    address: '',
+    salary: ''
+  });
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editItem) {
-      updateItem(editItem.id, formData);
+      updateItem(editItem.id, {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        phone: formData.phone,
+        qualification: formData.qualification,
+        gender: formData.gender,
+        exp: formData.exp,
+        dob: formData.dob,
+        joined: formData.joined,
+        username: formData.username,
+        password: formData.password,
+        employeeType: formData.employeeType,
+        address: formData.address,
+        salary: formData.salary
+      });
       setEditItem(null);
     }
   };
 
-  const handleDuplicate = (employee: Employee) => {
-    addItem({
-      ...employee,
-      name: `${employee.name} (Copy)`
-    });
-    setActiveMenu(null);
-  };
-
   const openEditModal = (item: Employee) => {
-    setFormData({ name: item.name, phone: item.phone, qualification: item.qualification, gender: item.gender, exp: item.exp, dob: item.dob, joined: item.joined });
+    const [firstName = '', ...lastNameParts] = (item.name || '').split(' ');
+    const lastName = lastNameParts.join(' ');
+    setFormData({ 
+      firstName, 
+      lastName, 
+      phone: item.phone || '', 
+      qualification: item.qualification || '', 
+      gender: item.gender || '', 
+      exp: item.exp || 0, 
+      dob: item.dob || '', 
+      joined: item.joined || '', 
+      username: item.username || '', 
+      password: item.password || '',
+      employeeType: item.employeeType || '',
+      address: item.address || '',
+      salary: item.salary || ''
+    });
     setEditItem(item);
     setActiveMenu(null);
   };
 
   const openDetailsModal = (item: Employee) => {
-    setDetailsItem(item);
+    navigate(`/employees/${item.id}`);
+  };
+
+  const handleDuplicate = (employee: Employee) => {
+    addItem({
+      ...employee,
+      name: `${employee.name} (Copy)`,
+      username: '',
+      password: ''
+    });
     setActiveMenu(null);
   };
 
@@ -55,6 +100,8 @@ export default function EmployeesPage() {
     { key: 'exp', label: t('years_of_experience') },
     { key: 'dob', label: t('date_of_birth') },
     { key: 'joined', label: t('joined_date') },
+    { key: 'salary', label: 'Salary' },
+    { key: 'employeeType', label: 'Employee type' },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
@@ -114,17 +161,17 @@ export default function EmployeesPage() {
                     <button
                       key={col.key}
                       onClick={() => toggleColumn(col.key)}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
                     >
                       <div className={cn(
-                        "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                        "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
                         visibleColumns[col.key] 
                           ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
                           : "border-zinc-700"
                       )}>
                         {visibleColumns[col.key] && <Check className="w-3 h-3" />}
                       </div>
-                      {col.label}
+                      <span className="flex-1">{col.label}</span>
                     </button>
                   ))}
                 </div>
@@ -137,13 +184,13 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
+          <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
             <tr>
-              <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+              <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
               {columns.map(col => visibleColumns[col.key] && (
-                <th key={col.key} className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">
+                <th key={col.key} className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300"
                     onClick={() => handleSort(col.key as keyof Employee)}
@@ -159,15 +206,17 @@ export default function EmployeesPage() {
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
             {sortedEmployees.map((employee, index) => (
               <tr key={employee.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group">
-                <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
-                {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{employee.name}</td>}
-                {visibleColumns.phone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.phone}</td>}
-                {visibleColumns.qualification && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.qualification}</td>}
-                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.gender}</td>}
-                {visibleColumns.exp && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.exp}</td>}
-                {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.dob}</td>}
-                {visibleColumns.joined && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
-                <td className="px-6 py-4 text-right relative">
+                <td className="px-6 py-4 whitespace-nowrap text-zinc-500 dark:text-zinc-400">{index + 1}</td>
+                {visibleColumns.name && <td className="px-6 py-4 whitespace-nowrap text-zinc-900 dark:text-zinc-100 font-medium">{employee.name}</td>}
+                {visibleColumns.phone && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.phone}</td>}
+                {visibleColumns.qualification && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.qualification}</td>}
+                {visibleColumns.gender && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.gender}</td>}
+                {visibleColumns.exp && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.exp}</td>}
+                {visibleColumns.dob && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.dob}</td>}
+                {visibleColumns.joined && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
+                {visibleColumns.salary && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.salary || '-'}</td>}
+                {visibleColumns.employeeType && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.employeeType || '-'}</td>}
+                <td className="px-6 py-4 whitespace-nowrap text-right relative">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === employee.id ? null : employee.id); }}
                     className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
@@ -192,43 +241,9 @@ export default function EmployeesPage() {
         </table>
       </div>
 
-      {detailsItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
-            <button 
-              onClick={() => setDetailsItem(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('details')}</h2>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('full_name')}</label>
-                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.name}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('phone')}</label>
-                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.phone}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('qualification')}</label>
-                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.qualification}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('years_of_experience')}</label>
-                <p className="text-zinc-900 dark:text-zinc-100">{detailsItem.exp}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {editItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+          <div className="w-full max-w-xl bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setEditItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -236,22 +251,93 @@ export default function EmployeesPage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">Edit the employee</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Fill the form with new employee details.</p>
             </div>
             <form className="space-y-6" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('full_name')}</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">First name</label>
+                <input required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
+              
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Last name</label>
+                <input required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Role</label>
+                <input disabled value="Employee" type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 dark:text-zinc-500 focus:outline-none cursor-not-allowed" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Employee type</label>
+                <select value={formData.employeeType} onChange={e => setFormData({...formData, employeeType: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
+                  <option value="">Select type</option>
+                  <option value="English Teacher">English Teacher</option>
+                  <option value="Math Teacher">Math Teacher</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of birth</label>
+                  <input required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Gender</label>
+                  <select required value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phone</label>
                 <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
+
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
-                <input required value={formData.qualification} onChange={e => setFormData({...formData, qualification: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Address of residence <span className="text-zinc-500 font-normal">(optional)</span></label>
+                <input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
-              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualification</label>
+                  <input required value={formData.qualification} onChange={e => setFormData({...formData, qualification: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Years of experience</label>
+                  <input required value={formData.exp} onChange={e => setFormData({...formData, exp: parseInt(e.target.value) || 0})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Joined date</label>
+                <input required value={formData.joined} onChange={e => setFormData({...formData, joined: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Salary <span className="text-zinc-500 font-normal">(optional)</span></label>
+                <input value={formData.salary} onChange={e => setFormData({...formData, salary: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Username</label>
+                  <input value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+                  <input value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                </div>
+              </div>
+
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">Save</button>
             </form>
           </div>
         </div>

@@ -5,6 +5,7 @@ export type Student = {
   name: string;
   phone: string;
   courses: string;
+  group: string;
   gender: string;
   parent: string;
   parentPhone: string;
@@ -33,6 +34,11 @@ export type Employee = {
   exp: number;
   dob: string;
   joined: string;
+  username?: string;
+  password?: string;
+  employeeType?: string;
+  address?: string;
+  salary?: string;
 };
 
 export type Course = {
@@ -48,11 +54,22 @@ export type Room = {
   size: number;
 };
 
+export type TimetableEvent = {
+  id: number;
+  day: string;
+  title: string;
+  teacher: string;
+  room: string;
+  start: string;
+  end: string;
+  track: number;
+};
+
 const initialMockStudents: Student[] = [
-  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: 'General English', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '94...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: 'Matematika\nCEFR', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '95...', dob: '12-02-2007', address: 'Yangibozor', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: 'Pre-IELTS', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '97...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: 'Pre-IELTS', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '95...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
+  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: 'General English', group: 'Grammar | E-15:30-Quvonchoy', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '94...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
+  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: 'Matematika\nCEFR', group: 'Matematika | O-14:00-Aziza', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '95...', dob: '12-02-2007', address: 'Yangibozor', balance: -350000, price: '350,000 UZS', registration: '13-09-2025' },
+  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '97...', dob: '12-05-2005', address: 'Urganch', balance: 100000, price: '350,000 UZS', registration: '13-09-2025' },
+  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '95...', dob: '12-05-2005', address: 'Urganch', balance: -700000, price: '350,000 UZS', registration: '13-09-2025' },
 ];
 
 const initialMockGroups: Group[] = [
@@ -64,10 +81,10 @@ const initialMockGroups: Group[] = [
 ];
 
 const initialMockEmployees: Employee[] = [
-  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023' },
-  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023' },
-  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023' },
-  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023' },
+  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023', username: 'suhrob', password: '123' },
+  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023', username: 'khakimbek', password: '123' },
+  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023', username: 'gulnur', password: '123' },
+  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023', username: 'quvonchoy', password: '123' },
 ];
 
 const initialMockCourses: Course[] = [
@@ -85,6 +102,23 @@ const initialMockRooms: Room[] = [
   { id: 2, name: 'Room C', size: 16 },
   { id: 3, name: 'Room A', size: 22 },
   { id: 4, name: 'Room B', size: 16 },
+];
+
+const initialMockEvents: TimetableEvent[] = [
+  { id: 1, day: 'odd', title: 'Pre-IELTS | O-10:00-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '10:00', end: '11:30', track: 0 },
+  { id: 2, day: 'odd', title: 'Grammar | O-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '15:00', end: '16:30', track: 0 },
+  { id: 3, day: 'odd', title: 'CEFR | O-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '16:30', end: '18:00', track: 0 },
+  { id: 4, day: 'odd', title: 'Pre-IELTS | O-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room B', start: '16:30', end: '18:00', track: 1 },
+  { id: 5, day: 'even', title: 'KIDS | E-10:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '10:30', end: '12:00', track: 0 },
+  { id: 6, day: 'even', title: 'Grammar | E-14:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '14:30', end: '16:00', track: 0 },
+  { id: 7, day: 'even', title: 'IELTS | E-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '16:00', end: '18:00', track: 0 },
+  { id: 8, day: 'even', title: 'Beginner | E-14:00-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room B', start: '14:30', end: '16:00', track: 1 },
+  { id: 9, day: 'even', title: 'KIDS | E-15:30-Husniya', teacher: 'Husniya Botirova', room: 'Room B', start: '16:00', end: '17:30', track: 1 },
+  { id: 10, day: 'even', title: 'Grammar | E-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '14:30', end: '16:00', track: 2 },
+  { id: 11, day: 'even', title: 'Grammar | E-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '16:00', end: '17:30', track: 2 },
+  { id: 12, day: 'even', title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00', track: 3 },
+  { id: 13, day: 'even', title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30', track: 3 },
+  { id: 14, day: 'even', title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00', track: 4 },
 ];
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {
@@ -148,6 +182,7 @@ export const useGroups = createUseEntityHook<Group>('mock_groups', initialMockGr
 export const useEmployees = createUseEntityHook<Employee>('mock_employees', initialMockEmployees);
 export const useCourses = createUseEntityHook<Course>('mock_courses', initialMockCourses);
 export const useRooms = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
+export const useTimetableEvents = createUseEntityHook<TimetableEvent>('mock_timetable_events', initialMockEvents);
 
 export type EmployeeType = {
   id: number;

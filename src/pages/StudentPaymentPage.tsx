@@ -1,22 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown, Plus, X } from 'lucide-react';
+import { ChevronsUpDown, Plus, X, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useStudents, useCourses, useGroups } from '../lib/mockData.ts';
 
 export default function StudentPaymentPage() {
   const { id } = useParams();
   const { t } = useTranslation();
+  const { students, updateStudent } = useStudents();
+  const { items: allCourses } = useCourses();
+  const { items: allGroups } = useGroups();
 
   // Mock data for the student
-  const student = {
-    id,
-    name: "Farangiz Azimova",
-    balance: -2000000,
+  const student = students.find(s => s.id === Number(id)) || {
+    id: Number(id),
+    name: "Unknown Student",
+    balance: 0,
+    courses: '',
+    group: '',
+    price: '0 UZS',
+    registration: ''
   };
 
-  const courses = [
-    { id: 1, name: 'Grammar', group: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', price: '400,000 UZS', nextPayment: '22-03-2026', registration: '22-09-2025' },
-  ];
+  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
+    const course = allCourses.find(c => c.name === courseName.trim());
+    const group = allGroups.find(g => g.name === student.group);
+    return {
+      id: index + 1,
+      name: courseName.trim(),
+      group: student.group || 'N/A',
+      teacher: group ? group.teachers : 'N/A',
+      price: student.price || '0 UZS',
+      nextPayment: 'N/A',
+      registration: student.registration || 'N/A'
+    };
+  }) : [];
 
   const initialPayments = [
     { id: 1, course: 'Grammar', amount: '400,000 UZS', type: 'Cash', date: '11-11-2025', notes: 'Sep 22 - Oct 22', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
@@ -24,30 +42,120 @@ export default function StudentPaymentPage() {
 
   const [payments, setPayments] = useState(initialPayments);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<number | null>(null);
+  const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAddModalOpen || isEditModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAddModalOpen, isEditModalOpen]);
+
   const [formData, setFormData] = useState({
     course: '',
     amount: '0',
     type: '',
     date: '',
-    notes: ''
+    notes: '',
+    addedBy: 'Umarbek Erkinboev (Admin)'
   });
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newPayment = {
-      id: Math.max(0, ...payments.map(p => p.id)) + 1,
-      course: formData.course || 'Grammar',
-      amount: formData.amount + ' UZS',
-      type: formData.type || 'Cash',
-      date: formData.date || new Date().toISOString().split('T')[0],
-      notes: formData.notes,
-      addedBy: 'Admin',
-      editedDate: '',
-      editedBy: ''
-    };
-    setPayments([...payments, newPayment]);
-    setIsAddModalOpen(false);
-    setFormData({ course: '', amount: '0', type: '', date: '', notes: '' });
+    const paymentAmount = parseInt(formData.amount.replace(/,/g, ''), 10) || 0;
+    
+    if (editPaymentId) {
+      // Handle Edit
+      const oldPayment = payments.find(p => p.id === editPaymentId);
+      const oldAmount = oldPayment ? parseInt(oldPayment.amount.replace(/[^0-9]/g, ''), 10) : 0;
+      
+      const updatedPayments = payments.map(p => {
+        if (p.id === editPaymentId) {
+          return {
+            ...p,
+            course: formData.course || 'Grammar',
+            amount: formData.amount + ' UZS',
+            type: formData.type || 'Cash',
+            date: formData.date || new Date().toISOString().split('T')[0],
+            notes: formData.notes,
+            editedDate: new Date().toISOString().split('T')[0],
+            editedBy: formData.addedBy
+          };
+        }
+        return p;
+      });
+      
+      setPayments(updatedPayments);
+      
+      if (student.id) {
+        updateStudent(student.id, {
+          ...student,
+          balance: student.balance - oldAmount + paymentAmount
+        });
+      }
+      setIsEditModalOpen(false);
+      setEditPaymentId(null);
+    } else {
+      // Handle Add
+      const newPayment = {
+        id: Math.max(0, ...payments.map(p => p.id)) + 1,
+        course: formData.course || 'Grammar',
+        amount: formData.amount + ' UZS',
+        type: formData.type || 'Cash',
+        date: formData.date || new Date().toISOString().split('T')[0],
+        notes: formData.notes,
+        addedBy: formData.addedBy,
+        editedDate: '',
+        editedBy: ''
+      };
+      
+      setPayments([...payments, newPayment]);
+      
+      // Update student balance
+      if (student.id) {
+        updateStudent(student.id, {
+          ...student,
+          balance: student.balance + paymentAmount
+        });
+      }
+      
+      setIsAddModalOpen(false);
+    }
+    
+    setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: 'Umarbek Erkinboev (Admin)' });
+  };
+
+  const handleEditPayment = (payment: any) => {
+    setFormData({
+      course: payment.course,
+      amount: payment.amount.replace(/[^0-9]/g, ''),
+      type: payment.type,
+      date: payment.date,
+      notes: payment.notes,
+      addedBy: payment.addedBy
+    });
+    setEditPaymentId(payment.id);
+    setIsEditModalOpen(true);
+    setActiveMenu(null);
+  };
+
+  const handleDeletePayment = (paymentId: number) => {
+    const paymentToDelete = payments.find(p => p.id === paymentId);
+    if (paymentToDelete && student.id) {
+      const amount = parseInt(paymentToDelete.amount.replace(/[^0-9]/g, ''), 10) || 0;
+      updateStudent(student.id, {
+        ...student,
+        balance: student.balance - amount
+      });
+    }
+    setPayments(payments.filter(p => p.id !== paymentId));
+    setActiveMenu(null);
   };
 
   return (
@@ -72,17 +180,17 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Student courses</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
+            <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">#</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Course price</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Next payment date</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Course registration date</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course price</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Next payment date</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">Course registration date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -104,24 +212,25 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Payment history</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
+            <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">#</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Amount</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Payment type</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Payment date</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Notes</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Payment added by</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Edited date</th>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">Edited by</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Amount</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment type</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment date</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Notes</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment added by</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Edited date</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Edited by</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
               {payments.map((payment, index) => (
-                <tr key={payment.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
+                <tr key={payment.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group">
                   <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                   <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{payment.course}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{payment.amount}</td>
@@ -131,6 +240,30 @@ export default function StudentPaymentPage() {
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{payment.addedBy}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{payment.editedDate}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{payment.editedBy}</td>
+                  <td className="px-6 py-4 text-right relative">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === payment.id ? null : payment.id); }}
+                      className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    
+                    {activeMenu === payment.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                        <div className="absolute right-8 top-10 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                          <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            Edit details
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeletePayment(payment.id); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 flex items-center gap-2">
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -138,19 +271,28 @@ export default function StudentPaymentPage() {
         </div>
       </div>
 
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+      {(isAddModalOpen || isEditModalOpen) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative my-8">
             <button 
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => {
+                setIsAddModalOpen(false);
+                setIsEditModalOpen(false);
+                setEditPaymentId(null);
+                setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: 'Umarbek Erkinboev (Admin)' });
+              }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Add new student payment</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Fill the form with new student payment details.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                {isEditModalOpen ? 'Edit student payment' : 'Add new student payment'}
+              </h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {isEditModalOpen ? 'Update the payment details.' : 'Fill the form with new student payment details.'}
+              </p>
             </div>
 
             <form className="space-y-6" onSubmit={handleAddSubmit}>
@@ -162,7 +304,7 @@ export default function StudentPaymentPage() {
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
                   <option value="">Select course</option>
-                  {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
 
@@ -199,6 +341,19 @@ export default function StudentPaymentPage() {
                   onChange={e => setFormData({...formData, date: e.target.value})}
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Added by</label>
+                <select 
+                  value={formData.addedBy}
+                  onChange={e => setFormData({...formData, addedBy: e.target.value})}
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                >
+                  <option value="Umarbek Erkinboev (Admin)">Umarbek Erkinboev (Admin)</option>
+                  <option value="Eldor Bohramov (Admin)">Eldor Bohramov (Admin)</option>
+                  <option value="Admin">Admin</option>
+                </select>
               </div>
 
               <div className="space-y-2">

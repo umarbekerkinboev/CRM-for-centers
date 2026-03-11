@@ -3,57 +3,75 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, LayoutGrid, Check, Plus, X, Search } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
-import { useStudents, Student } from '../lib/mockData.ts';
+import { useStudents, Student, useGroups, useCourses, useEmployees, useRooms } from '../lib/mockData.ts';
 
 export default function GroupDetailsPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Mock data for the group
-  const group = {
-    id,
-    name: 'Grammar | E-15:30-Quvonchoy',
-    teacher: 'Quvonchoy Razzakova',
-    course: 'Grammar',
-    room: 'Room D',
-    timetable: 'Even days, 15:30-17:00',
-    balance: -5150000,
+  const { items: groups, updateItem: updateGroup, deleteItem: deleteGroup } = useGroups();
+  const { students: allStudents, addStudent, updateStudent } = useStudents();
+
+  const { items: courses } = useCourses();
+  const { items: employees } = useEmployees();
+  const { items: rooms } = useRooms();
+
+  const group = groups.find(g => g.id === Number(id)) || {
+    id: Number(id),
+    name: 'Unknown Group',
+    teachers: '',
+    courses: '',
+    rooms: '',
+    students: 0,
   };
 
-  const { students: allStudents, addStudent } = useStudents();
-  const [groupStudents, setGroupStudents] = useState<Student[]>([]);
+  const groupStudents = allStudents.filter(s => s.group === group.name);
+  const groupBalance = groupStudents.reduce((sum, s) => sum + s.balance, 0);
+
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addTab, setAddTab] = useState<'existing' | 'new'>('existing');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', courseName: '', courseRegistrationDate: '', coursePrice: '' });
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState({ name: group.name, teacher: group.teacher, course: group.course, room: group.room, timetable: group.timetable });
+
+  useEffect(() => {
+    if (isAddModalOpen || isEditModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAddModalOpen, isEditModalOpen]);
+
+  const [editFormData, setEditFormData] = useState({ name: group.name, teacher: group.teachers, course: group.courses, room: group.rooms });
 
   const handleEditGroup = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, update the group here
+    updateGroup(Number(id), {
+      name: editFormData.name,
+      teachers: editFormData.teacher,
+      courses: editFormData.course,
+      rooms: editFormData.room,
+      students: group.students
+    });
     setIsEditModalOpen(false);
   };
 
   const handleDeleteGroup = () => {
-    // In a real app, delete the group here
+    deleteGroup(Number(id));
     navigate('/groups');
   };
-
-  // Initialize group students with some mock data if empty
-  useEffect(() => {
-    if (groupStudents.length === 0 && allStudents.length > 0) {
-      setGroupStudents(allStudents.slice(0, 3));
-    }
-  }, [allStudents]);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (addTab === 'new') {
-      const newStudent = addStudent({
+      addStudent({
         name: `${formData.name} ${formData.lastName}`,
         balance: 0,
         price: formData.coursePrice || '350,000 UZS',
@@ -64,18 +82,14 @@ export default function GroupDetailsPage() {
         parentPhone: formData.parentPhone,
         dob: formData.dob,
         address: formData.address,
-        courses: formData.courseName || group.course,
+        courses: formData.courseName || group.courses,
+        group: group.name
       });
-      setGroupStudents([...groupStudents, newStudent]);
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
-      const newGroupStudents = [...groupStudents];
       selectedStudents.forEach(s => {
-        if (!newGroupStudents.find(gs => gs.id === s.id)) {
-          newGroupStudents.push(s);
-        }
+        updateStudent(s.id, { ...s, group: group.name });
       });
-      setGroupStudents(newGroupStudents);
     }
     
     setIsAddModalOpen(false);
@@ -113,15 +127,14 @@ export default function GroupDetailsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{group.name}</h1>
           <div className="space-y-1 text-sm">
-            <p><span className="text-zinc-500 dark:text-zinc-400">Teacher:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teacher}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Course:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.course}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Room:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.room}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Timetable:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.timetable}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Group balance:</span> <span className={group.balance < 0 ? "text-red-500" : "text-emerald-500"}>{group.balance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">Teacher:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">Course:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">Room:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">Group balance:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -179,17 +192,17 @@ export default function GroupDetailsPage() {
                       <button
                         key={col.key}
                         onClick={() => toggleColumn(col.key)}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
                       >
                         <div className={cn(
-                          "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                          "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
                           visibleColumns[col.key] 
                             ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
                             : "border-zinc-700"
                         )}>
                           {visibleColumns[col.key] && <Check className="w-3 h-3" />}
                         </div>
-                        {col.label}
+                        <span className="flex-1">{col.label}</span>
                       </button>
                     ))}
                   </div>
@@ -207,11 +220,11 @@ export default function GroupDetailsPage() {
 
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800/50">
+            <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">#</th>
+                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">#</th>
                 {columns.map(col => visibleColumns[col.key] && (
-                  <th key={col.key} className="px-6 py-4 font-medium bg-zinc-50 dark:bg-zinc-900/30">
+                  <th key={col.key} className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">
                     <div className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300">
                       {col.label}
                       <ChevronsUpDown className="w-3 h-3" />
@@ -234,7 +247,7 @@ export default function GroupDetailsPage() {
                   {visibleColumns.registration && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.registration}</td>}
                   {visibleColumns.phone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.phone}</td>}
                   {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.gender}</td>}
-                  {visibleColumns.parentName && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parent || student.parentName}</td>}
+                  {visibleColumns.parentName && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parent}</td>}
                   {visibleColumns.parentPhone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parentPhone}</td>}
                   {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.dob}</td>}
                 </tr>
@@ -304,12 +317,12 @@ export default function GroupDetailsPage() {
                 </div>
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
                   <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+                    <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                       <tr>
-                        <th className="px-4 py-3 font-medium w-12">#</th>
-                        <th className="px-4 py-3 font-medium">Full name</th>
-                        <th className="px-4 py-3 font-medium">Course price</th>
-                        <th className="px-4 py-3 font-medium">Course registration date</th>
+                        <th className="px-4 py-3 font-bold whitespace-nowrap w-12">#</th>
+                        <th className="px-4 py-3 font-bold whitespace-nowrap">Full name</th>
+                        <th className="px-4 py-3 font-bold whitespace-nowrap">Course price</th>
+                        <th className="px-4 py-3 font-bold whitespace-nowrap">Course registration date</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-60 overflow-y-auto block w-full" style={{ display: 'table-row-group' }}>
@@ -488,26 +501,61 @@ export default function GroupDetailsPage() {
       )}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative">
             <button 
               onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Edit group details</h2>
+              <h2 className="text-xl font-bold text-zinc-100 mb-2">Edit the group</h2>
+              <p className="text-sm text-zinc-400">Fill the form with new group details.</p>
             </div>
             <form className="space-y-4" onSubmit={handleEditGroup}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Group name</label>
-                <input required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-300">Group name</label>
+                <input required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} type="text" className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
-                <input required value={editFormData.teacher} onChange={e => setEditFormData({...editFormData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-300">Employees</label>
+                <div className="relative">
+                  <select required value={editFormData.teacher} onChange={e => setEditFormData({...editFormData, teacher: e.target.value})} className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:border-zinc-600 transition-colors appearance-none opacity-0 absolute inset-0 z-10 cursor-pointer">
+                    <option value="">Select teacher</option>
+                    {employees.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
+                  </select>
+                  <div className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 flex items-center justify-between min-h-[46px]">
+                    {editFormData.teacher ? (
+                      <div className="flex items-center gap-2 bg-zinc-800/50 px-2 py-1 rounded-md text-sm">
+                        {editFormData.teacher}
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-300">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-zinc-500">Select teacher</span>
+                    )}
+                    <div className="flex items-center gap-2 text-zinc-500">
+                      {editFormData.teacher && <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-300"><X className="w-4 h-4" /></button>}
+                      <ChevronsUpDown className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">Save</button>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300">Course</label>
+                <div className="relative">
+                  <select disabled value={editFormData.course} onChange={e => setEditFormData({...editFormData, course: e.target.value})} className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors appearance-none cursor-not-allowed">
+                    <option value="">Select course</option>
+                    {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                    <ChevronsUpDown className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">Cannot change the course since there are students assigned to this group.</p>
+              </div>
+              <button type="submit" className="w-full bg-zinc-200 hover:bg-white text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">Save</button>
             </form>
           </div>
         </div>
