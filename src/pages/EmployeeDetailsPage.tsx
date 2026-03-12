@@ -200,16 +200,16 @@ export default function EmployeeDetailsPage() {
       <div>
         <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">Groups</h2>
         
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">#</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Number of students</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Courses</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Rooms</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">#</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Number of students</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Courses</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Rooms</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">

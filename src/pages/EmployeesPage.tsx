@@ -184,13 +184,13 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
         <table className="w-full text-sm text-left">
           <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
             <tr>
-              <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+              <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
               {columns.map(col => visibleColumns[col.key] && (
-                <th key={col.key} className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">
+                <th key={col.key} className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300"
                     onClick={() => handleSort(col.key as keyof Employee)}
@@ -206,17 +206,17 @@ export default function EmployeesPage() {
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
             {sortedEmployees.map((employee, index) => (
               <tr key={employee.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group">
-                <td className="px-6 py-4 whitespace-nowrap text-zinc-500 dark:text-zinc-400">{index + 1}</td>
-                {visibleColumns.name && <td className="px-6 py-4 whitespace-nowrap text-zinc-900 dark:text-zinc-100 font-medium">{employee.name}</td>}
-                {visibleColumns.phone && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.phone}</td>}
-                {visibleColumns.qualification && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.qualification}</td>}
-                {visibleColumns.gender && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.gender}</td>}
-                {visibleColumns.exp && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.exp}</td>}
-                {visibleColumns.dob && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.dob}</td>}
-                {visibleColumns.joined && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
-                {visibleColumns.salary && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.salary || '-'}</td>}
-                {visibleColumns.employeeType && <td className="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{employee.employeeType || '-'}</td>}
-                <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
+                {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{employee.name}</td>}
+                {visibleColumns.phone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.phone}</td>}
+                {visibleColumns.qualification && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.qualification}</td>}
+                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.gender}</td>}
+                {visibleColumns.exp && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.exp}</td>}
+                {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.dob}</td>}
+                {visibleColumns.joined && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
+                {visibleColumns.salary && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.salary || '-'}</td>}
+                {visibleColumns.employeeType && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.employeeType || '-'}</td>}
+                <td className="px-6 py-4 text-right relative">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === employee.id ? null : employee.id); }}
                     className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
@@ -227,10 +227,10 @@ export default function EmployeesPage() {
                   {activeMenu === employee.id && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                      <div className="absolute right-8 top-10 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
-                        <button onClick={(e) => { e.stopPropagation(); openDetailsModal(employee); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('details')}</button>
-                        <button onClick={(e) => { e.stopPropagation(); openEditModal(employee); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('edit_details')}</button>
-                        <button onClick={(e) => { e.stopPropagation(); deleteItem(employee.id); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
+                      <div className={cn("absolute right-8 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= sortedEmployees.length / 2 && sortedEmployees.length > 1 ? "bottom-10" : "top-10")}>
+                        <button onClick={(e) => { e.stopPropagation(); openDetailsModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('details')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); openEditModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('edit_details')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteItem(employee.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
                       </div>
                     </>
                   )}

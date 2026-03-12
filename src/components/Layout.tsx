@@ -29,6 +29,7 @@ type MenuItem = {
   label: string;
   icon: React.ElementType;
   path: string;
+  subItems?: { label: string; path: string }[];
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -48,14 +49,73 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   };
 
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    groups: true,
+    students: true,
+    employees: true,
+    courses: true,
+    rooms: true
+  });
+
+  const toggleMenu = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setExpandedMenus(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const menuItems: MenuItem[] = [
     { id: 'timetable', label: t('timetable'), icon: CalendarDays, path: '/timetable' },
     { id: 'analytics', label: t('analytics'), icon: BarChart2, path: '/analytics' },
-    { id: 'groups', label: t('groups'), icon: Users, path: '/groups' },
-    { id: 'students', label: t('students'), icon: GraduationCap, path: '/students' },
-    { id: 'employees', label: t('employees'), icon: Contact2, path: '/employees' },
-    { id: 'courses', label: t('courses'), icon: BookOpen, path: '/courses' },
-    { id: 'rooms', label: t('rooms'), icon: LampDesk, path: '/rooms' },
+    { 
+      id: 'groups', 
+      label: t('groups'), 
+      icon: Users, 
+      path: '/groups',
+      subItems: [
+        { label: t('manage_groups'), path: '/groups' },
+        { label: t('add_new_group'), path: '/groups/add' }
+      ]
+    },
+    { 
+      id: 'students', 
+      label: t('students'), 
+      icon: GraduationCap, 
+      path: '/students',
+      subItems: [
+        { label: t('manage_students'), path: '/students' },
+        { label: t('add_new_student'), path: '/students/add' }
+      ]
+    },
+    { 
+      id: 'employees', 
+      label: t('employees'), 
+      icon: Contact2, 
+      path: '/employees',
+      subItems: [
+        { label: t('manage_employees'), path: '/employees' },
+        { label: t('manage_employee_types'), path: '/employees/types' },
+        { label: t('add_new_employee'), path: '/employees/add' }
+      ]
+    },
+    { 
+      id: 'courses', 
+      label: t('courses'), 
+      icon: BookOpen, 
+      path: '/courses',
+      subItems: [
+        { label: t('manage_courses'), path: '/courses' },
+        { label: t('add_new_course'), path: '/courses/add' }
+      ]
+    },
+    { 
+      id: 'rooms', 
+      label: t('rooms'), 
+      icon: LampDesk, 
+      path: '/rooms',
+      subItems: [
+        { label: t('manage_rooms'), path: '/rooms' },
+        { label: t('add_new_room'), path: '/rooms/add' }
+      ]
+    },
   ];
 
   return (
@@ -74,24 +134,61 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         
-        <div className="flex-1 py-4 overflow-y-auto">
+        <div className="flex-1 py-4 overflow-y-auto overflow-x-hidden scrollbar-thin">
           <nav className={cn("space-y-0.5", isSidebarOpen ? "px-3" : "px-2")}>
             {menuItems.map((item) => {
               const isActive = location.pathname.startsWith(item.path);
 
               return (
                 <div key={item.id} className="relative group">
-                  <Link
-                    to={item.path}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      isSidebarOpen ? "" : "justify-center",
-                      isActive ? "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-zinc-100"
-                    )}
-                  >
-                    <item.icon className="w-5 h-5 shrink-0" />
-                    {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
-                  </Link>
+                  {item.subItems && isSidebarOpen ? (
+                    <div>
+                      <button
+                        onClick={(e) => toggleMenu(item.id, e)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                          isActive ? "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="w-5 h-5 shrink-0" />
+                          <span className="whitespace-nowrap">{item.label}</span>
+                        </div>
+                        <ChevronDown className={cn("w-4 h-4 transition-transform", expandedMenus[item.id] ? "rotate-180" : "")} />
+                      </button>
+                      {expandedMenus[item.id] && (
+                        <div className="mt-1 ml-4 pl-4 border-l border-zinc-200 dark:border-zinc-800 space-y-1">
+                          {item.subItems.map((subItem, idx) => {
+                            const isSubActive = location.pathname === subItem.path;
+                            return (
+                              <Link
+                                key={idx}
+                                to={subItem.path}
+                                className={cn(
+                                  "block px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                  isSubActive ? "text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/50" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+                                )}
+                              >
+                                {subItem.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        isSidebarOpen ? "" : "justify-center",
+                        isActive ? "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      )}
+                    >
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                    </Link>
+                  )}
 
                   {!isSidebarOpen && (
                     <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1.5 bg-zinc-800 text-zinc-100 text-xs font-medium rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
@@ -224,7 +321,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
           <div className="max-w-[1600px] mx-auto">
             {children}
           </div>

@@ -180,17 +180,17 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Student courses</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course price</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Next payment date</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">Course registration date</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course price</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Next payment date</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">Course registration date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -212,20 +212,20 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Payment history</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a]">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Amount</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment type</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment date</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Notes</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Payment added by</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Edited date</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">Edited by</th>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Amount</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment type</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment date</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Notes</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment added by</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Edited date</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Edited by</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -251,7 +251,7 @@ export default function StudentPaymentPage() {
                     {activeMenu === payment.id && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                        <div className="absolute right-8 top-10 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                        <div className={cn("absolute right-8 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
                           <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2">
                             <Edit className="w-4 h-4" />
                             Edit details

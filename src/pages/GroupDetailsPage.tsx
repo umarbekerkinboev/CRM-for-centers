@@ -219,12 +219,12 @@ export default function GroupDetailsPage() {
         </div>
 
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
+          <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
-                <th className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">#</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">#</th>
                 {columns.map(col => visibleColumns[col.key] && (
-                  <th key={col.key} className="px-6 py-4 font-bold whitespace-nowrap bg-zinc-50 dark:bg-zinc-900/30">
+                  <th key={col.key} className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">
                     <div className="flex items-center gap-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-300">
                       {col.label}
                       <ChevronsUpDown className="w-3 h-3" />
@@ -319,10 +319,10 @@ export default function GroupDetailsPage() {
                   <table className="w-full text-sm text-left">
                     <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                       <tr>
-                        <th className="px-4 py-3 font-bold whitespace-nowrap w-12">#</th>
-                        <th className="px-4 py-3 font-bold whitespace-nowrap">Full name</th>
-                        <th className="px-4 py-3 font-bold whitespace-nowrap">Course price</th>
-                        <th className="px-4 py-3 font-bold whitespace-nowrap">Course registration date</th>
+                        <th className="px-4 py-3 font-bold w-12">#</th>
+                        <th className="px-4 py-3 font-bold">Full name</th>
+                        <th className="px-4 py-3 font-bold">Course price</th>
+                        <th className="px-4 py-3 font-bold">Course registration date</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-60 overflow-y-auto block w-full" style={{ display: 'table-row-group' }}>
