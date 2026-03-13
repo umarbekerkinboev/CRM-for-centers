@@ -14,6 +14,7 @@ export type Student = {
   balance: number;
   price: string;
   registration: string;
+  lastChargedDate?: string;
 };
 
 export type Group = {
@@ -65,11 +66,24 @@ export type TimetableEvent = {
   track: number;
 };
 
+export type Payment = {
+  id: number;
+  studentId: number;
+  course: string;
+  amount: string;
+  type: string;
+  date: string;
+  notes: string;
+  addedBy: string;
+  editedDate: string;
+  editedBy: string;
+};
+
 const initialMockStudents: Student[] = [
-  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: 'General English', group: 'Grammar | E-15:30-Quvonchoy', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '94...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: 'Matematika\nCEFR', group: 'Matematika | O-14:00-Aziza', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '95...', dob: '12-02-2007', address: 'Yangibozor', balance: -350000, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '97...', dob: '12-05-2005', address: 'Urganch', balance: 100000, price: '350,000 UZS', registration: '13-09-2025' },
-  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '95...', dob: '12-05-2005', address: 'Urganch', balance: -700000, price: '350,000 UZS', registration: '13-09-2025' },
+  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: 'General English', group: 'Grammar | E-15:30-Quvonchoy', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '94...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
+  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: 'Matematika\nCEFR', group: 'Matematika | O-14:00-Aziza', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '95...', dob: '12-02-2007', address: 'Yangibozor', balance: -350000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
+  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '97...', dob: '12-05-2005', address: 'Urganch', balance: 100000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
+  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '95...', dob: '12-05-2005', address: 'Urganch', balance: -700000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
 ];
 
 const initialMockGroups: Group[] = [
@@ -119,6 +133,11 @@ const initialMockEvents: TimetableEvent[] = [
   { id: 12, day: 'even', title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00', track: 3 },
   { id: 13, day: 'even', title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30', track: 3 },
   { id: 14, day: 'even', title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00', track: 4 },
+];
+
+const initialMockPayments: Payment[] = [
+  { id: 1, studentId: 1, course: 'Grammar', amount: '400,000 UZS', type: 'Cash', date: '11-11-2025', notes: 'Sep 22 - Oct 22', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
+  { id: 2, studentId: 2, course: 'Matematika', amount: '350,000 UZS', type: 'Card', date: '01-01-2026', notes: 'Monthly payment', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '01-02-2026', editedBy: 'Umarbek Erkinboev (Admin)' },
 ];
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {
@@ -183,6 +202,7 @@ export const useEmployees = createUseEntityHook<Employee>('mock_employees', init
 export const useCourses = createUseEntityHook<Course>('mock_courses', initialMockCourses);
 export const useRooms = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
 export const useTimetableEvents = createUseEntityHook<TimetableEvent>('mock_timetable_events', initialMockEvents);
+export const usePayments = createUseEntityHook<Payment>('mock_payments', initialMockPayments);
 
 export type EmployeeType = {
   id: number;
@@ -199,9 +219,53 @@ const initialMockEmployeeTypes: EmployeeType[] = [
 
 export const useEmployeeTypes = createUseEntityHook<EmployeeType>('mock_employee_types', initialMockEmployeeTypes);
 
+let monthlyChargesProcessed = false;
+
 const useStudentsBase = createUseEntityHook<Student>('mock_students', initialMockStudents);
 export function useStudents() {
   const { items, setItems, addItem, updateItem, deleteItem } = useStudentsBase();
+  
+  useEffect(() => {
+    if (monthlyChargesProcessed || items.length === 0) return;
+    monthlyChargesProcessed = true;
+    
+    let updated = false;
+    const newItems = items.map(student => {
+      if (!student.lastChargedDate) return student;
+      
+      const parts = student.lastChargedDate.split('-');
+      if (parts.length !== 3) return student;
+      
+      const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      const now = new Date();
+      
+      let monthsPassed = (now.getFullYear() - lastCharged.getFullYear()) * 12 + (now.getMonth() - lastCharged.getMonth());
+      if (now.getDate() < lastCharged.getDate()) {
+        monthsPassed--;
+      }
+      
+      if (monthsPassed > 0) {
+        updated = true;
+        const price = parseInt(student.price.replace(/[^0-9]/g, ''), 10) || 0;
+        
+        const newChargeDate = new Date(lastCharged);
+        newChargeDate.setMonth(newChargeDate.getMonth() + monthsPassed);
+        const newDateStr = `${newChargeDate.getDate().toString().padStart(2, '0')}-${(newChargeDate.getMonth() + 1).toString().padStart(2, '0')}-${newChargeDate.getFullYear()}`;
+        
+        return {
+          ...student,
+          balance: student.balance - (price * monthsPassed),
+          lastChargedDate: newDateStr
+        };
+      }
+      return student;
+    });
+    
+    if (updated) {
+      setItems(newItems);
+    }
+  }, [items, setItems]);
+
   return {
     students: items,
     setStudents: setItems,

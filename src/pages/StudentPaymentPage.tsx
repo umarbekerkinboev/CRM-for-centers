@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, Plus, X, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import { useStudents, useCourses, useGroups } from '../lib/mockData.ts';
+import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
+import { cn } from '../lib/utils.ts';
 
 export default function StudentPaymentPage() {
   const { id } = useParams();
@@ -36,11 +37,8 @@ export default function StudentPaymentPage() {
     };
   }) : [];
 
-  const initialPayments = [
-    { id: 1, course: 'Grammar', amount: '400,000 UZS', type: 'Cash', date: '11-11-2025', notes: 'Sep 22 - Oct 22', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
-  ];
-
-  const [payments, setPayments] = useState(initialPayments);
+  const { items: allPayments, addPayment, updatePayment, deletePayment } = usePayments();
+  const payments = allPayments.filter(p => p.studentId === Number(id));
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
@@ -75,23 +73,17 @@ export default function StudentPaymentPage() {
       const oldPayment = payments.find(p => p.id === editPaymentId);
       const oldAmount = oldPayment ? parseInt(oldPayment.amount.replace(/[^0-9]/g, ''), 10) : 0;
       
-      const updatedPayments = payments.map(p => {
-        if (p.id === editPaymentId) {
-          return {
-            ...p,
-            course: formData.course || 'Grammar',
-            amount: formData.amount + ' UZS',
-            type: formData.type || 'Cash',
-            date: formData.date || new Date().toISOString().split('T')[0],
-            notes: formData.notes,
-            editedDate: new Date().toISOString().split('T')[0],
-            editedBy: formData.addedBy
-          };
-        }
-        return p;
-      });
+      const updatedPayment = {
+        course: formData.course || 'Grammar',
+        amount: formData.amount + ' UZS',
+        type: formData.type || 'Cash',
+        date: formData.date || new Date().toISOString().split('T')[0],
+        notes: formData.notes,
+        editedDate: new Date().toISOString().split('T')[0],
+        editedBy: formData.addedBy
+      };
       
-      setPayments(updatedPayments);
+      updatePayment(editPaymentId, updatedPayment);
       
       if (student.id) {
         updateStudent(student.id, {
@@ -104,7 +96,7 @@ export default function StudentPaymentPage() {
     } else {
       // Handle Add
       const newPayment = {
-        id: Math.max(0, ...payments.map(p => p.id)) + 1,
+        studentId: Number(id),
         course: formData.course || 'Grammar',
         amount: formData.amount + ' UZS',
         type: formData.type || 'Cash',
@@ -115,7 +107,7 @@ export default function StudentPaymentPage() {
         editedBy: ''
       };
       
-      setPayments([...payments, newPayment]);
+      addPayment(newPayment);
       
       // Update student balance
       if (student.id) {
@@ -154,7 +146,7 @@ export default function StudentPaymentPage() {
         balance: student.balance - amount
       });
     }
-    setPayments(payments.filter(p => p.id !== paymentId));
+    deletePayment(paymentId);
     setActiveMenu(null);
   };
 
@@ -272,8 +264,8 @@ export default function StudentPaymentPage() {
       </div>
 
       {(isAddModalOpen || isEditModalOpen) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => {
                 setIsAddModalOpen(false);

@@ -37,9 +37,10 @@ export default function AddStudentPage() {
       parentPhone: formData.parentPhone,
       dob: formData.dob,
       address: formData.address,
-      balance: 0,
+      balance: formData.coursePrice ? -parseInt(formData.coursePrice.replace(/[^0-9]/g, ''), 10) : 0,
       price: formData.coursePrice ? `${parseInt(formData.coursePrice).toLocaleString()} UZS` : '0 UZS',
       registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+      lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
     });
     navigate(-1);
   };

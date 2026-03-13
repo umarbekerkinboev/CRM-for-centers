@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, X, DollarSign, Edit, Trash2, MoreVertical } from 'lucide-react';
-import { useStudents, useCourses, useGroups } from '../lib/mockData.ts';
+import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
+import { cn } from '../lib/utils.ts';
 
 export default function StudentDetailsPage() {
   const { id } = useParams();
@@ -42,12 +43,8 @@ export default function StudentDetailsPage() {
     };
   }) : [];
 
-  const initialPayments = [
-    { id: 1, course: 'CEFR', amount: '400,000 UZS', type: 'Cash', date: '14-02-2026', notes: '', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
-    { id: 2, course: 'Matematika', amount: '400,000 UZS', type: 'Card', date: '15-02-2026', notes: '', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
-  ];
-
-  const [payments, setPayments] = useState(initialPayments);
+  const { items: allPayments, addPayment, updatePayment, deletePayment } = usePayments();
+  const payments = allPayments.filter(p => p.studentId === Number(id));
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
   const [isEditPaymentModalOpen, setIsEditPaymentModalOpen] = useState(false);
@@ -97,7 +94,7 @@ export default function StudentDetailsPage() {
         balance: student.balance - amount
       });
     }
-    setPayments(payments.filter(p => p.id !== paymentId));
+    deletePayment(paymentId);
     setActiveMenu(null);
   };
 
@@ -109,23 +106,17 @@ export default function StudentDetailsPage() {
       const oldPayment = payments.find(p => p.id === editPaymentId);
       const oldAmount = oldPayment ? parseInt(oldPayment.amount.replace(/[^0-9]/g, ''), 10) : 0;
       
-      const updatedPayments = payments.map(p => {
-        if (p.id === editPaymentId) {
-          return {
-            ...p,
-            course: editPaymentData.course || 'Grammar',
-            amount: editPaymentData.amount + ' UZS',
-            type: editPaymentData.type || 'Cash',
-            date: editPaymentData.date || new Date().toISOString().split('T')[0],
-            notes: editPaymentData.notes,
-            editedDate: new Date().toISOString().split('T')[0],
-            editedBy: editPaymentData.addedBy
-          };
-        }
-        return p;
-      });
+      const updatedPayment = {
+        course: editPaymentData.course || 'Grammar',
+        amount: editPaymentData.amount + ' UZS',
+        type: editPaymentData.type || 'Cash',
+        date: editPaymentData.date || new Date().toISOString().split('T')[0],
+        notes: editPaymentData.notes,
+        editedDate: new Date().toISOString().split('T')[0],
+        editedBy: editPaymentData.addedBy
+      };
       
-      setPayments(updatedPayments);
+      updatePayment(editPaymentId, updatedPayment);
       
       if (student.id) {
         updateStudent(student.id, {
@@ -397,8 +388,8 @@ export default function StudentDetailsPage() {
       )}
 
       {isEditPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-8">
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setIsEditPaymentModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"

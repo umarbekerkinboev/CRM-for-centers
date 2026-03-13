@@ -69,9 +69,14 @@ export default function GroupsPage() {
     { key: 'rooms', label: t('rooms') },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
-    columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
-  );
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+    name: true,
+    students: true,
+    balance: true,
+    teachers: true,
+    courses: false,
+    rooms: false,
+  });
 
   const handleSort = (key: keyof Group) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -207,8 +212,8 @@ export default function GroupsPage() {
       </div>
 
       {editItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setEditItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

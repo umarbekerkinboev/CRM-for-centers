@@ -91,9 +91,25 @@ export default function StudentsPage() {
     { key: 'dob', label: t('date_of_birth') },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
-    columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
-  );
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('students_visible_columns');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return {
+      name: true,
+      phone: true,
+      courses: true,
+      gender: false,
+      parent: false,
+      parentPhone: false,
+      dob: false,
+    };
+  });
 
   const handleSort = (key: keyof Student) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -120,7 +136,11 @@ export default function StudentsPage() {
   }, [sortConfig, students]);
 
   const toggleColumn = (key: string) => {
-    setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
+    setVisibleColumns(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('students_visible_columns', JSON.stringify(next));
+      return next;
+    });
   };
 
   return (
@@ -228,8 +248,8 @@ export default function StudentsPage() {
       </div>
 
       {editItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-8">
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setEditItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"

@@ -73,9 +73,10 @@ export default function GroupDetailsPage() {
     if (addTab === 'new') {
       addStudent({
         name: `${formData.name} ${formData.lastName}`,
-        balance: 0,
+        balance: -parseInt((formData.coursePrice || '350,000 UZS').replace(/[^0-9]/g, ''), 10),
         price: formData.coursePrice || '350,000 UZS',
         registration: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        lastChargedDate: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
         phone: formData.phone,
         gender: formData.gender,
         parent: formData.parentName,

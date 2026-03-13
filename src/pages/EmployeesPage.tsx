@@ -104,9 +104,17 @@ export default function EmployeesPage() {
     { key: 'employeeType', label: 'Employee type' },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
-    columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
-  );
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+    name: true,
+    phone: true,
+    qualification: false,
+    gender: false,
+    exp: false,
+    dob: false,
+    joined: false,
+    salary: true,
+    employeeType: true,
+  });
 
   const handleSort = (key: keyof Employee) => {
     let direction: 'asc' | 'desc' = 'asc';
