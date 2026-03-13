@@ -56,7 +56,7 @@ export default function AddGroupPage() {
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="IELTS | E-15:30-Akmal"
+              placeholder={t('e_g_group_name')}
             />
           </div>
 
@@ -88,8 +88,8 @@ export default function AddGroupPage() {
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('days')}</label>
             <select required value={formData.days} onChange={e => setFormData({...formData, days: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
               <option value="">{t('select_days')}</option>
-              <option value="odd">Odd days</option>
-              <option value="even">Even days</option>
+              <option value="odd">{t('odd')}</option>
+              <option value="even">{t('even')}</option>
             </select>
           </div>
 
@@ -100,7 +100,7 @@ export default function AddGroupPage() {
               required
               value={formData.startTime}
               onChange={e => setFormData({...formData, startTime: e.target.value})}
-              className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+              className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
             />
           </div>
 

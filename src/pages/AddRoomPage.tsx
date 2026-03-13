@@ -39,7 +39,7 @@ export default function AddRoomPage() {
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="Room A"
+              placeholder={t('e_g_room_name')}
             />
           </div>
 
@@ -51,7 +51,7 @@ export default function AddRoomPage() {
               value={formData.size || ''}
               onChange={e => setFormData({ ...formData, size: parseInt(e.target.value) || 0 })}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="16"
+              placeholder={t('e_g_capacity')}
             />
           </div>
 

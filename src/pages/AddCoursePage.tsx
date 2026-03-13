@@ -27,7 +27,7 @@ export default function AddCoursePage() {
             <input 
               type="text" 
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="IELTS"
+              placeholder={t('e_g_course_name')}
             />
           </div>
 
@@ -36,7 +36,7 @@ export default function AddCoursePage() {
             <input 
               type="text" 
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="550,000 UZS"
+              placeholder={t('e_g_price')}
             />
           </div>
 
@@ -47,7 +47,7 @@ export default function AddCoursePage() {
             <input 
               type="url" 
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="https://t.me/..."
+              placeholder={t('e_g_url')}
             />
           </div>
 

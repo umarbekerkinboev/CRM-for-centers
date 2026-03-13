@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, LayoutGrid, Check, Plus, X, Search } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
 import { useStudents, Student, useGroups, useCourses, useEmployees, useRooms } from '../lib/mockData.ts';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 export default function GroupDetailsPage() {
   const { id } = useParams();
@@ -37,6 +38,7 @@ export default function GroupDetailsPage() {
   const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', courseName: '', courseRegistrationDate: '', coursePrice: '' });
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (isAddModalOpen || isEditModalOpen) {
@@ -89,7 +91,17 @@ export default function GroupDetailsPage() {
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
       selectedStudents.forEach(s => {
-        updateStudent(s.id, { ...s, group: group.name });
+        const updates: any = {
+          ...s, 
+          group: group.name,
+          registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : s.registration,
+          lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : s.lastChargedDate
+        };
+        if (formData.coursePrice) {
+          updates.price = formData.coursePrice;
+          updates.balance = s.balance - parseInt(formData.coursePrice.replace(/[^0-9]/g, ''), 10);
+        }
+        updateStudent(s.id, updates);
       });
     }
     
@@ -107,15 +119,15 @@ export default function GroupDetailsPage() {
   }, [allStudents, groupStudents, searchQuery]);
 
   const columns = [
-    { key: 'name', label: 'Full name' },
-    { key: 'balance', label: 'Balance' },
-    { key: 'price', label: 'Course price' },
-    { key: 'registration', label: 'Course registration date' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'gender', label: 'Gender' },
-    { key: 'parentName', label: 'Parent name' },
-    { key: 'parentPhone', label: 'Parent phone' },
-    { key: 'dob', label: 'Date of birth' },
+    { key: 'name', label: t('full_name') },
+    { key: 'balance', label: t('balance') },
+    { key: 'price', label: t('course_price') },
+    { key: 'registration', label: t('course_registration_date') },
+    { key: 'phone', label: t('phone') },
+    { key: 'gender', label: t('gender') },
+    { key: 'parentName', label: t('parent_name') },
+    { key: 'parentPhone', label: t('parent_phone') },
+    { key: 'dob', label: t('date_of_birth') },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
@@ -132,10 +144,10 @@ export default function GroupDetailsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{group.name}</h1>
           <div className="space-y-1 text-sm">
-            <p><span className="text-zinc-500 dark:text-zinc-400">Teacher:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Course:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Room:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Group balance:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('teacher')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('course')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('room')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -143,7 +155,7 @@ export default function GroupDetailsPage() {
             onClick={() => setIsActionsMenuOpen(!isActionsMenuOpen)}
             className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex items-center gap-2"
           >
-            Actions
+            {t('actions')}
             <ChevronsUpDown className="w-4 h-4" />
           </button>
           
@@ -155,13 +167,13 @@ export default function GroupDetailsPage() {
                   onClick={() => { setIsActionsMenuOpen(false); setIsEditModalOpen(true); }}
                   className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2"
                 >
-                  Edit details
+                  {t('edit_details')}
                 </button>
                 <button 
-                  onClick={() => { setIsActionsMenuOpen(false); handleDeleteGroup(); }}
+                  onClick={() => { setIsActionsMenuOpen(false); setIsDeleteModalOpen(true); }}
                   className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 flex items-center gap-2"
                 >
-                  Delete
+                  {t('delete')}
                 </button>
               </div>
             </>
@@ -169,9 +181,15 @@ export default function GroupDetailsPage() {
         </div>
       </div>
 
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteGroup}
+      />
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Students</h2>
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('students')}</h2>
           <div className="flex items-center gap-3">
             <div className="relative">
               <button 
@@ -187,7 +205,7 @@ export default function GroupDetailsPage() {
                   <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
                   <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
                     <div className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                      Toggle columns
+                      {t('toggle_columns')}
                     </div>
                     {columns.map(col => (
                       <button
@@ -214,7 +232,7 @@ export default function GroupDetailsPage() {
               onClick={() => setIsAddModalOpen(true)}
               className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors flex items-center gap-2"
             >
-              Add student
+              {t('add_student')}
             </button>
           </div>
         </div>
@@ -279,7 +297,7 @@ export default function GroupDetailsPage() {
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                   )}
                 >
-                  Existing
+                  {t('existing')}
                 </button>
                 <button
                   onClick={() => setAddTab('new')}
@@ -290,27 +308,48 @@ export default function GroupDetailsPage() {
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                   )}
                 >
-                  New
+                  {t('new')}
                 </button>
               </div>
             </div>
 
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                {addTab === 'existing' ? 'List of students' : 'Add new student'}
+                {addTab === 'existing' ? t('list_of_students') : t('add_new_student')}
               </h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {addTab === 'existing' ? 'Select and add students to the group.' : 'Fill the form with new student details.'}
+                {addTab === 'existing' ? t('select_and_add_students') : t('fill_student_details')}
               </p>
             </div>
 
             {addTab === 'existing' ? (
               <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                    <input 
+                      type="date" 
+                      value={formData.courseRegistrationDate}
+                      onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})}
+                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')} ({t('optional')})</label>
+                    <input 
+                      type="text" 
+                      value={formData.coursePrice}
+                      onChange={e => setFormData({...formData, coursePrice: e.target.value})}
+                      placeholder={t('e_g_price')}
+                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                    />
+                  </div>
+                </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input 
                     type="text" 
-                    placeholder="Search..."
+                    placeholder={t('search')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
@@ -321,9 +360,8 @@ export default function GroupDetailsPage() {
                     <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                       <tr>
                         <th className="px-4 py-3 font-bold w-12">#</th>
-                        <th className="px-4 py-3 font-bold">Full name</th>
-                        <th className="px-4 py-3 font-bold">Course price</th>
-                        <th className="px-4 py-3 font-bold">Course registration date</th>
+                        <th className="px-4 py-3 font-bold">{t('full_name')}</th>
+                        <th className="px-4 py-3 font-bold">{t('course_registration_date')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-60 overflow-y-auto block w-full" style={{ display: 'table-row-group' }}>
@@ -344,14 +382,13 @@ export default function GroupDetailsPage() {
                             />
                           </td>
                           <td className="px-4 py-3 text-zinc-900 dark:text-zinc-100">{student.name}</td>
-                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{student.price}</td>
                           <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{student.registration}</td>
                         </tr>
                       ))}
                       {filteredExistingStudents.length === 0 && (
                         <tr>
                           <td colSpan={4} className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                            No students found.
+                            {t('no_students_found')}
                           </td>
                         </tr>
                       )}
@@ -363,14 +400,14 @@ export default function GroupDetailsPage() {
                   disabled={selectedStudentIds.length === 0}
                   className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save
+                  {t('save')}
                 </button>
               </div>
             ) : (
               <form className="space-y-6" onSubmit={handleAddSubmit}>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">First name</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
                     <input 
                       type="text" 
                       required
@@ -380,7 +417,7 @@ export default function GroupDetailsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Last name</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
                     <input 
                       type="text" 
                       required
@@ -393,29 +430,29 @@ export default function GroupDetailsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of birth</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
                     <input 
                       type="date" 
                       value={formData.dob}
                       onChange={e => setFormData({...formData, dob: e.target.value})}
-                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Gender</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
                     <select 
                       value={formData.gender}
                       onChange={e => setFormData({...formData, gender: e.target.value})}
                       className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                     >
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
+                      <option value="Male">{t('male')}</option>
+                      <option value="Female">{t('female')}</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phone</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
                   <input 
                     type="text" 
                     required
@@ -426,7 +463,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Address of residence</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
                   <input 
                     type="text" 
                     value={formData.address}
@@ -437,7 +474,7 @@ export default function GroupDetailsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Parent name</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
                     <input 
                       type="text" 
                       value={formData.parentName}
@@ -446,7 +483,7 @@ export default function GroupDetailsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Parent phone</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
                     <input 
                       type="text" 
                       value={formData.parentPhone}
@@ -457,33 +494,33 @@ export default function GroupDetailsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course name</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
                   <input 
                     type="text" 
                     value={formData.courseName}
                     onChange={e => setFormData({...formData, courseName: e.target.value})}
-                    placeholder={group.course}
+                    placeholder={group.courses}
                     className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course registration date</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
                     <input 
                       type="date" 
                       value={formData.courseRegistrationDate}
                       onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})}
-                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                      className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course price</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')}</label>
                     <input 
                       type="text" 
                       value={formData.coursePrice}
                       onChange={e => setFormData({...formData, coursePrice: e.target.value})}
-                      placeholder="350,000 UZS"
+                      placeholder={t('e_g_price')}
                       className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                     />
                   </div>
@@ -493,7 +530,7 @@ export default function GroupDetailsPage() {
                   type="submit"
                   className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors"
                 >
-                  Save
+                  {t('save')}
                 </button>
               </form>
             )}
@@ -510,53 +547,53 @@ export default function GroupDetailsPage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-100 mb-2">Edit the group</h2>
-              <p className="text-sm text-zinc-400">Fill the form with new group details.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_group')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_group_details')}</p>
             </div>
             <form className="space-y-4" onSubmit={handleEditGroup}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300">Group name</label>
-                <input required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} type="text" className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
+                <input required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300">Employees</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employees')}</label>
                 <div className="relative">
-                  <select required value={editFormData.teacher} onChange={e => setEditFormData({...editFormData, teacher: e.target.value})} className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:border-zinc-600 transition-colors appearance-none opacity-0 absolute inset-0 z-10 cursor-pointer">
-                    <option value="">Select teacher</option>
+                  <select required value={editFormData.teacher} onChange={e => setEditFormData({...editFormData, teacher: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none opacity-0 absolute inset-0 z-10 cursor-pointer">
+                    <option value="">{t('select_teacher')}</option>
                     {employees.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
                   </select>
-                  <div className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 flex items-center justify-between min-h-[46px]">
+                  <div className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 flex items-center justify-between min-h-[46px]">
                     {editFormData.teacher ? (
-                      <div className="flex items-center gap-2 bg-zinc-800/50 px-2 py-1 rounded-md text-sm">
+                      <div className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-800/50 px-2 py-1 rounded-md text-sm">
                         {editFormData.teacher}
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-300">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-600 dark:hover:text-zinc-300">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
                     ) : (
-                      <span className="text-zinc-500">Select teacher</span>
+                      <span className="text-zinc-500">{t('select_teacher')}</span>
                     )}
                     <div className="flex items-center gap-2 text-zinc-500">
-                      {editFormData.teacher && <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-300"><X className="w-4 h-4" /></button>}
+                      {editFormData.teacher && <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-600 dark:hover:text-zinc-300"><X className="w-4 h-4" /></button>}
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300">Course</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
                 <div className="relative">
-                  <select disabled value={editFormData.course} onChange={e => setEditFormData({...editFormData, course: e.target.value})} className="w-full bg-[#141414] border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors appearance-none cursor-not-allowed">
-                    <option value="">Select course</option>
+                  <select disabled value={editFormData.course} onChange={e => setEditFormData({...editFormData, course: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors appearance-none cursor-not-allowed">
+                    <option value="">{t('select_course')}</option>
                     {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
                     <ChevronsUpDown className="w-4 h-4" />
                   </div>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1">Cannot change the course since there are students assigned to this group.</p>
+                <p className="text-xs text-zinc-500 mt-1">{t('cannot_change_course')}</p>
               </div>
-              <button type="submit" className="w-full bg-zinc-200 hover:bg-white text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">Save</button>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>
           </div>
         </div>

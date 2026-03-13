@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, Plus, X, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
 import { cn } from '../lib/utils.ts';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 export default function StudentPaymentPage() {
   const { id } = useParams();
@@ -37,12 +38,13 @@ export default function StudentPaymentPage() {
     };
   }) : [];
 
-  const { items: allPayments, addPayment, updatePayment, deletePayment } = usePayments();
+  const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     if (isAddModalOpen || isEditModalOpen) {
@@ -138,26 +140,33 @@ export default function StudentPaymentPage() {
   };
 
   const handleDeletePayment = (paymentId: number) => {
-    const paymentToDelete = payments.find(p => p.id === paymentId);
-    if (paymentToDelete && student.id) {
-      const amount = parseInt(paymentToDelete.amount.replace(/[^0-9]/g, ''), 10) || 0;
-      updateStudent(student.id, {
-        ...student,
-        balance: student.balance - amount
-      });
-    }
-    deletePayment(paymentId);
+    setItemToDelete(paymentId);
     setActiveMenu(null);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete !== null) {
+      const paymentToDelete = payments.find(p => p.id === itemToDelete);
+      if (paymentToDelete && student.id) {
+        const amount = parseInt(paymentToDelete.amount.replace(/[^0-9]/g, ''), 10) || 0;
+        updateStudent(student.id, {
+          ...student,
+          balance: student.balance - amount
+        });
+      }
+      deletePayment(itemToDelete);
+      setItemToDelete(null);
+    }
   };
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Payment</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{t('payment')}</h1>
           <div className="space-y-1 text-sm">
-            <p><span className="text-zinc-500 dark:text-zinc-400">Student name:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.name}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">Balance:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('student_name')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.name}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
           </div>
         </div>
         <div className="flex items-start h-full">
@@ -165,24 +174,24 @@ export default function StudentPaymentPage() {
             onClick={() => setIsAddModalOpen(true)}
             className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors flex items-center gap-2"
           >
-            Add payment
+            {t('add_payment')}
           </button>
         </div>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Student courses</h2>
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course price</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Next payment date</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">Course registration date</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('group_name')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_price')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('next_payment_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('course_registration_date')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -203,20 +212,20 @@ export default function StudentPaymentPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Payment history</h2>
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('payment_history')}</h2>
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tl-xl">#</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Course name</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Amount</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment type</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment date</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Notes</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Payment added by</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Edited date</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Edited by</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('amount')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_type')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('notes')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_added_by')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_by')}</th>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
               </tr>
             </thead>
@@ -246,11 +255,11 @@ export default function StudentPaymentPage() {
                         <div className={cn("absolute right-8 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
                           <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2">
                             <Edit className="w-4 h-4" />
-                            Edit details
+                            {t('edit_details')}
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); handleDeletePayment(payment.id); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 flex items-center gap-2">
                             <Trash2 className="w-4 h-4" />
-                            Delete
+                            {t('delete')}
                           </button>
                         </div>
                       </>
@@ -280,28 +289,28 @@ export default function StudentPaymentPage() {
 
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                {isEditModalOpen ? 'Edit student payment' : 'Add new student payment'}
+                {isEditModalOpen ? t('edit_payment') : t('add_new_student_payment')}
               </h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {isEditModalOpen ? 'Update the payment details.' : 'Fill the form with new student payment details.'}
+                {isEditModalOpen ? t('update_payment_details') : t('fill_new_student_payment_details')}
               </p>
             </div>
 
             <form className="space-y-6" onSubmit={handleAddSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Course</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
                 <select 
                   value={formData.course}
                   onChange={e => setFormData({...formData, course: e.target.value})}
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
-                  <option value="">Select course</option>
+                  <option value="">{t('select_course')}</option>
                   {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Amount</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('amount')}</label>
                 <input 
                   type="number" 
                   required
@@ -312,31 +321,31 @@ export default function StudentPaymentPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Type</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('type')}</label>
                 <select 
                   value={formData.type}
                   onChange={e => setFormData({...formData, type: e.target.value})}
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
-                  <option value="">Select payment type</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
-                  <option value="Transfer">Transfer</option>
+                  <option value="">{t('select_payment_type')}</option>
+                  <option value="Cash">{t('cash')}</option>
+                  <option value="Card">{t('card')}</option>
+                  <option value="Transfer">{t('transfer')}</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date')}</label>
                 <input 
                   type="date" 
                   value={formData.date}
                   onChange={e => setFormData({...formData, date: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Added by</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('added_by')}</label>
                 <select 
                   value={formData.addedBy}
                   onChange={e => setFormData({...formData, addedBy: e.target.value})}
@@ -350,7 +359,7 @@ export default function StudentPaymentPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Notes (optional)</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('notes')} ({t('optional')})</label>
                   <span className="text-xs text-zinc-500">{formData.notes.length} / 125</span>
                 </div>
                 <textarea 
@@ -359,7 +368,7 @@ export default function StudentPaymentPage() {
                   maxLength={125}
                   rows={3}
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors resize-none"
-                  placeholder="Payment notes..."
+                  placeholder={t('payment_notes')}
                 />
               </div>
 
@@ -367,12 +376,18 @@ export default function StudentPaymentPage() {
                 type="submit"
                 className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors"
               >
-                Save
+                {t('save')}
               </button>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

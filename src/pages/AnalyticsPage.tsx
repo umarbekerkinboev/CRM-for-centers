@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users, GraduationCap, Contact2, BookOpen, TrendingUp, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useGroups, useStudents, useEmployees, useCourses } from '../lib/mockData.ts';
 import { Modal } from '../components/Modal.tsx';
 
@@ -15,6 +17,36 @@ export default function AnalyticsPage() {
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [revenueTab, setRevenueTab] = useState<'overview' | 'debtors'>('overview');
   const [studentTab, setStudentTab] = useState<'recent' | 'distribution'>('recent');
+
+  const COURSE_COLORS = [
+    '#e84118', // orange/red
+    '#0097e6', // teal/blue
+    '#273c75', // dark blue
+    '#fbc531', // yellow
+    '#e1b12c', // orange/brown
+    '#00a8ff', // light blue
+    '#192a56', // darker blue
+    '#4cd137', // green
+    '#9c88ff', // purple
+  ];
+
+  const groupsByCourseData = courses.map((course, index) => {
+    const count = groups.filter(g => g.courses.includes(course.name)).length;
+    return {
+      name: course.name,
+      value: count,
+      fill: COURSE_COLORS[index % COURSE_COLORS.length]
+    };
+  }).filter(item => item.value > 0);
+
+  const studentsByCourseData = courses.map((course, index) => {
+    const count = students.filter(s => s.courses.includes(course.name)).length;
+    return {
+      name: course.name,
+      value: count,
+      fill: COURSE_COLORS[index % COURSE_COLORS.length]
+    };
+  }).filter(item => item.value > 0);
 
   const stats = [
     { label: t('total_groups'), value: groups.length.toString(), icon: Users, trend: '+12%', color: 'bg-blue-500' },
@@ -31,10 +63,20 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6 flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white ${stat.color}`}>
+          <motion.div 
+            key={index} 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+            className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow"
+          >
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-12 h-12 rounded-lg flex items-center justify-center text-white ${stat.color} shadow-sm`}
+            >
               <stat.icon className="w-6 h-6" />
-            </div>
+            </motion.div>
             <div>
               <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{stat.label}</div>
               <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-baseline gap-2">
@@ -42,72 +84,94 @@ export default function AnalyticsPage() {
                 <span className="text-xs font-medium text-emerald-500">{stat.trend}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Revenue Overview</h2>
-            <button 
-              onClick={() => setIsRevenueModalOpen(true)}
-              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              View details
-            </button>
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
+        >
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_groups')}</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{t('courses_by_groups_desc')}</p>
           </div>
-          <div className="h-64 flex items-end justify-between gap-2">
-            {[40, 70, 45, 90, 65, 85, 100].map((height, i) => (
-              <div key={i} className="w-full bg-blue-100 dark:bg-blue-900/20 rounded-t-md relative group">
-                <div 
-                  className="absolute bottom-0 w-full bg-blue-500 rounded-t-md transition-all duration-500 group-hover:bg-blue-600"
-                  style={{ height: `${height}%` }}
-                ></div>
-              </div>
-            ))}
+          <div className="h-80 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={groupsByCourseData}
+                  cx="50%"
+                  cy="45%"
+                  outerRadius={100}
+                  dataKey="value"
+                  labelLine={true}
+                  label={({ value }) => value}
+                  stroke="none"
+                >
+                  {groupsByCourseData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: '#1a1a1a', color: '#fff' }}
+                  itemStyle={{ color: '#fff', fontWeight: 600 }}
+                />
+                <Legend 
+                  layout="horizontal" 
+                  verticalAlign="bottom" 
+                  align="center"
+                  wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div className="flex justify-between mt-4 text-xs text-zinc-500 dark:text-zinc-400">
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span>Sat</span>
-            <span>Sun</span>
-          </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Student Growth</h2>
-            <button 
-              onClick={() => setIsStudentModalOpen(true)}
-              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              View details
-            </button>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
+        >
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_students')}</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{t('courses_by_students_desc')}</p>
           </div>
-          <div className="h-64 flex items-end justify-between gap-2">
-            {[30, 40, 35, 50, 45, 60, 75].map((height, i) => (
-              <div key={i} className="w-full bg-emerald-100 dark:bg-emerald-900/20 rounded-t-md relative group">
-                <div 
-                  className="absolute bottom-0 w-full bg-emerald-500 rounded-t-md transition-all duration-500 group-hover:bg-emerald-600"
-                  style={{ height: `${height}%` }}
-                ></div>
-              </div>
-            ))}
+          <div className="h-80 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={studentsByCourseData}
+                  cx="50%"
+                  cy="45%"
+                  outerRadius={100}
+                  dataKey="value"
+                  labelLine={true}
+                  label={({ value }) => value}
+                  stroke="none"
+                >
+                  {studentsByCourseData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: '#1a1a1a', color: '#fff' }}
+                  itemStyle={{ color: '#fff', fontWeight: 600 }}
+                />
+                <Legend 
+                  layout="horizontal" 
+                  verticalAlign="bottom" 
+                  align="center"
+                  wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div className="flex justify-between mt-4 text-xs text-zinc-500 dark:text-zinc-400">
-            <span>Jan</span>
-            <span>Feb</span>
-            <span>Mar</span>
-            <span>Apr</span>
-            <span>May</span>
-            <span>Jun</span>
-            <span>Jul</span>
-          </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Revenue Details Modal */}

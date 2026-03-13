@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, MoreVertical, Plus, X, Filter, Search, Check } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
 import { useTimetableEvents, useGroups, useEmployees, useRooms, TimetableEvent } from '../lib/mockData.ts';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 const timeSlots = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', 
@@ -55,6 +56,7 @@ export default function TimetablePage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
@@ -123,7 +125,7 @@ export default function TimetablePage() {
   const evenHeight = (maxEvenTrack + 1) * 120 + 32;
 
   const handleDelete = (id: number) => {
-    deleteItem(id);
+    setItemToDelete(id);
     setActiveMenu(null);
   };
 
@@ -222,7 +224,7 @@ export default function TimetablePage() {
                       onClick={() => setExpandedFilter(expandedFilter === 'teachers' ? null : 'teachers')}
                       className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     >
-                      Filter by teachers
+                      {t('filter_by_teachers')}
                       {expandedFilter === 'teachers' ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
                     {expandedFilter === 'teachers' && (
@@ -231,7 +233,7 @@ export default function TimetablePage() {
                           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                           <input 
                             type="text" 
-                            placeholder="Search..." 
+                            placeholder={t('search')} 
                             value={teacherSearch}
                             onChange={(e) => setTeacherSearch(e.target.value)}
                             className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
@@ -264,7 +266,7 @@ export default function TimetablePage() {
                       onClick={() => setExpandedFilter(expandedFilter === 'rooms' ? null : 'rooms')}
                       className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     >
-                      Filter by rooms
+                      {t('filter_by_rooms')}
                       {expandedFilter === 'rooms' ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
                     {expandedFilter === 'rooms' && (
@@ -273,7 +275,7 @@ export default function TimetablePage() {
                           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                           <input 
                             type="text" 
-                            placeholder="Search..." 
+                            placeholder={t('search')} 
                             value={roomSearch}
                             onChange={(e) => setRoomSearch(e.target.value)}
                             className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
@@ -389,41 +391,41 @@ export default function TimetablePage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Add Entry</h2>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add')}</h2>
             </div>
             <form className="space-y-4" onSubmit={handleAddSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Title</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('title')}</label>
                 <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('teacher')}</label>
                 <input required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Room</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
                 <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Start Time</label>
-                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
+                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">End Time</label>
-                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Day</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('day')}</label>
                   <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                    <option value="odd">Odd</option>
-                    <option value="even">Even</option>
+                    <option value="odd">{t('odd')}</option>
+                    <option value="even">{t('even')}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Track</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('track')}</label>
                   <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
@@ -453,24 +455,24 @@ export default function TimetablePage() {
             </div>
             <div className="space-y-4">
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">Title</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('title')}</div>
                 <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.title}</div>
               </div>
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">Teacher</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('teacher')}</div>
                 <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.teacher}</div>
               </div>
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">Room</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('room')}</div>
                 <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.room}</div>
               </div>
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">Time</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('time')}</div>
                 <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.start} - {detailsEvent.end}</div>
               </div>
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">Day</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{detailsEvent.day}</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('day')}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{t(detailsEvent.day)}</div>
               </div>
             </div>
           </div>
@@ -492,27 +494,27 @@ export default function TimetablePage() {
             </div>
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Group</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
                 <select required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                  <option value="">Select group</option>
+                  <option value="">{t('select_group')}</option>
                   {groups.map(g => (
                     <option key={g.id} value={g.name}>{g.name}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teacher</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('teacher')}</label>
                 <select required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                  <option value="">Select teacher</option>
+                  <option value="">{t('select_teacher')}</option>
                   {employees.map(e => (
                     <option key={e.id} value={e.name}>{e.name}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Room</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
                 <select required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                  <option value="">Select room</option>
+                  <option value="">{t('select_room')}</option>
                   {rooms.map(r => (
                     <option key={r.id} value={r.name}>{r.name}</option>
                   ))}
@@ -520,24 +522,24 @@ export default function TimetablePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Start Time</label>
-                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
+                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">End Time</label>
-                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Day</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('day')}</label>
                   <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                    <option value="odd">Odd</option>
-                    <option value="even">Even</option>
+                    <option value="odd">{t('odd')}</option>
+                    <option value="even">{t('even')}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Track</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('track')}</label>
                   <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
@@ -551,6 +553,17 @@ export default function TimetablePage() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete !== null) {
+            deleteItem(itemToDelete);
+            setItemToDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
 import { useRooms, Room } from '../lib/mockData.ts';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 type SortConfig = {
   key: keyof Room;
@@ -17,6 +18,7 @@ export default function RoomsPage() {
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [editItem, setEditItem] = useState<Room | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: '', size: 0 });
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -97,7 +99,7 @@ export default function RoomsPage() {
                 <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
                 <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
                   <div className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                    Toggle columns
+                    {t('toggle_columns')}
                   </div>
                   {columns.map(col => (
                     <button
@@ -165,7 +167,7 @@ export default function RoomsPage() {
                       <div className={cn("absolute right-8 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= sortedRooms.length / 2 && sortedRooms.length > 1 ? "bottom-10" : "top-10")}>
                         <button onClick={(e) => { e.stopPropagation(); openEditModal(room); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('edit_details')}</button>
                         <button onClick={(e) => { e.stopPropagation(); handleDuplicate(room); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('duplicate')}</button>
-                        <button onClick={(e) => { e.stopPropagation(); deleteItem(room.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(room.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300">{t('delete')}</button>
                       </div>
                     </>
                   )}
@@ -175,6 +177,17 @@ export default function RoomsPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete !== null) {
+            deleteItem(itemToDelete);
+            setItemToDelete(null);
+          }
+        }}
+      />
 
       {editItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

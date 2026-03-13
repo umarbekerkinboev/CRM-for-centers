@@ -67,7 +67,7 @@ export default function AddEmployeePage() {
                 value={formData.firstName}
                 onChange={e => setFormData({...formData, firstName: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="Michael"
+                placeholder={t('e_g_first_name')}
               />
             </div>
             <div className="space-y-2">
@@ -78,7 +78,7 @@ export default function AddEmployeePage() {
                 value={formData.lastName}
                 onChange={e => setFormData({...formData, lastName: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="Scott"
+                placeholder={t('e_g_last_name')}
               />
             </div>
           </div>
@@ -88,8 +88,8 @@ export default function AddEmployeePage() {
             <input 
               type="text" 
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="Employee"
-              defaultValue="Employee"
+              placeholder={t('employee')}
+              defaultValue={t('employee')}
               disabled
             />
           </div>
@@ -109,23 +109,23 @@ export default function AddEmployeePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Username</label>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
               <input 
                 type="text" 
                 value={formData.username}
                 onChange={e => setFormData({...formData, username: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="username"
+                placeholder={t('e_g_username')}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
               <input 
                 type="text" 
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="password"
+                placeholder={t('e_g_password')}
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function AddEmployeePage() {
               value={formData.phone}
               onChange={e => setFormData({...formData, phone: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="991234567"
+              placeholder={t('e_g_phone')}
             />
           </div>
 
@@ -177,7 +177,7 @@ export default function AddEmployeePage() {
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="12B Street, City, Uzbekistan"
+              placeholder={t('e_g_address')}
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function AddEmployeePage() {
                 value={formData.qualification}
                 onChange={e => setFormData({...formData, qualification: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="Bachelor's..."
+                placeholder={t('e_g_degree')}
               />
             </div>
             <div className="space-y-2">
@@ -201,7 +201,7 @@ export default function AddEmployeePage() {
                 value={formData.exp}
                 onChange={e => setFormData({...formData, exp: parseInt(e.target.value) || 0})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                placeholder="0"
+                placeholder={t('e_g_salary')}
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function AddEmployeePage() {
               value={formData.salary}
               onChange={e => setFormData({...formData, salary: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-              placeholder="0"
+              placeholder={t('e_g_salary')}
             />
           </div>
 

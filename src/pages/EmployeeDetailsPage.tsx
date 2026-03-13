@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown, X, Edit, Lock, Trash2 } from 'lucide-react';
 import { useEmployees, useGroups, Employee } from '../lib/mockData.ts';
 import { cn } from '../lib/utils.ts';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 export default function EmployeeDetailsPage() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function EmployeeDetailsPage() {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [editItem, setEditItem] = useState<Employee | null>(null);
   const [credentialsItem, setCredentialsItem] = useState<Employee | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   const [formData, setFormData] = useState({ 
     firstName: '', 
@@ -41,14 +43,17 @@ export default function EmployeeDetailsPage() {
   });
 
   if (!employee) {
-    return <div className="p-6 text-zinc-500">Employee not found</div>;
+    return <div className="p-6 text-zinc-500">{t('employee_not_found')}</div>;
   }
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
-      deleteItem(employee.id);
-      navigate('/employees');
-    }
+    setIsDeleteModalOpen(true);
+    setIsActionsOpen(false);
+  };
+
+  const confirmDelete = () => {
+    deleteItem(employee.id);
+    navigate('/employees');
   };
 
   const openEditModal = () => {
@@ -123,31 +128,31 @@ export default function EmployeeDetailsPage() {
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{employee.name}</h1>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Employee type:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('employee_type')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.employeeType || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Qualification:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('qualification')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.qualification || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Years of experience:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('years_of_experience')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.exp || 0}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Gender:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('gender')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.gender || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Phone:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('phone')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.phone || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Date of birth:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('date_of_birth')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.dob || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">Joined date:</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('joined_date')}:</span>
               <span className="text-zinc-600 dark:text-zinc-400">{employee.joined || '-'}</span>
             </div>
           </div>
@@ -158,7 +163,7 @@ export default function EmployeeDetailsPage() {
             onClick={() => setIsActionsOpen(!isActionsOpen)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
           >
-            Actions
+            {t('actions')}
             <ChevronDown className="w-4 h-4" />
           </button>
 
@@ -171,14 +176,14 @@ export default function EmployeeDetailsPage() {
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
-                  Edit details
+                  {t('edit_details')}
                 </button>
                 <button 
                   onClick={openCredentialsModal}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
                 >
                   <Lock className="w-4 h-4" />
-                  Edit credentials
+                  {t('edit_credentials')}
                 </button>
                 <div className="h-px bg-zinc-800/50 my-1"></div>
                 <button 
@@ -186,7 +191,7 @@ export default function EmployeeDetailsPage() {
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  {t('delete')}
                 </button>
               </div>
             </>
@@ -198,25 +203,25 @@ export default function EmployeeDetailsPage() {
 
       {/* Groups Section */}
       <div>
-        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">Groups</h2>
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">{t('groups')}</h2>
         
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">#</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Group name</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Number of students</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Teachers</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Courses</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">Rooms</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('group_name')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('number_of_students')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('courses')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('rooms')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
               {employeeGroups.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                    No groups assigned to this teacher.
+                    {t('no_groups_assigned')}
                   </td>
                 </tr>
               ) : (
@@ -247,29 +252,29 @@ export default function EmployeeDetailsPage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">Edit the employee</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Fill the form with new employee details.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_the_employee')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_employee_details')}</p>
             </div>
             <form className="space-y-6" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">First name</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
                 <input required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Last name</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
                 <input required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Role</label>
-                <input disabled value="Employee" type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 dark:text-zinc-500 focus:outline-none cursor-not-allowed" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+                <input disabled value={t('employee')} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 dark:text-zinc-500 focus:outline-none cursor-not-allowed" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Employee type</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
                 <select value={formData.employeeType} onChange={e => setFormData({...formData, employeeType: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
-                  <option value="">Select type</option>
+                  <option value="">{t('select_type')}</option>
                   <option value="English Teacher">English Teacher</option>
                   <option value="Math Teacher">Math Teacher</option>
                   <option value="Admin">Admin</option>
@@ -278,62 +283,62 @@ export default function EmployeeDetailsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of birth</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
                   <input required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Gender</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
                   <select required value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
+                    <option value="">{t('select_gender')}</option>
+                    <option value="Male">{t('male')}</option>
+                    <option value="Female">{t('female')}</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phone</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
                 <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Address of residence <span className="text-zinc-500 font-normal">(optional)</span></label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
                 <input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualification</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
                   <input required value={formData.qualification} onChange={e => setFormData({...formData, qualification: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Years of experience</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('years_of_experience')}</label>
                   <input required value={formData.exp} onChange={e => setFormData({...formData, exp: parseInt(e.target.value) || 0})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Joined date</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('joined_date')}</label>
                 <input required value={formData.joined} onChange={e => setFormData({...formData, joined: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Salary <span className="text-zinc-500 font-normal">(optional)</span></label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('salary')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
                 <input value={formData.salary} onChange={e => setFormData({...formData, salary: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Username</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
                   <input value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
                   <input value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
 
-              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">Save</button>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
             </form>
           </div>
         </div>
@@ -350,23 +355,29 @@ export default function EmployeeDetailsPage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">Edit credentials</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Update username and password for this employee.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_credentials')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('update_username_and_password')}</p>
             </div>
             <form className="space-y-6" onSubmit={handleCredentialsSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Username</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
                 <input required value={credentialsData.username} onChange={e => setCredentialsData({...credentialsData, username: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
                 <input required value={credentialsData.password} onChange={e => setCredentialsData({...credentialsData, password: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
-              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">Save credentials</button>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save_credentials')}</button>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
