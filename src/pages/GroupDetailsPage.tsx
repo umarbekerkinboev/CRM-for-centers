@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown, LayoutGrid, Check, Plus, X, Search } from 'lucide-react';
+import { ChevronsUpDown, LayoutGrid, Check, Plus, X, Search, MoreVertical } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
 import { useStudents, Student, useGroups, useCourses, useEmployees, useRooms } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
@@ -12,7 +12,7 @@ export default function GroupDetailsPage() {
   const navigate = useNavigate();
 
   const { items: groups, updateItem: updateGroup, deleteItem: deleteGroup } = useGroups();
-  const { students: allStudents, addStudent, updateStudent } = useStudents();
+  const { students: allStudents, addStudent, updateStudent, deleteStudent } = useStudents();
 
   const { items: courses } = useCourses();
   const { items: employees } = useEmployees();
@@ -27,7 +27,7 @@ export default function GroupDetailsPage() {
     students: 0,
   };
 
-  const groupStudents = allStudents.filter(s => s.group === group.name);
+  const groupStudents = allStudents.filter(s => s.group && s.group.split(', ').includes(group.name));
   const groupBalance = groupStudents.reduce((sum, s) => sum + s.balance, 0);
 
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
@@ -39,9 +39,27 @@ export default function GroupDetailsPage() {
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
+  const [teacherSearch, setTeacherSearch] = useState('');
+
+  const [activeStudentMenu, setActiveStudentMenu] = useState<number | null>(null);
+  const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<number | null>(null);
+  const [editStudentFormData, setEditStudentFormData] = useState({ 
+    firstName: '', 
+    lastName: '', 
+    phone: '', 
+    parentName: '', 
+    parentPhone: '', 
+    gender: '', 
+    dob: '', 
+    address: '',
+    courseName: '',
+    courseRegistrationDate: ''
+  });
 
   useEffect(() => {
-    if (isAddModalOpen || isEditModalOpen) {
+    if (isAddModalOpen || isEditModalOpen || studentToEdit) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -49,9 +67,45 @@ export default function GroupDetailsPage() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isAddModalOpen, isEditModalOpen]);
+  }, [isAddModalOpen, isEditModalOpen, studentToEdit]);
 
   const [editFormData, setEditFormData] = useState({ name: group.name, teacher: group.teachers, course: group.courses, room: group.rooms });
+
+  const handleEditStudentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (studentToEdit) {
+      updateStudent(studentToEdit.id, {
+        ...studentToEdit,
+        name: `${editStudentFormData.firstName} ${editStudentFormData.lastName}`.trim(),
+        phone: editStudentFormData.phone,
+        parent: editStudentFormData.parentName,
+        parentPhone: editStudentFormData.parentPhone,
+        gender: editStudentFormData.gender,
+        dob: editStudentFormData.dob,
+        address: editStudentFormData.address,
+        courses: editStudentFormData.courseName,
+        registration: editStudentFormData.courseRegistrationDate ? editStudentFormData.courseRegistrationDate.split('-').reverse().join('-') : ''
+      });
+      setStudentToEdit(null);
+    }
+  };
+
+  const openEditStudentModal = (item: Student) => {
+    setEditStudentFormData({ 
+      firstName: item.name.split(' ')[0] || '', 
+      lastName: item.name.split(' ').slice(1).join(' ') || '', 
+      phone: item.phone, 
+      parentName: item.parent || '', 
+      parentPhone: item.parentPhone || '', 
+      gender: item.gender || 'Male', 
+      dob: item.dob || '', 
+      address: item.address || '',
+      courseName: item.courses ? item.courses.split(',')[0].trim() : '',
+      courseRegistrationDate: item.registration ? item.registration.split('-').reverse().join('-') : ''
+    });
+    setStudentToEdit(item);
+    setActiveStudentMenu(null);
+  };
 
   const handleEditGroup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +126,17 @@ export default function GroupDetailsPage() {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const groupCourse = courses.find(c => c.name === group.courses);
+    const groupCoursePrice = groupCourse ? groupCourse.price : '350,000 UZS';
+    const coursePriceToUse = formData.coursePrice || groupCoursePrice;
+    const initialBalance = -parseInt(coursePriceToUse.replace(/[^0-9]/g, ''), 10) || 0;
+
     if (addTab === 'new') {
       addStudent({
         name: `${formData.name} ${formData.lastName}`,
-        balance: -parseInt((formData.coursePrice || '350,000 UZS').replace(/[^0-9]/g, ''), 10),
-        price: formData.coursePrice || '350,000 UZS',
+        balance: initialBalance,
+        price: coursePriceToUse,
         registration: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
         lastChargedDate: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
         phone: formData.phone,
@@ -91,17 +151,52 @@ export default function GroupDetailsPage() {
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
       selectedStudents.forEach(s => {
-        const updates: any = {
-          ...s, 
-          group: group.name,
-          registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : s.registration,
-          lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : s.lastChargedDate
-        };
-        if (formData.coursePrice) {
-          updates.price = formData.coursePrice;
-          updates.balance = s.balance - parseInt(formData.coursePrice.replace(/[^0-9]/g, ''), 10);
+        const currentGroups = s.group ? s.group.split(',').map(g => g.trim()) : [];
+        const currentCourses = s.courses ? s.courses.split(',').map(c => c.trim()) : [];
+        const currentPrices = s.price ? s.price.split(',').map(p => p.trim()) : [];
+        const currentRegistrations = s.registration ? s.registration.split(',').map(r => r.trim()) : [];
+        const currentLastCharged = s.lastChargedDate ? s.lastChargedDate.split(',').map(d => d.trim()) : [];
+
+        // Pad arrays to match currentCourses length to maintain parallel structure
+        while (currentGroups.length < currentCourses.length) currentGroups.push('');
+        while (currentPrices.length < currentCourses.length) currentPrices.push('0 UZS');
+        while (currentRegistrations.length < currentCourses.length) currentRegistrations.push(currentRegistrations[0] || '');
+        while (currentLastCharged.length < currentCourses.length) currentLastCharged.push(currentLastCharged[0] || '');
+
+        const newCourse = formData.courseName || group.courses;
+        const courseIndex = currentCourses.indexOf(newCourse);
+        
+        // Only proceed if student is not already in this specific group
+        if (!currentGroups.includes(group.name)) {
+          if (courseIndex !== -1 && (!currentGroups[courseIndex] || currentGroups[courseIndex] === '')) {
+            // Course exists but has no group, update it
+            currentGroups[courseIndex] = group.name;
+            currentPrices[courseIndex] = coursePriceToUse;
+            if (formData.courseRegistrationDate) {
+              const formattedDate = formData.courseRegistrationDate.split('-').reverse().join('-');
+              currentRegistrations[courseIndex] = formattedDate;
+              currentLastCharged[courseIndex] = formattedDate;
+            }
+          } else {
+            // Add new course and group entry
+            currentCourses.push(newCourse);
+            currentGroups.push(group.name);
+            currentPrices.push(coursePriceToUse);
+            const dateToUse = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+            currentRegistrations.push(dateToUse);
+            currentLastCharged.push(dateToUse);
+          }
+
+          updateStudent(s.id, {
+            ...s,
+            group: currentGroups.join(', '),
+            courses: currentCourses.join(', '),
+            balance: s.balance + initialBalance,
+            price: currentPrices.join(', '),
+            registration: currentRegistrations.join(', '),
+            lastChargedDate: currentLastCharged.join(', ')
+          });
         }
-        updateStudent(s.id, updates);
       });
     }
     
@@ -130,9 +225,21 @@ export default function GroupDetailsPage() {
     { key: 'dob', label: t('date_of_birth') },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
-    columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {})
-  );
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('groupDetailsVisibleColumns');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // Ignore error
+      }
+    }
+    return columns.reduce((acc, col) => ({ ...acc, [col.key]: true }), {});
+  });
+
+  useEffect(() => {
+    localStorage.setItem('groupDetailsVisibleColumns', JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
 
   const toggleColumn = (key: string) => {
     setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
@@ -162,16 +269,16 @@ export default function GroupDetailsPage() {
           {isActionsMenuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsActionsMenuOpen(false)} />
-              <div className="absolute right-0 top-12 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+              <div className="absolute right-0 top-12 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
                 <button 
                   onClick={() => { setIsActionsMenuOpen(false); setIsEditModalOpen(true); }}
-                  className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2"
+                  className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-2"
                 >
                   {t('edit_details')}
                 </button>
                 <button 
                   onClick={() => { setIsActionsMenuOpen(false); setIsDeleteModalOpen(true); }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 flex items-center gap-2"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-2"
                 >
                   {t('delete')}
                 </button>
@@ -203,21 +310,21 @@ export default function GroupDetailsPage() {
               {isViewMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-2 z-50">
-                    <div className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
+                    <div className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                       {t('toggle_columns')}
                     </div>
                     {columns.map(col => (
                       <button
                         key={col.key}
                         onClick={() => toggleColumn(col.key)}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                       >
                         <div className={cn(
                           "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
                           visibleColumns[col.key] 
-                            ? "bg-zinc-100 border-zinc-100 text-zinc-900" 
-                            : "border-zinc-700"
+                            ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900" 
+                            : "border-zinc-300 dark:border-zinc-700"
                         )}>
                           {visibleColumns[col.key] && <Check className="w-3 h-3" />}
                         </div>
@@ -237,7 +344,7 @@ export default function GroupDetailsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
@@ -250,14 +357,14 @@ export default function GroupDetailsPage() {
                     </div>
                   </th>
                 ))}
+                <th className="px-6 py-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
               {groupStudents.map((student, index) => (
                 <tr 
                   key={student.id} 
-                  onClick={() => navigate(`/students/${student.id}`)}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors cursor-pointer"
+                  className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group"
                 >
                   <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                   {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{student.name}</td>}
@@ -269,6 +376,26 @@ export default function GroupDetailsPage() {
                   {visibleColumns.parentName && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parent}</td>}
                   {visibleColumns.parentPhone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parentPhone}</td>}
                   {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.dob}</td>}
+                  <td className="px-6 py-4 text-right relative">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveStudentMenu(activeStudentMenu === student.id ? null : student.id); }}
+                      className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    
+                    {activeStudentMenu === student.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveStudentMenu(null); }} />
+                        <div className={cn("absolute right-8 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= groupStudents.length / 2 && groupStudents.length > 1 ? "bottom-10" : "top-10")}>
+                          <Link to={`/students/${student.id}`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</Link>
+                          <Link to={`/students/${student.id}/payment`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('payment')}</Link>
+                          <button onClick={(e) => { e.stopPropagation(); openEditStudentModal(student); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+                          <button onClick={(e) => { e.stopPropagation(); setStudentToDelete(student.id); setActiveStudentMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+                        </div>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -456,8 +583,9 @@ export default function GroupDetailsPage() {
                   <input 
                     type="text" 
                     required
+                    maxLength={9}
                     value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
                     className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   />
                 </div>
@@ -486,8 +614,9 @@ export default function GroupDetailsPage() {
                     <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
                     <input 
                       type="text" 
+                      maxLength={9}
                       value={formData.parentPhone}
-                      onChange={e => setFormData({...formData, parentPhone: e.target.value})}
+                      onChange={e => setFormData({...formData, parentPhone: e.target.value.replace(/\D/g, '')})}
                       className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                     />
                   </div>
@@ -555,30 +684,102 @@ export default function GroupDetailsPage() {
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
                 <input required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employees')}</label>
-                <div className="relative">
-                  <select required value={editFormData.teacher} onChange={e => setEditFormData({...editFormData, teacher: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none opacity-0 absolute inset-0 z-10 cursor-pointer">
-                    <option value="">{t('select_teacher')}</option>
-                    {employees.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
-                  </select>
-                  <div className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 flex items-center justify-between min-h-[46px]">
-                    {editFormData.teacher ? (
-                      <div className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-800/50 px-2 py-1 rounded-md text-sm">
-                        {editFormData.teacher}
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-600 dark:hover:text-zinc-300">
+                <div 
+                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 cursor-pointer flex justify-between items-center min-h-[46px]"
+                  onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {editFormData.teacher ? editFormData.teacher.split(', ').map(teacher => (
+                      <div key={teacher} className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-800/50 px-2 py-1 rounded-md text-sm">
+                        {teacher}
+                        <button 
+                          type="button" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setEditFormData(prev => ({
+                              ...prev, 
+                              teacher: prev.teacher.split(', ').filter(t => t !== teacher).join(', ')
+                            }));
+                          }} 
+                          className="hover:text-zinc-600 dark:hover:text-zinc-300"
+                        >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
-                    ) : (
+                    )) : (
                       <span className="text-zinc-500">{t('select_teacher')}</span>
                     )}
-                    <div className="flex items-center gap-2 text-zinc-500">
-                      {editFormData.teacher && <button type="button" onClick={(e) => { e.stopPropagation(); setEditFormData({...editFormData, teacher: ''}); }} className="hover:text-zinc-600 dark:hover:text-zinc-300"><X className="w-4 h-4" /></button>}
-                      <ChevronsUpDown className="w-4 h-4" />
-                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-zinc-500 shrink-0">
+                    {editFormData.teacher && (
+                      <button 
+                        type="button" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setEditFormData({...editFormData, teacher: ''}); 
+                        }} 
+                        className="hover:text-zinc-600 dark:hover:text-zinc-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                    <ChevronsUpDown className="w-4 h-4" />
                   </div>
                 </div>
+                
+                {isTeacherDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsTeacherDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
+                      <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input 
+                            type="text" 
+                            placeholder={t('search')} 
+                            value={teacherSearch}
+                            onChange={(e) => setTeacherSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto p-2 space-y-1">
+                        {employees.filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase())).map(employee => {
+                          const isSelected = editFormData.teacher ? editFormData.teacher.split(', ').includes(employee.name) : false;
+                          return (
+                            <label key={employee.id} className="flex items-center gap-3 px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded cursor-pointer">
+                              <div className={cn(
+                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                isSelected
+                                  ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900"
+                                  : "border-zinc-300 dark:border-zinc-700"
+                              )}>
+                                {isSelected && <Check className="w-3 h-3" />}
+                              </div>
+                              <input 
+                                type="checkbox" 
+                                className="hidden" 
+                                checked={isSelected}
+                                onChange={() => {
+                                  setEditFormData(prev => {
+                                    const currentTeachers = prev.teacher ? prev.teacher.split(', ').filter(Boolean) : [];
+                                    const newTeachers = isSelected 
+                                      ? currentTeachers.filter(t => t !== employee.name)
+                                      : [...currentTeachers, employee.name];
+                                    return { ...prev, teacher: newTeachers.join(', ') };
+                                  });
+                                }}
+                              />
+                              <span className="text-sm text-zinc-700 dark:text-zinc-300">{employee.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
@@ -592,6 +793,86 @@ export default function GroupDetailsPage() {
                   </div>
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">{t('cannot_change_course')}</p>
+              </div>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={studentToDelete !== null}
+        onClose={() => setStudentToDelete(null)}
+        onConfirm={() => {
+          if (studentToDelete !== null) {
+            deleteStudent(studentToDelete);
+            setStudentToDelete(null);
+          }
+        }}
+      />
+
+      {studentToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setStudentToEdit(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_student_details')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_student_details')}</p>
+            </div>
+            <form className="space-y-4" onSubmit={handleEditStudentSubmit}>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+                <input required value={editStudentFormData.firstName} onChange={e => setEditStudentFormData({...editStudentFormData, firstName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+                <input required value={editStudentFormData.lastName} onChange={e => setEditStudentFormData({...editStudentFormData, lastName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+                <input type="text" value="Student" disabled className="w-full bg-zinc-100 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+                  <input type="date" value={editStudentFormData.dob} onChange={e => setEditStudentFormData({...editStudentFormData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+                  <select value={editStudentFormData.gender} onChange={e => setEditStudentFormData({...editStudentFormData, gender: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
+                    <option value="Male">{t('male')}</option>
+                    <option value="Female">{t('female')}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+                <input required maxLength={9} value={editStudentFormData.phone} onChange={e => setEditStudentFormData({...editStudentFormData, phone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
+                <input value={editStudentFormData.address} onChange={e => setEditStudentFormData({...editStudentFormData, address: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+                <input value={editStudentFormData.parentName} onChange={e => setEditStudentFormData({...editStudentFormData, parentName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+                <input maxLength={9} value={editStudentFormData.parentPhone} onChange={e => setEditStudentFormData({...editStudentFormData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
+                <input value={editStudentFormData.courseName} onChange={e => setEditStudentFormData({...editStudentFormData, courseName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                <input type="date" value={editStudentFormData.courseRegistrationDate} onChange={e => setEditStudentFormData({...editStudentFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>

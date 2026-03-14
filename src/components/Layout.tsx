@@ -294,22 +294,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {isLangOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsLangOpen(false)} />
-                  <div className="absolute left-0 mt-2 w-32 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                  <div className="absolute left-0 mt-2 w-32 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
                     <button 
                       onClick={() => changeLanguage('en')}
-                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
                     >
                       English
                     </button>
                     <button 
                       onClick={() => changeLanguage('ru')}
-                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
                     >
                       Русский
                     </button>
                     <button 
                       onClick={() => changeLanguage('uz')}
-                      className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
                     >
                       O'zbek
                     </button>

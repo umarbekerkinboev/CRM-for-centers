@@ -26,6 +26,13 @@ export default function AddStudentPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const selectedGroup = groups.find(g => g.name === formData.group);
+    const selectedCourse = courses.find(c => c.name === (selectedGroup?.courses || formData.course));
+    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
+    const coursePriceValue = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+    const initialBalance = selectedGroup ? -coursePriceValue : 0;
+
     addStudent({
       name: `${formData.firstName} ${formData.lastName}`,
       phone: formData.phone,
@@ -36,8 +43,8 @@ export default function AddStudentPage() {
       parentPhone: formData.parentPhone,
       dob: formData.dob,
       address: formData.address,
-      balance: 0,
-      price: '',
+      balance: initialBalance,
+      price: selectedGroup ? coursePriceStr : '',
       registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
       lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
     });
@@ -148,8 +155,9 @@ export default function AddStudentPage() {
             <input 
               type="tel" 
               required
+              maxLength={9}
               value={formData.phone}
-              onChange={e => setFormData({...formData, phone: e.target.value})}
+              onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder={t('e_g_phone')}
             />
@@ -194,8 +202,9 @@ export default function AddStudentPage() {
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
             <input 
               type="tel" 
+              maxLength={9}
               value={formData.parentPhone}
-              onChange={e => setFormData({...formData, parentPhone: e.target.value})}
+              onChange={e => setFormData({...formData, parentPhone: e.target.value.replace(/\D/g, '')})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder={t('e_g_parent_phone')}
             />

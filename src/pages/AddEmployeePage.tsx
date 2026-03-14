@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { useEmployees } from '../lib/mockData.ts';
+import { useEmployees, useEmployeeTypes } from '../lib/mockData.ts';
 
 export default function AddEmployeePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { addItem } = useEmployees();
+  const { items: employeeTypes } = useEmployeeTypes();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -19,7 +20,7 @@ export default function AddEmployeePage() {
     phone: '',
     address: '',
     qualification: '',
-    exp: 0,
+    exp: '',
     joined: '',
     salary: '',
     username: '',
@@ -30,14 +31,17 @@ export default function AddEmployeePage() {
     e.preventDefault();
     addItem({
       name: `${formData.firstName} ${formData.lastName}`.trim(),
-      phone: formData.phone,
+      phone: formData.phone.replace(/\s/g, ''),
       qualification: formData.qualification,
       gender: formData.gender,
-      exp: formData.exp,
+      exp: parseInt(formData.exp) || 0,
       dob: formData.dob,
       joined: formData.joined,
       username: formData.username,
-      password: formData.password
+      password: formData.password,
+      employeeType: formData.employeeType,
+      address: formData.address,
+      salary: formData.salary
     });
     navigate('/employees');
   };
@@ -102,8 +106,9 @@ export default function AddEmployeePage() {
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
             >
               <option value="">{t('select_employee_type')}</option>
-              <option value="teacher">Teacher</option>
-              <option value="admin">Admin</option>
+              {employeeTypes.map(type => (
+                <option key={type.id} value={type.type}>{type.type}</option>
+              ))}
             </select>
           </div>
 
@@ -161,8 +166,9 @@ export default function AddEmployeePage() {
             <input 
               type="tel" 
               required
+              maxLength={9}
               value={formData.phone}
-              onChange={e => setFormData({...formData, phone: e.target.value})}
+              onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder={t('e_g_phone')}
             />
@@ -199,7 +205,7 @@ export default function AddEmployeePage() {
                 type="number" 
                 required
                 value={formData.exp}
-                onChange={e => setFormData({...formData, exp: parseInt(e.target.value) || 0})}
+                onChange={e => setFormData({...formData, exp: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 placeholder={t('e_g_salary')}
               />

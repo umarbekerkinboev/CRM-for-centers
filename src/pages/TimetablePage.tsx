@@ -67,6 +67,8 @@ export default function TimetablePage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [detailsEventId, setDetailsEventId] = useState<number | null>(null);
   const [editEventId, setEditEventId] = useState<number | null>(null);
+  const [isDaysDropdownOpen, setIsDaysDropdownOpen] = useState(false);
+  const [daysSearch, setDaysSearch] = useState('');
 
   // Form states
   const [formData, setFormData] = useState({
@@ -75,15 +77,14 @@ export default function TimetablePage() {
     room: '',
     start: '',
     end: '',
-    day: 'odd',
-    track: 0
+    days: [] as string[]
   });
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addItem(formData);
     setIsAddModalOpen(false);
-    setFormData({ title: '', teacher: '', room: '', start: '', end: '', day: 'odd', track: 0 });
+    setFormData({ title: '', teacher: '', room: '', start: '', end: '', days: [] });
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -101,8 +102,7 @@ export default function TimetablePage() {
       room: event.room,
       start: event.start,
       end: event.end,
-      day: event.day,
-      track: event.track
+      days: event.days || []
     });
     setEditEventId(event.id);
   };
@@ -115,28 +115,53 @@ export default function TimetablePage() {
     });
   }, [events, selectedTeachers, selectedRooms]);
 
-  const oddEvents = filteredEvents.filter(e => e.day === 'odd');
-  const evenEvents = filteredEvents.filter(e => e.day === 'even');
+  const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  const maxOddTrack = Math.max(...oddEvents.map(e => e.track), 0);
-  const maxEvenTrack = Math.max(...evenEvents.map(e => e.track), 0);
+  const calculateTracksForDay = (dayEvents: TimetableEvent[]) => {
+    const sorted = [...dayEvents].sort((a, b) => a.start.localeCompare(b.start));
+    const tracks: TimetableEvent[][] = [];
+    const eventTracks: Record<number, number> = {};
+    
+    sorted.forEach(event => {
+      let placed = false;
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const lastEvent = track[track.length - 1];
+        if (lastEvent.end <= event.start) {
+          track.push(event);
+          eventTracks[event.id] = i;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        tracks.push([event]);
+        eventTracks[event.id] = tracks.length - 1;
+      }
+    });
+    
+    return { maxTrack: tracks.length > 0 ? tracks.length - 1 : 0, eventTracks };
+  };
 
-  const oddHeight = (maxOddTrack + 1) * 120 + 32;
-  const evenHeight = (maxEvenTrack + 1) * 120 + 32;
+  const visibleDays = useMemo(() => {
+    if (filter === 'odd') return ['Monday', 'Wednesday', 'Friday'];
+    if (filter === 'even') return ['Tuesday', 'Thursday', 'Saturday'];
+    return weekDays;
+  }, [filter]);
 
   const handleDelete = (id: number) => {
     setItemToDelete(id);
     setActiveMenu(null);
   };
 
-  const renderEvent = (event: TimetableEvent) => (
+  const renderEvent = (event: TimetableEvent, day: string, track: number) => (
     <div 
-      key={event.id}
+      key={`${day}-${event.id}`}
       className={cn(
         "absolute bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex flex-col items-center justify-center text-center group transition-colors hover:border-zinc-300 dark:hover:border-zinc-700",
         activeMenu === event.id ? "z-50" : "z-10"
       )}
-      style={getEventStyle(event.start, event.end, event.track)}
+      style={getEventStyle(event.start, event.end, track)}
     >
       <button 
         onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === event.id ? null : event.id); }}
@@ -148,22 +173,22 @@ export default function TimetablePage() {
       {activeMenu === event.id && (
         <>
           <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-          <div className="absolute top-8 right-2 w-32 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+          <div className="absolute top-8 right-2 w-32 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
             <button 
               onClick={(e) => { e.stopPropagation(); setDetailsEventId(event.id); setActiveMenu(null); }}
-              className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+              className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
               {t('details')}
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); openEditModal(event); setActiveMenu(null); }}
-              className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+              className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
               {t('edit')}
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); handleDelete(event.id); }}
-              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300"
+              className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
             >
               {t('delete')}
             </button>
@@ -317,10 +342,10 @@ export default function TimetablePage() {
             {isFilterOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)} />
-                <div className="absolute right-0 mt-2 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
-                  <button onClick={() => { setFilter('all'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('odd_even_days')}</button>
-                  <button onClick={() => { setFilter('odd'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('odd_days')}</button>
-                  <button onClick={() => { setFilter('even'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100">{t('even_days')}</button>
+                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+                  <button onClick={() => { setFilter('all'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('odd_even_days')}</button>
+                  <button onClick={() => { setFilter('odd'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('odd_days')}</button>
+                  <button onClick={() => { setFilter('even'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('even_days')}</button>
                 </div>
               </>
             )}
@@ -334,7 +359,7 @@ export default function TimetablePage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
         <div className="min-w-[1400px]">
           {/* Header */}
           <div className="flex border-b border-zinc-200 dark:border-zinc-800/50">
@@ -348,35 +373,28 @@ export default function TimetablePage() {
             </div>
           </div>
 
-          {/* Odd days */}
-          {(filter === 'all' || filter === 'odd') && (
-            <div className="flex border-b border-zinc-200 dark:border-zinc-800/50" style={{ height: oddHeight }}>
-              <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50 flex items-center justify-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                {t('odd_days')}
-              </div>
-              <div className="flex-1 flex relative">
-                {timeSlots.map(time => (
-                  <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
-                ))}
-                {oddEvents.map(renderEvent)}
-              </div>
-            </div>
-          )}
+          {/* Days */}
+          {visibleDays.map((day, index) => {
+            const dayEvents = filteredEvents.filter(e => e.days.includes(day));
+            if (dayEvents.length === 0 && filter !== 'all' && filter !== 'odd' && filter !== 'even') return null;
+            
+            const { maxTrack, eventTracks } = calculateTracksForDay(dayEvents);
+            const height = (maxTrack + 1) * 120 + 32;
 
-          {/* Even days */}
-          {(filter === 'all' || filter === 'even') && (
-            <div className="flex" style={{ height: evenHeight }}>
-              <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50 flex items-center justify-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                {t('even_days')}
+            return (
+              <div key={day} className={cn("flex", index !== visibleDays.length - 1 && "border-b border-zinc-200 dark:border-zinc-800/50")} style={{ height }}>
+                <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50 flex items-center justify-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                  {t(day.toLowerCase())}
+                </div>
+                <div className="flex-1 flex relative">
+                  {timeSlots.map(time => (
+                    <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
+                  ))}
+                  {dayEvents.map(event => renderEvent(event, day, eventTracks[event.id] || 0))}
+                </div>
               </div>
-              <div className="flex-1 flex relative">
-                {timeSlots.map(time => (
-                  <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
-                ))}
-                {evenEvents.map(renderEvent)}
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       </div>
 
@@ -391,43 +409,137 @@ export default function TimetablePage() {
               <X className="w-5 h-5" />
             </button>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add')}</h2>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_lesson_timetable_entry')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_the_form_with_new_lesson_timetable_entry_details')}</p>
             </div>
             <form className="space-y-4" onSubmit={handleAddSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('title')}</label>
-                <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('teacher')}</label>
-                <input required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
-                <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+                <select 
+                  required 
+                  value={formData.title} 
+                  onChange={e => {
+                    const group = groups.find(g => g.name === e.target.value);
+                    if (group) {
+                      setFormData({...formData, title: group.name, teacher: group.teachers});
+                    } else {
+                      setFormData({...formData, title: '', teacher: ''});
+                    }
+                  }} 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                >
+                  <option value="">{t('select_group')}</option>
+                  {groups.filter(g => !events.some(e => e.title === g.name)).map(g => (
+                    <option key={g.id} value={g.name}>{g.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
-                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
-                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('day')}</label>
-                  <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                    <option value="odd">{t('odd')}</option>
-                    <option value="even">{t('even')}</option>
+                  <select 
+                    required 
+                    value={formData.start} 
+                    onChange={e => setFormData({...formData, start: e.target.value})} 
+                    className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  >
+                    <option value="">{t('select_start_time')}</option>
+                    {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('track')}</label>
-                  <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+                  <select 
+                    required 
+                    value={formData.end} 
+                    onChange={e => setFormData({...formData, end: e.target.value})} 
+                    className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  >
+                    <option value="">{t('select_end_time')}</option>
+                    {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
                 </div>
+              </div>
+              <div className="space-y-2 relative">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('lesson_days')}</label>
+                <div 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 cursor-pointer flex justify-between items-center"
+                  onClick={() => setIsDaysDropdownOpen(!isDaysDropdownOpen)}
+                >
+                  <span className={formData.days.length === 0 ? "text-zinc-500" : ""}>
+                    {formData.days.length > 0 ? formData.days.map(d => t(d.toLowerCase())).join(', ') : t('select_lesson_days')}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-zinc-500" />
+                </div>
+                
+                {isDaysDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsDaysDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
+                      <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input 
+                            type="text" 
+                            placeholder={t('search')} 
+                            value={daysSearch}
+                            onChange={(e) => setDaysSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto p-2 space-y-1">
+                        {weekDays.filter(d => t(d.toLowerCase()).toLowerCase().includes(daysSearch.toLowerCase())).map(day => (
+                          <label key={day} className="flex items-center gap-3 px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded cursor-pointer">
+                            <div className={cn(
+                              "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                              formData.days.includes(day)
+                                ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900"
+                                : "border-zinc-300 dark:border-zinc-700"
+                            )}>
+                              {formData.days.includes(day) && <Check className="w-3 h-3" />}
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              className="hidden" 
+                              checked={formData.days.includes(day)}
+                              onChange={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  days: prev.days.includes(day) 
+                                    ? prev.days.filter(d => d !== day)
+                                    : [...prev.days, day]
+                                }));
+                              }}
+                            />
+                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(day.toLowerCase())}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
+                        <button 
+                          type="button"
+                          onClick={() => setIsDaysDropdownOpen(false)}
+                          className="w-full py-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded"
+                        >
+                          {t('close')}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
+                <select 
+                  required 
+                  value={formData.room} 
+                  onChange={e => setFormData({...formData, room: e.target.value})} 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                >
+                  <option value="">{t('select_room')}</option>
+                  {rooms.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
+                </select>
               </div>
               <button 
                 type="submit"
@@ -471,8 +583,8 @@ export default function TimetablePage() {
                 <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.start} - {detailsEvent.end}</div>
               </div>
               <div>
-                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('day')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{t(detailsEvent.day)}</div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('lesson_days')}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{detailsEvent.days.map(d => t(d.toLowerCase())).join(', ')}</div>
               </div>
             </div>
           </div>
@@ -495,53 +607,131 @@ export default function TimetablePage() {
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
-                <select required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
+                <select 
+                  required 
+                  value={formData.title} 
+                  onChange={e => {
+                    const group = groups.find(g => g.name === e.target.value);
+                    if (group) {
+                      setFormData({...formData, title: group.name, teacher: group.teachers});
+                    } else {
+                      setFormData({...formData, title: '', teacher: ''});
+                    }
+                  }} 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                >
                   <option value="">{t('select_group')}</option>
-                  {groups.map(g => (
+                  {groups.filter(g => !events.some(e => e.title === g.name && e.id !== editEventId)).map(g => (
                     <option key={g.id} value={g.name}>{g.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('teacher')}</label>
-                <select required value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                  <option value="">{t('select_teacher')}</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.name}>{e.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
-                <select required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                  <option value="">{t('select_room')}</option>
-                  {rooms.map(r => (
-                    <option key={r.id} value={r.name}>{r.name}</option>
                   ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
-                  <input required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
-                  <input required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} type="time" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('day')}</label>
-                  <select value={formData.day} onChange={e => setFormData({...formData, day: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors">
-                    <option value="odd">{t('odd')}</option>
-                    <option value="even">{t('even')}</option>
+                  <select 
+                    required 
+                    value={formData.start} 
+                    onChange={e => setFormData({...formData, start: e.target.value})} 
+                    className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  >
+                    <option value="">{t('select_start_time')}</option>
+                    {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('track')}</label>
-                  <input required value={formData.track} onChange={e => setFormData({...formData, track: parseInt(e.target.value) || 0})} type="number" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+                  <select 
+                    required 
+                    value={formData.end} 
+                    onChange={e => setFormData({...formData, end: e.target.value})} 
+                    className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  >
+                    <option value="">{t('select_end_time')}</option>
+                    {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
                 </div>
+              </div>
+              <div className="space-y-2 relative">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('lesson_days')}</label>
+                <div 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 cursor-pointer flex justify-between items-center"
+                  onClick={() => setIsDaysDropdownOpen(!isDaysDropdownOpen)}
+                >
+                  <span className={formData.days.length === 0 ? "text-zinc-500" : ""}>
+                    {formData.days.length > 0 ? formData.days.map(d => t(d.toLowerCase())).join(', ') : t('select_lesson_days')}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-zinc-500" />
+                </div>
+                
+                {isDaysDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsDaysDropdownOpen(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
+                      <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="relative">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input 
+                            type="text" 
+                            placeholder={t('search')} 
+                            value={daysSearch}
+                            onChange={(e) => setDaysSearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-md text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto p-2 space-y-1">
+                        {weekDays.filter(d => t(d.toLowerCase()).toLowerCase().includes(daysSearch.toLowerCase())).map(day => (
+                          <label key={day} className="flex items-center gap-3 px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded cursor-pointer">
+                            <div className={cn(
+                              "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                              formData.days.includes(day)
+                                ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900"
+                                : "border-zinc-300 dark:border-zinc-700"
+                            )}>
+                              {formData.days.includes(day) && <Check className="w-3 h-3" />}
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              className="hidden" 
+                              checked={formData.days.includes(day)}
+                              onChange={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  days: prev.days.includes(day) 
+                                    ? prev.days.filter(d => d !== day)
+                                    : [...prev.days, day]
+                                }));
+                              }}
+                            />
+                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(day.toLowerCase())}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
+                        <button 
+                          type="button"
+                          onClick={() => setIsDaysDropdownOpen(false)}
+                          className="w-full py-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded"
+                        >
+                          {t('close')}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
+                <select 
+                  required 
+                  value={formData.room} 
+                  onChange={e => setFormData({...formData, room: e.target.value})} 
+                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                >
+                  <option value="">{t('select_room')}</option>
+                  {rooms.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
+                </select>
               </div>
               <button 
                 type="submit"

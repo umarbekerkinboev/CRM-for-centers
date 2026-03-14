@@ -57,13 +57,12 @@ export type Room = {
 
 export type TimetableEvent = {
   id: number;
-  day: string;
+  days: string[];
   title: string;
   teacher: string;
   room: string;
   start: string;
   end: string;
-  track: number;
 };
 
 export type Payment = {
@@ -119,20 +118,20 @@ const initialMockRooms: Room[] = [
 ];
 
 const initialMockEvents: TimetableEvent[] = [
-  { id: 1, day: 'odd', title: 'Pre-IELTS | O-10:00-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '10:00', end: '11:30', track: 0 },
-  { id: 2, day: 'odd', title: 'Grammar | O-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '15:00', end: '16:30', track: 0 },
-  { id: 3, day: 'odd', title: 'CEFR | O-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '16:30', end: '18:00', track: 0 },
-  { id: 4, day: 'odd', title: 'Pre-IELTS | O-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room B', start: '16:30', end: '18:00', track: 1 },
-  { id: 5, day: 'even', title: 'KIDS | E-10:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '10:30', end: '12:00', track: 0 },
-  { id: 6, day: 'even', title: 'Grammar | E-14:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '14:30', end: '16:00', track: 0 },
-  { id: 7, day: 'even', title: 'IELTS | E-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '16:00', end: '18:00', track: 0 },
-  { id: 8, day: 'even', title: 'Beginner | E-14:00-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room B', start: '14:30', end: '16:00', track: 1 },
-  { id: 9, day: 'even', title: 'KIDS | E-15:30-Husniya', teacher: 'Husniya Botirova', room: 'Room B', start: '16:00', end: '17:30', track: 1 },
-  { id: 10, day: 'even', title: 'Grammar | E-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '14:30', end: '16:00', track: 2 },
-  { id: 11, day: 'even', title: 'Grammar | E-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '16:00', end: '17:30', track: 2 },
-  { id: 12, day: 'even', title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00', track: 3 },
-  { id: 13, day: 'even', title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30', track: 3 },
-  { id: 14, day: 'even', title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00', track: 4 },
+  { id: 1, days: ['Monday', 'Wednesday', 'Friday'], title: 'Pre-IELTS | O-10:00-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '10:00', end: '11:30' },
+  { id: 2, days: ['Monday', 'Wednesday', 'Friday'], title: 'Grammar | O-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '15:00', end: '16:30' },
+  { id: 3, days: ['Monday', 'Wednesday', 'Friday'], title: 'CEFR | O-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '16:30', end: '18:00' },
+  { id: 4, days: ['Monday', 'Wednesday', 'Friday'], title: 'Pre-IELTS | O-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room B', start: '16:30', end: '18:00' },
+  { id: 5, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'KIDS | E-10:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '10:30', end: '12:00' },
+  { id: 6, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '14:30', end: '16:00' },
+  { id: 7, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'IELTS | E-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '16:00', end: '18:00' },
+  { id: 8, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Beginner | E-14:00-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room B', start: '14:30', end: '16:00' },
+  { id: 9, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'KIDS | E-15:30-Husniya', teacher: 'Husniya Botirova', room: 'Room B', start: '16:00', end: '17:30' },
+  { id: 10, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '14:30', end: '16:00' },
+  { id: 11, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '16:00', end: '17:30' },
+  { id: 12, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00' },
+  { id: 13, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30' },
+  { id: 14, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00' },
 ];
 
 const initialMockPayments: Payment[] = [
@@ -197,7 +196,50 @@ function createUseEntityHook<T extends { id: number }>(key: string, initialData:
   };
 }
 
-export const useGroups = createUseEntityHook<Group>('mock_groups', initialMockGroups);
+const useGroupsBase = createUseEntityHook<Group>('mock_groups', initialMockGroups);
+
+export function useGroups() {
+  const { items, setItems, addItem, updateItem: baseUpdateItem, deleteItem } = useGroupsBase();
+  const { items: students, setItems: setStudents } = useStudentsBase();
+  const { items: events, setItems: setEvents } = useTimetableEvents();
+
+  const updateItem = (id: number, data: Partial<Group>) => {
+    const oldGroup = items.find(g => g.id === id);
+    baseUpdateItem(id, data);
+
+    if (oldGroup && data.name && oldGroup.name !== data.name) {
+      // Update students' group name
+      const newStudents = students.map(s => {
+        if (!s.group) return s;
+        const currentGroups = s.group.split(', ');
+        if (currentGroups.includes(oldGroup.name)) {
+          const newGroups = currentGroups.map(g => g === oldGroup.name ? data.name! : g).join(', ');
+          return { ...s, group: newGroups };
+        }
+        return s;
+      });
+      setStudents(newStudents);
+
+      // Update events' group name
+      const newEvents = events.map(e => e.title === oldGroup.name ? { ...e, title: data.name! } : e);
+      setEvents(newEvents);
+    }
+
+    if (oldGroup && data.teachers && oldGroup.teachers !== data.teachers) {
+      // Update events' teacher
+      const newEvents = events.map(e => e.title === (data.name || oldGroup.name) ? { ...e, teacher: data.teachers! } : e);
+      setEvents(newEvents);
+    }
+    
+    if (oldGroup && data.rooms && oldGroup.rooms !== data.rooms) {
+      // Update events' room
+      const newEvents = events.map(e => e.title === (data.name || oldGroup.name) ? { ...e, room: data.rooms! } : e);
+      setEvents(newEvents);
+    }
+  };
+
+  return { items, setItems, addItem, updateItem, deleteItem };
+}
 export const useEmployees = createUseEntityHook<Employee>('mock_employees', initialMockEmployees);
 export const useCourses = createUseEntityHook<Course>('mock_courses', initialMockCourses);
 export const useRooms = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
@@ -233,29 +275,44 @@ export function useStudents() {
     const newItems = items.map(student => {
       if (!student.lastChargedDate) return student;
       
-      const parts = student.lastChargedDate.split('-');
-      if (parts.length !== 3) return student;
+      const lastChargedDates = student.lastChargedDate.split(',').map(d => d.trim());
+      const prices = student.price ? student.price.split(',').map(p => p.trim()) : [];
       
-      const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-      const now = new Date();
+      let studentUpdated = false;
+      let totalDeduction = 0;
+      const newLastChargedDates = [...lastChargedDates];
       
-      let monthsPassed = (now.getFullYear() - lastCharged.getFullYear()) * 12 + (now.getMonth() - lastCharged.getMonth());
-      if (now.getDate() < lastCharged.getDate()) {
-        monthsPassed--;
-      }
+      lastChargedDates.forEach((dateStr, index) => {
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return;
+        
+        const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const now = new Date();
+        
+        let monthsPassed = (now.getFullYear() - lastCharged.getFullYear()) * 12 + (now.getMonth() - lastCharged.getMonth());
+        if (now.getDate() < lastCharged.getDate()) {
+          monthsPassed--;
+        }
+        
+        if (monthsPassed > 0) {
+          studentUpdated = true;
+          const priceStr = prices[index] || prices[0] || '0';
+          const price = parseInt(priceStr.replace(/[^0-9]/g, ''), 10) || 0;
+          
+          totalDeduction += price * monthsPassed;
+          
+          const newChargeDate = new Date(lastCharged);
+          newChargeDate.setMonth(newChargeDate.getMonth() + monthsPassed);
+          newLastChargedDates[index] = `${newChargeDate.getDate().toString().padStart(2, '0')}-${(newChargeDate.getMonth() + 1).toString().padStart(2, '0')}-${newChargeDate.getFullYear()}`;
+        }
+      });
       
-      if (monthsPassed > 0) {
+      if (studentUpdated) {
         updated = true;
-        const price = parseInt(student.price.replace(/[^0-9]/g, ''), 10) || 0;
-        
-        const newChargeDate = new Date(lastCharged);
-        newChargeDate.setMonth(newChargeDate.getMonth() + monthsPassed);
-        const newDateStr = `${newChargeDate.getDate().toString().padStart(2, '0')}-${(newChargeDate.getMonth() + 1).toString().padStart(2, '0')}-${newChargeDate.getFullYear()}`;
-        
         return {
           ...student,
-          balance: student.balance - (price * monthsPassed),
-          lastChargedDate: newDateStr
+          balance: student.balance - totalDeduction,
+          lastChargedDate: newLastChargedDates.join(', ')
         };
       }
       return student;

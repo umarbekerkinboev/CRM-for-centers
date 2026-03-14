@@ -25,18 +25,67 @@ export default function StudentPaymentPage() {
   };
 
   const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
-    const course = allCourses.find(c => c.name === courseName.trim());
-    const group = allGroups.find(g => g.name === student.group);
+    const courseNameTrimmed = courseName.trim();
+    const course = allCourses.find(c => c.name === courseNameTrimmed);
+    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    
+    // Find the correct group for this course
+    let groupName = 'N/A';
+    let groupIndex = index;
+    
+    // First, check if the group at the same index matches the course
+    const groupAtIndex = allGroups.find(g => g.name === groupNames[index]);
+    if (groupAtIndex && groupAtIndex.courses === courseNameTrimmed) {
+      groupName = groupNames[index];
+    } else {
+      // Otherwise, search all groups the student is in to find one that matches this course
+      const matchingGroupIndex = groupNames.findIndex(gn => {
+        const g = allGroups.find(group => group.name === gn);
+        return g && g.courses === courseNameTrimmed;
+      });
+      if (matchingGroupIndex !== -1) {
+        groupName = groupNames[matchingGroupIndex];
+        groupIndex = matchingGroupIndex;
+      } else {
+        // Fallback to the index if it exists and we haven't found a match
+        // But only if that group doesn't belong to another course we have!
+        const fallbackGroup = allGroups.find(g => g.name === groupNames[index]);
+        const studentCourses = student.courses.split(',').map(c => c.trim());
+        if (fallbackGroup && studentCourses.includes(fallbackGroup.courses)) {
+           // This group belongs to another course the student has, so don't use it here
+           groupName = 'N/A';
+        } else {
+           groupName = groupNames[index] || 'N/A';
+        }
+      }
+    }
+    
+    const group = allGroups.find(g => g.name === groupName);
+    
+    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
+    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(',')[groupIndex]?.trim() || student.lastChargedDate.split(',')[0]?.trim() || registration : registration;
+
+    let nextPayment = 'N/A';
+    if (lastChargedDateStr !== 'N/A') {
+      const parts = lastChargedDateStr.split('-');
+      if (parts.length === 3) {
+        const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const nextDate = new Date(lastCharged);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        nextPayment = `${nextDate.getDate().toString().padStart(2, '0')}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}-${nextDate.getFullYear()}`;
+      }
+    }
+
     return {
       id: index + 1,
-      name: courseName.trim(),
-      group: student.group || 'N/A',
+      name: courseNameTrimmed,
+      group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price || '0 UZS',
-      nextPayment: 'N/A',
-      registration: student.registration || 'N/A'
+      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+      nextPayment,
+      registration
     };
-  }) : [];
+  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -181,7 +230,7 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
@@ -213,7 +262,7 @@ export default function StudentPaymentPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('payment_history')}</h2>
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
@@ -252,12 +301,12 @@ export default function StudentPaymentPage() {
                     {activeMenu === payment.id && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                        <div className={cn("absolute right-8 w-40 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
-                          <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 flex items-center gap-2">
+                        <div className={cn("absolute right-8 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
+                          <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-2">
                             <Edit className="w-4 h-4" />
                             {t('edit_details')}
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); handleDeletePayment(payment.id); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 flex items-center gap-2">
+                          <button onClick={(e) => { e.stopPropagation(); handleDeletePayment(payment.id); }} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-2">
                             <Trash2 className="w-4 h-4" />
                             {t('delete')}
                           </button>

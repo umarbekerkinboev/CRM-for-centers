@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, X, Edit, Lock, Trash2 } from 'lucide-react';
-import { useEmployees, useGroups, Employee } from '../lib/mockData.ts';
+import { useEmployees, useGroups, useEmployeeTypes, Employee } from '../lib/mockData.ts';
 import { cn } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
@@ -11,6 +11,7 @@ export default function EmployeeDetailsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { items: employees, updateItem, deleteItem } = useEmployees();
+  const { items: employeeTypes } = useEmployeeTypes();
   const { items: groups } = useGroups();
   
   const employee = employees.find(e => e.id === Number(id));
@@ -27,7 +28,7 @@ export default function EmployeeDetailsPage() {
     phone: '', 
     qualification: '', 
     gender: '', 
-    exp: 0, 
+    exp: '', 
     dob: '', 
     joined: '', 
     username: '', 
@@ -65,7 +66,7 @@ export default function EmployeeDetailsPage() {
       phone: employee.phone || '', 
       qualification: employee.qualification || '', 
       gender: employee.gender || '', 
-      exp: employee.exp || 0, 
+      exp: employee.exp?.toString() || '0', 
       dob: employee.dob || '', 
       joined: employee.joined || '', 
       username: employee.username || '', 
@@ -83,10 +84,10 @@ export default function EmployeeDetailsPage() {
     if (editItem) {
       updateItem(editItem.id, {
         name: `${formData.firstName} ${formData.lastName}`.trim(),
-        phone: formData.phone,
+        phone: formData.phone.replace(/\s/g, ''),
         qualification: formData.qualification,
         gender: formData.gender,
-        exp: formData.exp,
+        exp: parseInt(formData.exp) || 0,
         dob: formData.dob,
         joined: formData.joined,
         username: formData.username,
@@ -170,25 +171,25 @@ export default function EmployeeDetailsPage() {
           {isActionsOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsActionsOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 bg-[#141414] border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
                 <button 
                   onClick={openEditModal}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                   {t('edit_details')}
                 </button>
                 <button 
                   onClick={openCredentialsModal}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
                   <Lock className="w-4 h-4" />
                   {t('edit_credentials')}
                 </button>
-                <div className="h-px bg-zinc-800/50 my-1"></div>
+                <div className="h-px bg-zinc-200 dark:bg-zinc-800/50 my-1"></div>
                 <button 
                   onClick={handleDelete}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50 hover:text-red-300 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                   {t('delete')}
@@ -205,7 +206,7 @@ export default function EmployeeDetailsPage() {
       <div>
         <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">{t('groups')}</h2>
         
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
               <tr>
@@ -275,9 +276,9 @@ export default function EmployeeDetailsPage() {
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
                 <select value={formData.employeeType} onChange={e => setFormData({...formData, employeeType: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
                   <option value="">{t('select_type')}</option>
-                  <option value="English Teacher">English Teacher</option>
-                  <option value="Math Teacher">Math Teacher</option>
-                  <option value="Admin">Admin</option>
+                  {employeeTypes.map(type => (
+                    <option key={type.id} value={type.type}>{type.type}</option>
+                  ))}
                 </select>
               </div>
 
@@ -298,7 +299,7 @@ export default function EmployeeDetailsPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
-                <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required maxLength={9} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
 
               <div className="space-y-2">
@@ -313,7 +314,7 @@ export default function EmployeeDetailsPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('years_of_experience')}</label>
-                  <input required value={formData.exp} onChange={e => setFormData({...formData, exp: parseInt(e.target.value) || 0})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                  <input required value={formData.exp} onChange={e => setFormData({...formData, exp: e.target.value})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
                 </div>
               </div>
 

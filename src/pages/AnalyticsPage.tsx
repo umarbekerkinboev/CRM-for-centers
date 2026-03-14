@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
       <Modal
         isOpen={isRevenueModalOpen}
         onClose={() => setIsRevenueModalOpen(false)}
-        title="Revenue Details"
+        title={t('revenue_details')}
         maxWidth="max-w-4xl"
       >
         <div className="space-y-6">
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
                   : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
               }`}
             >
-              Revenue by Course
+              {t('revenue_by_course')}
               {revenueTab === 'overview' && (
                 <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-t-full" />
               )}
@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
                   : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
               }`}
             >
-              Outstanding Balances
+              {t('outstanding_balances')}
               {revenueTab === 'debtors' && (
                 <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-t-full" />
               )}
@@ -216,10 +216,10 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm text-left">
                 <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Course Name</th>
-                    <th className="px-6 py-4 font-bold">Active Students</th>
-                    <th className="px-6 py-4 font-bold">Course Price</th>
-                    <th className="px-6 py-4 font-bold">Est. Monthly Revenue</th>
+                    <th className="px-6 py-4 font-bold">{t('course_name')}</th>
+                    <th className="px-6 py-4 font-bold">{t('active_students')}</th>
+                    <th className="px-6 py-4 font-bold">{t('course_price')}</th>
+                    <th className="px-6 py-4 font-bold">{t('est_monthly_revenue')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
                     );
                   })}
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 font-bold">
-                    <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100" colSpan={3}>Total Estimated Revenue</td>
+                    <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100" colSpan={3}>{t('total_estimated_revenue')}</td>
                     <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400">
                       {courses.reduce((acc, course) => {
                         const courseStudents = students.filter(s => s.courses.includes(course.name));
@@ -258,10 +258,10 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm text-left">
                 <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Student Name</th>
-                    <th className="px-6 py-4 font-bold">Phone</th>
-                    <th className="px-6 py-4 font-bold">Parent Phone</th>
-                    <th className="px-6 py-4 font-bold">Outstanding Balance</th>
+                    <th className="px-6 py-4 font-bold">{t('student_name')}</th>
+                    <th className="px-6 py-4 font-bold">{t('phone')}</th>
+                    <th className="px-6 py-4 font-bold">{t('parent_phone')}</th>
+                    <th className="px-6 py-4 font-bold">{t('outstanding_balance')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -278,7 +278,7 @@ export default function AnalyticsPage() {
                   {students.filter(s => s.balance < 0).length === 0 && (
                     <tr>
                       <td colSpan={4} className="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                        No students with outstanding balances.
+                        {t('no_students_with_outstanding_balances')}
                       </td>
                     </tr>
                   )}
@@ -293,7 +293,7 @@ export default function AnalyticsPage() {
       <Modal
         isOpen={isStudentModalOpen}
         onClose={() => setIsStudentModalOpen(false)}
-        title="Student Analytics"
+        title={t('student_analytics')}
         maxWidth="max-w-4xl"
       >
         <div className="space-y-6">
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
                   : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
               }`}
             >
-              Recent Enrollments
+              {t('recent_enrollments')}
               {studentTab === 'recent' && (
                 <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-t-full" />
               )}
@@ -319,7 +319,7 @@ export default function AnalyticsPage() {
                   : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
               }`}
             >
-              Course Distribution
+              {t('course_distribution')}
               {studentTab === 'distribution' && (
                 <div className="absolute bottom-0 left-0 w-full h-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-t-full" />
               )}
@@ -331,10 +331,10 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm text-left">
                 <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-900/30">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Student Name</th>
-                    <th className="px-6 py-4 font-bold">Registration Date</th>
-                    <th className="px-6 py-4 font-bold">Courses</th>
-                    <th className="px-6 py-4 font-bold">Status</th>
+                    <th className="px-6 py-4 font-bold">{t('student_name')}</th>
+                    <th className="px-6 py-4 font-bold">{t('registration_date')}</th>
+                    <th className="px-6 py-4 font-bold">{t('courses')}</th>
+                    <th className="px-6 py-4 font-bold">{t('status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -345,7 +345,7 @@ export default function AnalyticsPage() {
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300 whitespace-pre-line">{student.courses}</td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          Active
+                          {t('active')}
                         </span>
                       </td>
                     </tr>
@@ -365,7 +365,7 @@ export default function AnalyticsPage() {
                   <div key={course.id} className="bg-zinc-50 dark:bg-zinc-900/30 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800/50">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-medium text-zinc-900 dark:text-zinc-100">{course.name}</span>
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400">{courseStudents.length} students</span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">{courseStudents.length} {t('students').toLowerCase()}</span>
                     </div>
                     <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2.5">
                       <div 
@@ -374,7 +374,7 @@ export default function AnalyticsPage() {
                       ></div>
                     </div>
                     <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 text-right">
-                      {percentage}% of total students
+                      {percentage}% {t('of_total_students')}
                     </div>
                   </div>
                 );
