@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils.ts';
-import { useStudents, Student } from '../lib/mockData.ts';
+import { useStudents, Student, useCourses, useGroups } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 type SortConfig = {
@@ -14,6 +14,8 @@ type SortConfig = {
 export default function StudentsPage() {
   const { t } = useTranslation();
   const { students, updateStudent, deleteStudent } = useStudents();
+  const { items: allCourses } = useCourses();
+  const { items: allGroups } = useGroups();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -40,7 +42,8 @@ export default function StudentsPage() {
     gender: '', 
     dob: '', 
     address: '',
-    courseName: '',
+    course: '',
+    group: '',
     courseRegistrationDate: ''
   });
 
@@ -48,13 +51,23 @@ export default function StudentsPage() {
     e.preventDefault();
     if (editItem) {
       const currentCourses = editItem.courses ? editItem.courses.split(',').map(c => c.trim()) : [];
+      const currentGroups = editItem.group ? editItem.group.split(',').map(g => g.trim()) : [];
+      const currentPrices = editItem.price ? editItem.price.split(',').map(p => p.trim()) : [];
       const currentRegistrations = editItem.registration ? editItem.registration.split(',').map(r => r.trim()) : [];
       
+      const selectedGroup = allGroups.find(g => g.name === formData.group);
+      const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || formData.course));
+      const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
+
       if (currentCourses.length > 0) {
-        currentCourses[0] = formData.courseName;
+        currentCourses[0] = formData.course;
+        currentGroups[0] = formData.group;
+        currentPrices[0] = coursePriceStr;
         currentRegistrations[0] = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : '';
-      } else if (formData.courseName) {
-        currentCourses.push(formData.courseName);
+      } else if (formData.course) {
+        currentCourses.push(formData.course);
+        currentGroups.push(formData.group);
+        currentPrices.push(coursePriceStr);
         currentRegistrations.push(formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : '');
       }
 
@@ -68,6 +81,8 @@ export default function StudentsPage() {
         dob: formData.dob,
         address: formData.address,
         courses: currentCourses.join(', '),
+        group: currentGroups.join(', '),
+        price: currentPrices.join(', '),
         registration: currentRegistrations.join(', ')
       });
       setEditItem(null);
@@ -84,7 +99,8 @@ export default function StudentsPage() {
       gender: item.gender || 'Male', 
       dob: item.dob || '', 
       address: item.address || '',
-      courseName: item.courses ? item.courses.split(',')[0].trim() : '',
+      course: item.courses ? item.courses.split(',')[0].trim() : '',
+      group: item.group ? item.group.split(',')[0].trim() : '',
       courseRegistrationDate: item.registration ? item.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
     });
     setEditItem(item);
@@ -324,8 +340,29 @@ export default function StudentsPage() {
                 <input maxLength={9} value={formData.parentPhone} onChange={e => setFormData({...formData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
-                <input value={formData.courseName} onChange={e => setFormData({...formData, courseName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+                <select 
+                  value={formData.course}
+                  onChange={e => setFormData({...formData, course: e.target.value, group: ''})}
+                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                >
+                  <option value="">{t('select_course')}</option>
+                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+                <select 
+                  value={formData.group}
+                  onChange={e => setFormData({...formData, group: e.target.value})}
+                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                  disabled={!formData.course}
+                >
+                  <option value="">{t('select_group')}</option>
+                  {allGroups
+                    .filter(g => g.courses === formData.course)
+                    .map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>

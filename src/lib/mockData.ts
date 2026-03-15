@@ -24,6 +24,9 @@ export type Group = {
   teachers: string;
   courses: string;
   rooms: string;
+  days: string[];
+  startTime: string;
+  endTime: string;
 };
 
 export type Employee = {
@@ -55,16 +58,6 @@ export type Room = {
   size: number;
 };
 
-export type TimetableEvent = {
-  id: number;
-  days: string[];
-  title: string;
-  teacher: string;
-  room: string;
-  start: string;
-  end: string;
-};
-
 export type Payment = {
   id: number;
   studentId: number;
@@ -86,18 +79,30 @@ const initialMockStudents: Student[] = [
 ];
 
 const initialMockGroups: Group[] = [
-  { id: 1, name: 'IELTS | E-15:30-Akmal', students: 19, teachers: 'Akmalbek Xandurdiyev', courses: 'IELTS', rooms: 'Room A' },
-  { id: 2, name: 'Grammar | E-15:30-Quvonchoy', students: 14, teachers: 'Quvonchoy Razzakova', courses: 'Grammar', rooms: 'Room D' },
-  { id: 3, name: 'Grammar | E-14:00-Husniya', students: 14, teachers: 'Husniya Botirova', courses: 'Grammar', rooms: 'Room A' },
-  { id: 4, name: 'Matematika | O-14:00-Aziza', students: 13, teachers: 'Aziza Ro\'zmatova', courses: 'Matematika', rooms: 'Room C' },
-  { id: 5, name: 'Grammar | O-10:00-Umar (finished)', students: 2, teachers: 'Khakimbek Erkinboev', courses: 'Grammar', rooms: '-' },
+  { id: 1, name: 'Pre-IELTS | O-10:00-Akmal', students: 15, teachers: 'Akmalbek Xandurdiyev', courses: 'Pre-IELTS', rooms: 'Room A', days: ['odd'], startTime: '10:00', endTime: '11:30' },
+  { id: 2, name: 'Grammar | O-14:00-Suhrob', students: 12, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room A', days: ['odd'], startTime: '15:00', endTime: '16:30' },
+  { id: 3, name: 'CEFR | O-15:30-Suhrob', students: 10, teachers: 'Suhrob Shuhratov', courses: 'CEFR', rooms: 'Room A', days: ['odd'], startTime: '16:30', endTime: '18:00' },
+  { id: 4, name: 'Pre-IELTS | O-15:30-Akmal', students: 14, teachers: 'Akmalbek Xandurdiyev', courses: 'Pre-IELTS', rooms: 'Room B', days: ['odd'], startTime: '16:30', endTime: '18:00' },
+  { id: 5, name: 'KIDS | E-10:00-Husniya', students: 8, teachers: 'Husniya Botirova', courses: 'KIDS', rooms: 'Room A', days: ['even'], startTime: '10:30', endTime: '12:00' },
+  { id: 6, name: 'Grammar | E-14:00-Husniya', students: 14, teachers: 'Husniya Botirova', courses: 'Grammar', rooms: 'Room A', days: ['even'], startTime: '14:30', endTime: '16:00' },
+  { id: 7, name: 'IELTS | E-15:30-Akmal', students: 19, teachers: 'Akmalbek Xandurdiyev', courses: 'IELTS', rooms: 'Room A', days: ['even'], startTime: '16:00', endTime: '18:00' },
+  { id: 8, name: 'Beginner | E-14:00-Sharifa', students: 11, teachers: 'Sharifa Madrahimova', courses: 'Beginner', rooms: 'Room B', days: ['even'], startTime: '14:30', endTime: '16:00' },
+  { id: 9, name: 'KIDS | E-15:30-Husniya', students: 9, teachers: 'Husniya Botirova', courses: 'KIDS', rooms: 'Room B', days: ['even'], startTime: '16:00', endTime: '17:30' },
+  { id: 10, name: 'Grammar | E-14:00-Suhrob', students: 13, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room C', days: ['even'], startTime: '14:30', endTime: '16:00' },
+  { id: 11, name: 'Grammar | E-15:30-Suhrob', students: 12, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room C', days: ['even'], startTime: '16:00', endTime: '17:30' },
+  { id: 12, name: 'Grammar | E-14:00-Quvonchoy', students: 14, teachers: 'Quvonchoy Razzakova', courses: 'Grammar', rooms: 'Room D', days: ['even'], startTime: '14:30', endTime: '16:00' },
+  { id: 13, name: 'Grammar | E-15:30-Quvonchoy', students: 14, teachers: 'Quvonchoy Razzakova', courses: 'Grammar', rooms: 'Room D', days: ['even'], startTime: '16:00', endTime: '17:30' },
+  { id: 14, name: 'Beginner | O-10:30-Sharifa', students: 10, teachers: 'Sharifa Madrahimova', courses: 'Beginner', rooms: 'Room D', days: ['even'], startTime: '10:30', endTime: '12:00' },
+  { id: 15, name: 'Matematika | O-14:00-Aziza', students: 13, teachers: 'Aziza Ro\'zmatova', courses: 'Matematika', rooms: 'Room C', days: ['odd'], startTime: '14:00', endTime: '15:30' },
+  { id: 16, name: 'Grammar | O-10:00-Umar (finished)', students: 2, teachers: 'Khakimbek Erkinboev', courses: 'Grammar', rooms: '-', days: [], startTime: '', endTime: '' },
 ];
 
 const initialMockEmployees: Employee[] = [
-  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023', username: 'suhrob', password: '123' },
-  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023', username: 'khakimbek', password: '123' },
-  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023', username: 'gulnur', password: '123' },
-  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023', username: 'quvonchoy', password: '123' },
+  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023', username: 'suhrob', password: '123', employeeType: 'English Teacher' },
+  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023', username: 'khakimbek', password: '123', employeeType: 'English Teacher' },
+  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023', username: 'gulnur', password: '123', employeeType: 'English Teacher' },
+  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023', username: 'quvonchoy', password: '123', employeeType: 'English Teacher' },
+  { id: 5, name: 'Aziza Ro\'zmatova', phone: '991234567', qualification: 'Math Degree', gender: 'Female', exp: 3, dob: '15-05-1998', joined: '01-09-2023', username: 'aziza', password: '123', employeeType: 'Math Teacher' },
 ];
 
 const initialMockCourses: Course[] = [
@@ -115,23 +120,6 @@ const initialMockRooms: Room[] = [
   { id: 2, name: 'Room C', size: 16 },
   { id: 3, name: 'Room A', size: 22 },
   { id: 4, name: 'Room B', size: 16 },
-];
-
-const initialMockEvents: TimetableEvent[] = [
-  { id: 1, days: ['Monday', 'Wednesday', 'Friday'], title: 'Pre-IELTS | O-10:00-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '10:00', end: '11:30' },
-  { id: 2, days: ['Monday', 'Wednesday', 'Friday'], title: 'Grammar | O-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '15:00', end: '16:30' },
-  { id: 3, days: ['Monday', 'Wednesday', 'Friday'], title: 'CEFR | O-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '16:30', end: '18:00' },
-  { id: 4, days: ['Monday', 'Wednesday', 'Friday'], title: 'Pre-IELTS | O-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room B', start: '16:30', end: '18:00' },
-  { id: 5, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'KIDS | E-10:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '10:30', end: '12:00' },
-  { id: 6, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '14:30', end: '16:00' },
-  { id: 7, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'IELTS | E-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '16:00', end: '18:00' },
-  { id: 8, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Beginner | E-14:00-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room B', start: '14:30', end: '16:00' },
-  { id: 9, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'KIDS | E-15:30-Husniya', teacher: 'Husniya Botirova', room: 'Room B', start: '16:00', end: '17:30' },
-  { id: 10, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '14:30', end: '16:00' },
-  { id: 11, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '16:00', end: '17:30' },
-  { id: 12, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00' },
-  { id: 13, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30' },
-  { id: 14, days: ['Tuesday', 'Thursday', 'Saturday'], title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00' },
 ];
 
 const initialMockPayments: Payment[] = [
@@ -201,7 +189,6 @@ const useGroupsBase = createUseEntityHook<Group>('mock_groups', initialMockGroup
 export function useGroups() {
   const { items, setItems, addItem, updateItem: baseUpdateItem, deleteItem } = useGroupsBase();
   const { items: students, setItems: setStudents } = useStudentsBase();
-  const { items: events, setItems: setEvents } = useTimetableEvents();
 
   const updateItem = (id: number, data: Partial<Group>) => {
     const oldGroup = items.find(g => g.id === id);
@@ -219,22 +206,6 @@ export function useGroups() {
         return s;
       });
       setStudents(newStudents);
-
-      // Update events' group name
-      const newEvents = events.map(e => e.title === oldGroup.name ? { ...e, title: data.name! } : e);
-      setEvents(newEvents);
-    }
-
-    if (oldGroup && data.teachers && oldGroup.teachers !== data.teachers) {
-      // Update events' teacher
-      const newEvents = events.map(e => e.title === (data.name || oldGroup.name) ? { ...e, teacher: data.teachers! } : e);
-      setEvents(newEvents);
-    }
-    
-    if (oldGroup && data.rooms && oldGroup.rooms !== data.rooms) {
-      // Update events' room
-      const newEvents = events.map(e => e.title === (data.name || oldGroup.name) ? { ...e, room: data.rooms! } : e);
-      setEvents(newEvents);
     }
   };
 
@@ -243,7 +214,6 @@ export function useGroups() {
 export const useEmployees = createUseEntityHook<Employee>('mock_employees', initialMockEmployees);
 export const useCourses = createUseEntityHook<Course>('mock_courses', initialMockCourses);
 export const useRooms = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
-export const useTimetableEvents = createUseEntityHook<TimetableEvent>('mock_timetable_events', initialMockEvents);
 export const usePayments = createUseEntityHook<Payment>('mock_payments', initialMockPayments);
 
 export type EmployeeType = {
@@ -276,6 +246,7 @@ export function useStudents() {
       if (!student.lastChargedDate) return student;
       
       const lastChargedDates = student.lastChargedDate.split(',').map(d => d.trim());
+      const registrationDates = student.registration ? student.registration.split(',').map(d => d.trim()) : [];
       const prices = student.price ? student.price.split(',').map(p => p.trim()) : [];
       
       let studentUpdated = false;
@@ -284,13 +255,17 @@ export function useStudents() {
       
       lastChargedDates.forEach((dateStr, index) => {
         const parts = dateStr.split('-');
-        if (parts.length !== 3) return;
+        const regStr = registrationDates[index] || registrationDates[0] || dateStr;
+        const regParts = regStr.split('-');
+        
+        if (parts.length !== 3 || regParts.length !== 3) return;
         
         const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const regDay = parseInt(regParts[0]);
         const now = new Date();
         
         let monthsPassed = (now.getFullYear() - lastCharged.getFullYear()) * 12 + (now.getMonth() - lastCharged.getMonth());
-        if (now.getDate() < lastCharged.getDate()) {
+        if (now.getDate() < regDay) {
           monthsPassed--;
         }
         
@@ -301,8 +276,15 @@ export function useStudents() {
           
           totalDeduction += price * monthsPassed;
           
-          const newChargeDate = new Date(lastCharged);
-          newChargeDate.setMonth(newChargeDate.getMonth() + monthsPassed);
+          let newMonth = lastCharged.getMonth() + monthsPassed;
+          let newYear = lastCharged.getFullYear() + Math.floor(newMonth / 12);
+          newMonth = newMonth % 12;
+          
+          const newChargeDate = new Date(newYear, newMonth, regDay);
+          if (newChargeDate.getMonth() !== newMonth) {
+            newChargeDate.setDate(0); // Cap to last day of the month
+          }
+          
           newLastChargedDates[index] = `${newChargeDate.getDate().toString().padStart(2, '0')}-${(newChargeDate.getMonth() + 1).toString().padStart(2, '0')}-${newChargeDate.getFullYear()}`;
         }
       });

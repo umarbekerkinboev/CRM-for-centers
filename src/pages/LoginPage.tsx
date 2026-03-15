@@ -21,15 +21,27 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedUsername || !trimmedPassword) {
+      setError(true);
+      return;
+    }
+
     // Global admin check
-    if (username === 'admin' && password === 'admin') {
+    if (trimmedUsername.toLowerCase() === 'admin' && trimmedPassword === 'admin') {
       onLogin();
       navigate('/groups');
       return;
     }
 
     // Employee check
-    const employee = employees.find(emp => emp.username === username && emp.password === password);
+    const employee = employees.find(emp => 
+      emp.username?.toLowerCase() === trimmedUsername.toLowerCase() && 
+      emp.password === trimmedPassword
+    );
+    
     if (employee) {
       onLogin();
       navigate('/groups');

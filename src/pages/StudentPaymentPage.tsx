@@ -66,12 +66,26 @@ export default function StudentPaymentPage() {
     const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(',')[groupIndex]?.trim() || student.lastChargedDate.split(',')[0]?.trim() || registration : registration;
 
     let nextPayment = 'N/A';
-    if (lastChargedDateStr !== 'N/A') {
-      const parts = lastChargedDateStr.split('-');
-      if (parts.length === 3) {
-        const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        const nextDate = new Date(lastCharged);
-        nextDate.setMonth(nextDate.getMonth() + 1);
+    if (lastChargedDateStr !== 'N/A' && registration !== 'N/A') {
+      const lastParts = lastChargedDateStr.split('-');
+      const regParts = registration.split('-');
+      if (lastParts.length === 3 && regParts.length === 3) {
+        const regDay = parseInt(regParts[0]);
+        const lastMonth = parseInt(lastParts[1]) - 1;
+        const lastYear = parseInt(lastParts[2]);
+        
+        let nextMonth = lastMonth + 1;
+        let nextYear = lastYear;
+        if (nextMonth > 11) {
+          nextMonth = 0;
+          nextYear++;
+        }
+        
+        const nextDate = new Date(nextYear, nextMonth, regDay);
+        if (nextDate.getMonth() !== nextMonth) {
+          nextDate.setDate(0);
+        }
+        
         nextPayment = `${nextDate.getDate().toString().padStart(2, '0')}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}-${nextDate.getFullYear()}`;
       }
     }

@@ -107,8 +107,36 @@ export default function GroupDetailsPage() {
     setActiveStudentMenu(null);
   };
 
+  const [groupEditError, setGroupEditError] = useState('');
+
   const handleEditGroup = (e: React.FormEvent) => {
     e.preventDefault();
+    setGroupEditError('');
+
+    if (group.days && group.startTime && group.endTime) {
+      const newStart = parseInt(group.startTime.replace(':', ''));
+      const newEnd = parseInt(group.endTime.replace(':', ''));
+
+      const hasOverlap = groups.some(g => {
+        if (g.id === group.id) return false;
+        if (!g.days || !g.startTime || !g.endTime) return false;
+        if (g.rooms !== editFormData.room) return false;
+        
+        const hasCommonDay = g.days.some(d => group.days!.includes(d));
+        if (!hasCommonDay) return false;
+        
+        const eventStart = parseInt(g.startTime.replace(':', ''));
+        const eventEnd = parseInt(g.endTime.replace(':', ''));
+        
+        return (newStart < eventEnd && newEnd > eventStart);
+      });
+
+      if (hasOverlap) {
+        setGroupEditError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+        return;
+      }
+    }
+
     updateGroup(Number(id), {
       name: editFormData.name,
       teachers: editFormData.teacher,
@@ -679,6 +707,11 @@ export default function GroupDetailsPage() {
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_group')}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_group_details')}</p>
             </div>
+            {groupEditError && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+                {groupEditError}
+              </div>
+            )}
             <form className="space-y-4" onSubmit={handleEditGroup}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
@@ -746,7 +779,7 @@ export default function GroupDetailsPage() {
                         </div>
                       </div>
                       <div className="max-h-48 overflow-y-auto p-2 space-y-1">
-                        {employees.filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase())).map(employee => {
+                        {employees.filter(e => e.employeeType?.toLowerCase().includes('teacher')).filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase())).map(employee => {
                           const isSelected = editFormData.teacher ? editFormData.teacher.split(', ').includes(employee.name) : false;
                           return (
                             <label key={employee.id} className="flex items-center gap-3 px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded cursor-pointer">
@@ -803,9 +836,37 @@ export default function GroupDetailsPage() {
       <ConfirmDeleteModal
         isOpen={studentToDelete !== null}
         onClose={() => setStudentToDelete(null)}
+        title={t('remove_from_group', 'Remove from Group')}
+        message={t('are_you_sure_remove_student', 'Are you sure you want to remove this student from the group? The student will not be deleted from the database.')}
         onConfirm={() => {
           if (studentToDelete !== null) {
-            deleteStudent(studentToDelete);
+            const student = allStudents.find(s => s.id === studentToDelete);
+            if (student && student.group) {
+              const currentGroups = student.group.split(',').map(g => g.trim());
+              const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+              const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+              const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
+              const currentLastCharged = student.lastChargedDate ? student.lastChargedDate.split(',').map(d => d.trim()) : [];
+
+              const indexToRemove = currentGroups.indexOf(group.name);
+              
+              if (indexToRemove !== -1) {
+                // Remove the item at the specific index from all parallel arrays
+                currentGroups.splice(indexToRemove, 1);
+                if (currentCourses.length > indexToRemove) currentCourses.splice(indexToRemove, 1);
+                if (currentPrices.length > indexToRemove) currentPrices.splice(indexToRemove, 1);
+                if (currentRegistrations.length > indexToRemove) currentRegistrations.splice(indexToRemove, 1);
+                if (currentLastCharged.length > indexToRemove) currentLastCharged.splice(indexToRemove, 1);
+
+                updateStudent(studentToDelete, { 
+                  group: currentGroups.join(', '),
+                  courses: currentCourses.join(', '),
+                  price: currentPrices.join(', '),
+                  registration: currentRegistrations.join(', '),
+                  lastChargedDate: currentLastCharged.join(', ')
+                });
+              }
+            }
             setStudentToDelete(null);
           }
         }}

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, MoreVertical, Plus, X, Filter, Search, Check } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
-import { useTimetableEvents, useGroups, useEmployees, useRooms, TimetableEvent } from '../lib/mockData.ts';
+import { useGroups, useEmployees, useRooms, Group } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 const timeSlots = [
@@ -11,24 +11,8 @@ const timeSlots = [
   '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'
 ];
 
-const initialMockEvents = [
-  { id: 1, day: 'odd', title: 'Pre-IELTS | O-10:00-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '10:00', end: '11:30', track: 0 },
-  { id: 2, day: 'odd', title: 'Grammar | O-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '15:00', end: '16:30', track: 0 },
-  { id: 3, day: 'odd', title: 'CEFR | O-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room A', start: '16:30', end: '18:00', track: 0 },
-  { id: 4, day: 'odd', title: 'Pre-IELTS | O-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room B', start: '16:30', end: '18:00', track: 1 },
-  { id: 5, day: 'even', title: 'KIDS | E-10:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '10:30', end: '12:00', track: 0 },
-  { id: 6, day: 'even', title: 'Grammar | E-14:00-Husniya', teacher: 'Husniya Botirova', room: 'Room A', start: '14:30', end: '16:00', track: 0 },
-  { id: 7, day: 'even', title: 'IELTS | E-15:30-Akmal', teacher: 'Akmalbek Xandurdiyev', room: 'Room A', start: '16:00', end: '18:00', track: 0 },
-  { id: 8, day: 'even', title: 'Beginner | E-14:00-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room B', start: '14:30', end: '16:00', track: 1 },
-  { id: 9, day: 'even', title: 'KIDS | E-15:30-Husniya', teacher: 'Husniya Botirova', room: 'Room B', start: '16:00', end: '17:30', track: 1 },
-  { id: 10, day: 'even', title: 'Grammar | E-14:00-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '14:30', end: '16:00', track: 2 },
-  { id: 11, day: 'even', title: 'Grammar | E-15:30-Suhrob', teacher: 'Suhrob Shuhratov', room: 'Room C', start: '16:00', end: '17:30', track: 2 },
-  { id: 12, day: 'even', title: 'Grammar | E-14:00-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '14:30', end: '16:00', track: 3 },
-  { id: 13, day: 'even', title: 'Grammar | E-15:30-Quvonchoy', teacher: 'Quvonchoy Razzakova', room: 'Room D', start: '16:00', end: '17:30', track: 3 },
-  { id: 14, day: 'even', title: 'Beginner | O-10:30-Sharifa', teacher: 'Sharifa Madrahimova', room: 'Room D', start: '10:30', end: '12:00', track: 4 },
-];
-
 const getEventStyle = (start: string, end: string, track: number) => {
+  if (!start || !end) return {};
   const [startH, startM] = start.split(':').map(Number);
   const [endH, endM] = end.split(':').map(Number);
   
@@ -48,8 +32,7 @@ const getEventStyle = (start: string, end: string, track: number) => {
 
 export default function TimetablePage() {
   const { t } = useTranslation();
-  const { items: events, addItem, updateItem, deleteItem } = useTimetableEvents();
-  const { items: groups } = useGroups();
+  const { items: groups, updateItem } = useGroups();
   const { items: employees } = useEmployees();
   const { items: rooms } = useRooms();
   const [filter, setFilter] = useState<'all' | 'odd' | 'even'>('all');
@@ -70,6 +53,8 @@ export default function TimetablePage() {
   const [isDaysDropdownOpen, setIsDaysDropdownOpen] = useState(false);
   const [daysSearch, setDaysSearch] = useState('');
 
+  const [error, setError] = useState('');
+
   // Form states
   const [formData, setFormData] = useState({
     title: '',
@@ -80,46 +65,93 @@ export default function TimetablePage() {
     days: [] as string[]
   });
 
+  const checkOverlap = (excludeId?: number) => {
+    const newStart = parseInt(formData.start.replace(':', ''));
+    const newEnd = parseInt(formData.end.replace(':', ''));
+
+    return groups.some(group => {
+      if (!group.days || !group.startTime || !group.endTime) return false;
+      if (excludeId && group.id === excludeId) return false;
+      if (group.rooms !== formData.room) return false;
+      
+      const hasCommonDay = group.days.some(d => formData.days.includes(d));
+      if (!hasCommonDay) return false;
+      
+      const eventStart = parseInt(group.startTime.replace(':', ''));
+      const eventEnd = parseInt(group.endTime.replace(':', ''));
+      
+      return (newStart < eventEnd && newEnd > eventStart);
+    });
+  };
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addItem(formData);
+    setError('');
+    if (checkOverlap()) {
+      setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+      return;
+    }
+    
+    const group = groups.find(g => g.name === formData.title);
+    if (group) {
+      updateItem(group.id, {
+        teachers: formData.teacher,
+        rooms: formData.room,
+        startTime: formData.start,
+        endTime: formData.end,
+        days: formData.days
+      });
+    }
     setIsAddModalOpen(false);
     setFormData({ title: '', teacher: '', room: '', start: '', end: '', days: [] });
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (editEventId !== null) {
-      updateItem(editEventId, formData);
+      if (checkOverlap(editEventId)) {
+        setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+        return;
+      }
+      updateItem(editEventId, {
+        name: formData.title,
+        teachers: formData.teacher,
+        rooms: formData.room,
+        startTime: formData.start,
+        endTime: formData.end,
+        days: formData.days
+      });
       setEditEventId(null);
     }
   };
 
-  const openEditModal = (event: TimetableEvent) => {
+  const openEditModal = (group: Group) => {
     setFormData({
-      title: event.title,
-      teacher: event.teacher,
-      room: event.room,
-      start: event.start,
-      end: event.end,
-      days: event.days || []
+      title: group.name,
+      teacher: group.teachers,
+      room: group.rooms,
+      start: group.startTime || '',
+      end: group.endTime || '',
+      days: group.days || []
     });
-    setEditEventId(event.id);
+    setEditEventId(group.id);
   };
 
   const filteredEvents = useMemo(() => {
-    return events.filter(e => {
-      if (selectedTeachers.length > 0 && !selectedTeachers.includes(e.teacher)) return false;
-      if (selectedRooms.length > 0 && !selectedRooms.includes(e.room)) return false;
+    return groups.filter(g => {
+      if (!g.days || g.days.length === 0 || !g.startTime || !g.endTime) return false;
+      if (selectedTeachers.length > 0 && !selectedTeachers.includes(g.teachers)) return false;
+      if (selectedRooms.length > 0 && !selectedRooms.includes(g.rooms)) return false;
       return true;
     });
-  }, [events, selectedTeachers, selectedRooms]);
+  }, [groups, selectedTeachers, selectedRooms]);
 
-  const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const weekDays = ['odd', 'even'];
 
-  const calculateTracksForDay = (dayEvents: TimetableEvent[]) => {
-    const sorted = [...dayEvents].sort((a, b) => a.start.localeCompare(b.start));
-    const tracks: TimetableEvent[][] = [];
+  const calculateTracksForDay = (dayEvents: Group[]) => {
+    const sorted = [...dayEvents].sort((a, b) => a.startTime.localeCompare(b.startTime));
+    const tracks: Group[][] = [];
     const eventTracks: Record<number, number> = {};
     
     sorted.forEach(event => {
@@ -127,7 +159,7 @@ export default function TimetablePage() {
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i];
         const lastEvent = track[track.length - 1];
-        if (lastEvent.end <= event.start) {
+        if (lastEvent.endTime <= event.startTime) {
           track.push(event);
           eventTracks[event.id] = i;
           placed = true;
@@ -144,8 +176,8 @@ export default function TimetablePage() {
   };
 
   const visibleDays = useMemo(() => {
-    if (filter === 'odd') return ['Monday', 'Wednesday', 'Friday'];
-    if (filter === 'even') return ['Tuesday', 'Thursday', 'Saturday'];
+    if (filter === 'odd') return ['odd'];
+    if (filter === 'even') return ['even'];
     return weekDays;
   }, [filter]);
 
@@ -154,14 +186,14 @@ export default function TimetablePage() {
     setActiveMenu(null);
   };
 
-  const renderEvent = (event: TimetableEvent, day: string, track: number) => (
+  const renderEvent = (event: Group, day: string, track: number) => (
     <div 
       key={`${day}-${event.id}`}
       className={cn(
         "absolute bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex flex-col items-center justify-center text-center group transition-colors hover:border-zinc-300 dark:hover:border-zinc-700",
         activeMenu === event.id ? "z-50" : "z-10"
       )}
-      style={getEventStyle(event.start, event.end, track)}
+      style={getEventStyle(event.startTime, event.endTime, track)}
     >
       <button 
         onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === event.id ? null : event.id); }}
@@ -196,15 +228,15 @@ export default function TimetablePage() {
         </>
       )}
 
-      <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{event.title}</div>
-      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">{event.teacher}</div>
-      <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{event.room}</div>
-      <div className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">{event.start}-{event.end}</div>
+      <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{event.name}</div>
+      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">{event.teachers}</div>
+      <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{event.rooms}</div>
+      <div className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">{event.startTime}-{event.endTime}</div>
     </div>
   );
 
-  const detailsEvent = events.find(e => e.id === detailsEventId);
-  const editEvent = events.find(e => e.id === editEventId);
+  const detailsEvent = groups.find(e => e.id === detailsEventId);
+  const editEvent = groups.find(e => e.id === editEventId);
 
   const toggleTeacher = (teacherName: string) => {
     setSelectedTeachers(prev => 
@@ -218,7 +250,7 @@ export default function TimetablePage() {
     );
   };
 
-  const filteredTeachersList = employees.filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase()));
+  const filteredTeachersList = employees.filter(e => e.employeeType?.toLowerCase().includes('teacher')).filter(e => e.name.toLowerCase().includes(teacherSearch.toLowerCase()));
   const filteredRoomsList = rooms.filter(r => r.name.toLowerCase().includes(roomSearch.toLowerCase()));
 
   return (
@@ -360,9 +392,16 @@ export default function TimetablePage() {
       </div>
 
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
-        <div className="min-w-[1400px]">
+        <div className="min-w-[1400px] relative">
+          {/* Background grid lines */}
+          <div className="absolute top-[53px] bottom-0 left-24 right-0 flex pointer-events-none">
+            {timeSlots.map(time => (
+              <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
+            ))}
+          </div>
+
           {/* Header */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800/50">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800/50 relative z-10 bg-white dark:bg-[#0a0a0a]">
             <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50"></div>
             <div className="flex-1 flex">
               {timeSlots.map(time => (
@@ -374,27 +413,26 @@ export default function TimetablePage() {
           </div>
 
           {/* Days */}
-          {visibleDays.map((day, index) => {
-            const dayEvents = filteredEvents.filter(e => e.days.includes(day));
-            if (dayEvents.length === 0 && filter !== 'all' && filter !== 'odd' && filter !== 'even') return null;
-            
-            const { maxTrack, eventTracks } = calculateTracksForDay(dayEvents);
-            const height = (maxTrack + 1) * 120 + 32;
+          <div className="relative z-10">
+            {visibleDays.map((day, index) => {
+              const dayEvents = filteredEvents.filter(e => e.days.includes(day));
+              if (dayEvents.length === 0 && filter !== 'all' && filter !== 'odd' && filter !== 'even') return null;
+              
+              const { maxTrack, eventTracks } = calculateTracksForDay(dayEvents);
+              const height = (maxTrack + 1) * 120 + 32;
 
-            return (
-              <div key={day} className={cn("flex", index !== visibleDays.length - 1 && "border-b border-zinc-200 dark:border-zinc-800/50")} style={{ height }}>
-                <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50 flex items-center justify-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                  {t(day.toLowerCase())}
+              return (
+                <div key={day} className={cn("flex", index !== visibleDays.length - 1 && "border-b border-zinc-200 dark:border-zinc-800/50")} style={{ height }}>
+                  <div className="w-24 shrink-0 border-r border-zinc-200 dark:border-zinc-800/50 flex items-center justify-center font-bold text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-[#0a0a0a]">
+                    {t(day.toLowerCase())}
+                  </div>
+                  <div className="flex-1 relative">
+                    {dayEvents.map(event => renderEvent(event, day, eventTracks[event.id] || 0))}
+                  </div>
                 </div>
-                <div className="flex-1 flex relative">
-                  {timeSlots.map(time => (
-                    <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
-                  ))}
-                  {dayEvents.map(event => renderEvent(event, day, eventTracks[event.id] || 0))}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -403,7 +441,7 @@ export default function TimetablePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
             <button 
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => { setIsAddModalOpen(false); setError(''); }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -412,6 +450,11 @@ export default function TimetablePage() {
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_lesson_timetable_entry')}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_the_form_with_new_lesson_timetable_entry_details')}</p>
             </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <form className="space-y-4" onSubmit={handleAddSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
@@ -429,7 +472,7 @@ export default function TimetablePage() {
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
                   <option value="">{t('select_group')}</option>
-                  {groups.filter(g => !events.some(e => e.title === g.name)).map(g => (
+                  {groups.filter(g => !g.days || g.days.length === 0).map(g => (
                     <option key={g.id} value={g.name}>{g.name}</option>
                   ))}
                 </select>
@@ -568,23 +611,23 @@ export default function TimetablePage() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('title')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.title}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.name}</div>
               </div>
               <div>
                 <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('teacher')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.teacher}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.teachers}</div>
               </div>
               <div>
                 <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('room')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.room}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.rooms}</div>
               </div>
               <div>
                 <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('time')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.start} - {detailsEvent.end}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100">{detailsEvent.startTime} - {detailsEvent.endTime}</div>
               </div>
               <div>
                 <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('lesson_days')}</div>
-                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{detailsEvent.days.map(d => t(d.toLowerCase())).join(', ')}</div>
+                <div className="font-medium text-zinc-900 dark:text-zinc-100 capitalize">{detailsEvent.days?.map(d => t(d.toLowerCase())).join(', ') || ''}</div>
               </div>
             </div>
           </div>
@@ -596,7 +639,7 @@ export default function TimetablePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
             <button 
-              onClick={() => setEditEventId(null)}
+              onClick={() => { setEditEventId(null); setError(''); }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -604,6 +647,11 @@ export default function TimetablePage() {
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit')}</h2>
             </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
@@ -621,7 +669,7 @@ export default function TimetablePage() {
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
                   <option value="">{t('select_group')}</option>
-                  {groups.filter(g => !events.some(e => e.title === g.name && e.id !== editEventId)).map(g => (
+                  {groups.filter(g => (!g.days || g.days.length === 0) || g.id === editEventId).map(g => (
                     <option key={g.id} value={g.name}>{g.name}</option>
                   ))}
                 </select>
@@ -747,9 +795,11 @@ export default function TimetablePage() {
       <ConfirmDeleteModal
         isOpen={itemToDelete !== null}
         onClose={() => setItemToDelete(null)}
+        title={t('remove_from_timetable', 'Remove from Timetable')}
+        message={t('are_you_sure_remove_timetable', 'Are you sure you want to remove this group from the timetable? The group will not be deleted.')}
         onConfirm={() => {
           if (itemToDelete !== null) {
-            deleteItem(itemToDelete);
+            updateItem(itemToDelete, { days: [], startTime: '', endTime: '' });
             setItemToDelete(null);
           }
         }}

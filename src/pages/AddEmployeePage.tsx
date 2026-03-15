@@ -7,7 +7,7 @@ import { useEmployees, useEmployeeTypes } from '../lib/mockData.ts';
 export default function AddEmployeePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addItem } = useEmployees();
+  const { items: employees, addItem } = useEmployees();
   const { items: employeeTypes } = useEmployeeTypes();
 
   const [formData, setFormData] = useState({
@@ -26,9 +26,28 @@ export default function AddEmployeePage() {
     username: '',
     password: ''
   });
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    const trimmedUsername = formData.username.trim();
+    if (trimmedUsername) {
+      if (trimmedUsername.toLowerCase() === 'admin') {
+        setError(t('global_admin_username_error', 'You cannot use the global admin username.'));
+        return;
+      }
+      
+      const isDuplicateUsername = employees.some(
+        emp => emp.username?.toLowerCase() === trimmedUsername.toLowerCase()
+      );
+      if (isDuplicateUsername) {
+        setError(t('duplicate_username_error', 'An employee with this username already exists.'));
+        return;
+      }
+    }
+
     addItem({
       name: `${formData.firstName} ${formData.lastName}`.trim(),
       phone: formData.phone.replace(/\s/g, ''),
@@ -37,7 +56,7 @@ export default function AddEmployeePage() {
       exp: parseInt(formData.exp) || 0,
       dob: formData.dob,
       joined: formData.joined,
-      username: formData.username,
+      username: trimmedUsername,
       password: formData.password,
       employeeType: formData.employeeType,
       address: formData.address,
@@ -60,6 +79,12 @@ export default function AddEmployeePage() {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_employee')}</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_employee_details')}</p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

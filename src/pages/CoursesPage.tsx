@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cn } from '../lib/utils.ts';
+import { cn, formatPrice } from '../lib/utils.ts';
 import { useCourses, Course } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
@@ -24,7 +24,10 @@ export default function CoursesPage() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editItem) {
-      updateItem(editItem.id, formData);
+      updateItem(editItem.id, {
+        ...formData,
+        price: formatPrice(formData.price)
+      });
       setEditItem(null);
     }
   };

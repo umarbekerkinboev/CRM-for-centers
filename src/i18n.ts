@@ -226,7 +226,9 @@ const resources = {
       "select_lesson_days": "Select lesson days",
       "close": "Close",
       "select_start_time": "Select start time",
-      "select_end_time": "Select end time"
+      "select_end_time": "Select end time",
+      "global_admin_username_error": "You cannot use the global admin username.",
+      "duplicate_username_error": "An employee with this username already exists."
     }
   },
   ru: {
@@ -453,7 +455,9 @@ const resources = {
       "select_lesson_days": "Выберите дни занятий",
       "close": "Закрыть",
       "select_start_time": "Выберите время начала",
-      "select_end_time": "Выберите время окончания"
+      "select_end_time": "Выберите время окончания",
+      "global_admin_username_error": "Вы не можете использовать имя пользователя глобального администратора.",
+      "duplicate_username_error": "Сотрудник с таким именем пользователя уже существует."
     }
   },
   uz: {
@@ -680,7 +684,9 @@ const resources = {
       "select_lesson_days": "Dars kunlarini tanlang",
       "close": "Yopish",
       "select_start_time": "Boshlanish vaqtini tanlang",
-      "select_end_time": "Tugash vaqtini tanlang"
+      "select_end_time": "Tugash vaqtini tanlang",
+      "global_admin_username_error": "Siz global admin foydalanuvchi nomidan foydalana olmaysiz.",
+      "duplicate_username_error": "Ushbu foydalanuvchi nomiga ega xodim allaqachon mavjud."
     }
   }
 };

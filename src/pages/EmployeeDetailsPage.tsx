@@ -42,6 +42,7 @@ export default function EmployeeDetailsPage() {
     username: '',
     password: ''
   });
+  const [error, setError] = useState('');
 
   if (!employee) {
     return <div className="p-6 text-zinc-500">{t('employee_not_found')}</div>;
@@ -81,7 +82,23 @@ export default function EmployeeDetailsPage() {
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (editItem) {
+      const trimmedUsername = formData.username.trim();
+      if (trimmedUsername) {
+        if (trimmedUsername.toLowerCase() === 'admin') {
+          setError(t('global_admin_username_error', 'You cannot use the global admin username.'));
+          return;
+        }
+        const isDuplicateUsername = employees.some(
+          emp => emp.id !== editItem.id && emp.username?.toLowerCase() === trimmedUsername.toLowerCase()
+        );
+        if (isDuplicateUsername) {
+          setError(t('duplicate_username_error', 'An employee with this username already exists.'));
+          return;
+        }
+      }
+
       updateItem(editItem.id, {
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         phone: formData.phone.replace(/\s/g, ''),
@@ -90,7 +107,7 @@ export default function EmployeeDetailsPage() {
         exp: parseInt(formData.exp) || 0,
         dob: formData.dob,
         joined: formData.joined,
-        username: formData.username,
+        username: trimmedUsername,
         password: formData.password,
         employeeType: formData.employeeType,
         address: formData.address,
@@ -101,6 +118,7 @@ export default function EmployeeDetailsPage() {
   };
 
   const openCredentialsModal = () => {
+    setError('');
     setCredentialsData({
       username: employee.username || '',
       password: employee.password || ''
@@ -111,10 +129,26 @@ export default function EmployeeDetailsPage() {
 
   const handleCredentialsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (credentialsItem) {
+      const trimmedUsername = credentialsData.username.trim();
+      if (trimmedUsername) {
+        if (trimmedUsername.toLowerCase() === 'admin') {
+          setError(t('global_admin_username_error', 'You cannot use the global admin username.'));
+          return;
+        }
+        const isDuplicateUsername = employees.some(
+          emp => emp.id !== credentialsItem.id && emp.username?.toLowerCase() === trimmedUsername.toLowerCase()
+        );
+        if (isDuplicateUsername) {
+          setError(t('duplicate_username_error', 'An employee with this username already exists.'));
+          return;
+        }
+      }
+
       updateItem(credentialsItem.id, {
         ...employee,
-        username: credentialsData.username,
+        username: trimmedUsername,
         password: credentialsData.password
       });
       setCredentialsItem(null);
@@ -256,6 +290,11 @@ export default function EmployeeDetailsPage() {
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_the_employee')}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_employee_details')}</p>
             </div>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <form className="space-y-6" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
@@ -359,6 +398,11 @@ export default function EmployeeDetailsPage() {
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_credentials')}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('update_username_and_password')}</p>
             </div>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <form className="space-y-6" onSubmit={handleCredentialsSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
