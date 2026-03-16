@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.tsx';
@@ -21,51 +21,55 @@ import AddGroupPage from './pages/AddGroupPage.tsx';
 import AddCoursePage from './pages/AddCoursePage.tsx';
 import AddRoomPage from './pages/AddRoomPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
+import { AuthProvider, useAuth } from './contexts/AuthContext.tsx';
 
-export default function App() {
-  const { t } = useTranslation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function AppRoutes() {
+  const { user } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
-      <ThemeProvider defaultTheme="dark">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     );
   }
 
   return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/groups" replace />} />
+        <Route path="/timetable" element={<TimetablePage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/groups" element={<GroupsPage />} />
+        <Route path="/groups/add" element={<AddGroupPage />} />
+        <Route path="/groups/:id" element={<GroupDetailsPage />} />
+        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/students/add" element={<AddStudentPage />} />
+        <Route path="/students/:id" element={<StudentDetailsPage />} />
+        <Route path="/students/:id/payment" element={<StudentPaymentPage />} />
+        <Route path="/employees" element={<EmployeesPage />} />
+        <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+        <Route path="/employees/types" element={<EmployeeTypesPage />} />
+        <Route path="/employees/add" element={<AddEmployeePage />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/add" element={<AddCoursePage />} />
+        <Route path="/rooms" element={<RoomsPage />} />
+        <Route path="/rooms/add" element={<AddRoomPage />} />
+        <Route path="*" element={<div className="text-zinc-400 dark:text-zinc-500">Page not found</div>} />
+      </Routes>
+    </Layout>
+  );
+}
+
+export default function App() {
+  return (
     <ThemeProvider defaultTheme="dark">
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Navigate to="/groups" replace />} />
-            <Route path="/timetable" element={<TimetablePage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/groups" element={<GroupsPage />} />
-            <Route path="/groups/add" element={<AddGroupPage />} />
-            <Route path="/groups/:id" element={<GroupDetailsPage />} />
-            <Route path="/students" element={<StudentsPage />} />
-            <Route path="/students/add" element={<AddStudentPage />} />
-            <Route path="/students/:id" element={<StudentDetailsPage />} />
-            <Route path="/students/:id/payment" element={<StudentPaymentPage />} />
-            <Route path="/employees" element={<EmployeesPage />} />
-            <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
-            <Route path="/employees/types" element={<EmployeeTypesPage />} />
-            <Route path="/employees/add" element={<AddEmployeePage />} />
-            <Route path="/courses" element={<CoursesPage />} />
-            <Route path="/courses/add" element={<AddCoursePage />} />
-            <Route path="/rooms" element={<RoomsPage />} />
-            <Route path="/rooms/add" element={<AddRoomPage />} />
-            <Route path="*" element={<div className="text-zinc-400 dark:text-zinc-500">Page not found</div>} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

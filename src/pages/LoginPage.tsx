@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Languages } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEmployees } from '../lib/mockData.ts';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
-export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+export default function LoginPage() {
   const { t, i18n } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -12,6 +13,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [error, setError] = useState(false);
   const navigate = useNavigate();
   const { items: employees } = useEmployees();
+  const { login } = useAuth();
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -31,7 +33,12 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
 
     // Global admin check
     if (trimmedUsername.toLowerCase() === 'admin' && trimmedPassword === 'admin') {
-      onLogin();
+      login({
+        id: 'admin',
+        name: 'Umarbek Erkinboev',
+        role: 'Admin',
+        username: 'admin'
+      });
       navigate('/groups');
       return;
     }
@@ -43,7 +50,12 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
     );
     
     if (employee) {
-      onLogin();
+      login({
+        id: employee.id,
+        name: employee.name,
+        role: employee.employeeType || 'Employee',
+        username: employee.username || ''
+      });
       navigate('/groups');
       return;
     }

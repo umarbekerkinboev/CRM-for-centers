@@ -23,6 +23,7 @@ import {
 import { cn } from '../lib/utils.ts';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from './ThemeProvider.tsx';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 type MenuItem = {
   id: string;
@@ -35,6 +36,7 @@ type MenuItem = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -46,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = () => {
-    window.location.href = '/login';
+    logout();
   };
 
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
@@ -115,8 +117,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         { label: t('manage_rooms'), path: '/rooms' },
         { label: t('add_new_room'), path: '/rooms/add' }
       ]
-    },
+    }
   ];
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const userName = user?.name || 'Unknown User';
+  const userInitials = getInitials(userName);
+  const userRole = user?.role || t('employee');
 
   return (
     <div className="h-screen overflow-hidden bg-zinc-50 dark:bg-[#0a0a0a] text-zinc-900 dark:text-zinc-300 flex font-sans transition-colors duration-200">
@@ -212,12 +227,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-md bg-zinc-200 dark:bg-[#1a1a1a] flex items-center justify-center text-xs font-bold text-zinc-900 dark:text-zinc-100 shrink-0">
-                UE
+                {userInitials}
               </div>
               {isSidebarOpen && (
                 <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">Umarbek Erkinboev</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('admin')}</div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{userName}</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">{userRole}</div>
                 </div>
               )}
             </div>
@@ -232,11 +247,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}>
                 <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800/50 flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-md bg-zinc-100 dark:bg-[#1a1a1a] flex items-center justify-center text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                    UE
+                    {userInitials}
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Umarbek Erkinboev</div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('admin')}</div>
+                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{userName}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400">{userRole}</div>
                   </div>
                 </div>
                 

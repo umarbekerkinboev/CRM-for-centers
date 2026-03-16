@@ -50,20 +50,39 @@ export default function StudentsPage() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editItem) {
-      const currentCourses = editItem.courses ? editItem.courses.split(',').map(c => c.trim()) : [];
-      const currentGroups = editItem.group ? editItem.group.split(',').map(g => g.trim()) : [];
-      const currentPrices = editItem.price ? editItem.price.split(',').map(p => p.trim()) : [];
-      const currentRegistrations = editItem.registration ? editItem.registration.split(',').map(r => r.trim()) : [];
+      const currentCourses = editItem.courses ? editItem.courses.split(/,\s+/).map(c => c.trim()) : [];
+      const currentGroups = editItem.group ? editItem.group.split(/,\s+/).map(g => g.trim()) : [];
+      const currentPrices = editItem.price ? editItem.price.split(/,\s+/).map(p => p.trim()) : [];
+      const currentRegistrations = editItem.registration ? editItem.registration.split(/,\s+/).map(r => r.trim()) : [];
       
       const selectedGroup = allGroups.find(g => g.name === formData.group);
       const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || formData.course));
       const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
 
+      const oldGroup = currentGroups[0] || '';
+      const newGroup = formData.group;
+      let balanceChange = 0;
+
+      if (oldGroup !== newGroup) {
+        if (oldGroup) {
+          const oldGroupObj = allGroups.find(g => g.name === oldGroup);
+          const oldCourseObj = allCourses.find(c => c.name === oldGroupObj?.courses);
+          const oldPrice = oldCourseObj ? parseInt(oldCourseObj.price.replace(/[^0-9]/g, ''), 10) : 0;
+          balanceChange += oldPrice;
+        }
+        if (newGroup) {
+          const newPrice = selectedCourse ? parseInt(selectedCourse.price.replace(/[^0-9]/g, ''), 10) : 0;
+          balanceChange -= newPrice;
+        }
+      }
+
       if (currentCourses.length > 0) {
-        currentCourses[0] = formData.course;
-        currentGroups[0] = formData.group;
-        currentPrices[0] = coursePriceStr;
-        currentRegistrations[0] = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : '';
+        if (currentCourses[0] !== formData.course || currentGroups[0] !== formData.group) {
+          currentCourses[0] = formData.course;
+          currentGroups[0] = formData.group;
+          currentPrices[0] = coursePriceStr;
+        }
+        currentRegistrations[0] = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
       } else if (formData.course) {
         currentCourses.push(formData.course);
         currentGroups.push(formData.group);
@@ -83,7 +102,8 @@ export default function StudentsPage() {
         courses: currentCourses.join(', '),
         group: currentGroups.join(', '),
         price: currentPrices.join(', '),
-        registration: currentRegistrations.join(', ')
+        registration: currentRegistrations.join(', '),
+        balance: editItem.balance + balanceChange
       });
       setEditItem(null);
     }
@@ -99,9 +119,9 @@ export default function StudentsPage() {
       gender: item.gender || 'Male', 
       dob: item.dob || '', 
       address: item.address || '',
-      course: item.courses ? item.courses.split(',')[0].trim() : '',
-      group: item.group ? item.group.split(',')[0].trim() : '',
-      courseRegistrationDate: item.registration ? item.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
+      course: item.courses ? item.courses.split(/,\s+/)[0].trim() : '',
+      group: item.group ? item.group.split(/,\s+/)[0].trim() : '',
+      courseRegistrationDate: item.registration ? item.registration.split(/,\s+/)[0].trim().split('-').reverse().join('-') : ''
     });
     setEditItem(item);
     setActiveMenu(null);

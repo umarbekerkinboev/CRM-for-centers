@@ -231,25 +231,60 @@ const initialMockEmployeeTypes: EmployeeType[] = [
 
 export const useEmployeeTypes = createUseEntityHook<EmployeeType>('mock_employee_types', initialMockEmployeeTypes);
 
-let monthlyChargesProcessed = false;
-
 const useStudentsBase = createUseEntityHook<Student>('mock_students', initialMockStudents);
 export function useStudents() {
   const { items, setItems, addItem, updateItem, deleteItem } = useStudentsBase();
   
   useEffect(() => {
-    if (monthlyChargesProcessed || items.length === 0) return;
-    monthlyChargesProcessed = true;
+    if (items.length === 0) return;
     
     let updated = false;
     const newItems = items.map(student => {
-      if (!student.lastChargedDate) return student;
-      
-      const lastChargedDates = student.lastChargedDate.split(',').map(d => d.trim());
-      const registrationDates = student.registration ? student.registration.split(',').map(d => d.trim()) : [];
-      const prices = student.price ? student.price.split(',').map(p => p.trim()) : [];
-      
       let studentUpdated = false;
+      let updatedStudent = { ...student };
+      
+      // Data cleanup for malformed arrays (caused by previous split bug)
+      const currentGroups = updatedStudent.group ? updatedStudent.group.split(/,\s+/).map(g => g.trim()) : [];
+      const currentCourses = updatedStudent.courses ? updatedStudent.courses.split(/,\s+/).map(c => c.trim()) : [];
+      let currentPrices = updatedStudent.price ? updatedStudent.price.split(/,\s+/).map(p => p.trim()) : [];
+      const currentRegistrations = updatedStudent.registration ? updatedStudent.registration.split(/,\s+/).map(r => r.trim()) : [];
+      const currentLastCharged = updatedStudent.lastChargedDate ? updatedStudent.lastChargedDate.split(/,\s+/).map(d => d.trim()) : [];
+
+      // Fix malformed prices like "000 UZS"
+      let pricesChanged = false;
+      currentPrices = currentPrices.map(p => {
+        if (p === '000 UZS' || p === '0 UZS' || p === '000') {
+          pricesChanged = true;
+          // Find a valid price to use as fallback
+          const validPrice = currentPrices.find(price => price !== '000 UZS' && price !== '0 UZS' && price !== '000');
+          return validPrice || '0 UZS';
+        }
+        return p;
+      });
+
+      // Remove empty groups and their corresponding parallel data
+      if (currentGroups.some(g => g === '') || pricesChanged) {
+        const validIndices = currentGroups.map((g, i) => g !== '' ? i : -1).filter(i => i !== -1);
+        
+        if (validIndices.length > 0 && validIndices.length < currentGroups.length) {
+          updatedStudent.group = validIndices.map(i => currentGroups[i] || '').join(', ');
+          updatedStudent.courses = validIndices.map(i => currentCourses[i] || currentCourses[0] || '').join(', ');
+          updatedStudent.price = validIndices.map(i => currentPrices[i] || currentPrices[0] || '0 UZS').join(', ');
+          updatedStudent.registration = validIndices.map(i => currentRegistrations[i] || currentRegistrations[0] || '').join(', ');
+          updatedStudent.lastChargedDate = validIndices.map(i => currentLastCharged[i] || currentLastCharged[0] || '').join(', ');
+          studentUpdated = true;
+        } else if (pricesChanged) {
+          updatedStudent.price = currentPrices.join(', ');
+          studentUpdated = true;
+        }
+      }
+
+      if (!updatedStudent.lastChargedDate) return studentUpdated ? updatedStudent : student;
+      
+      const lastChargedDates = updatedStudent.lastChargedDate.split(/,\s+/).map(d => d.trim());
+      const registrationDates = updatedStudent.registration ? updatedStudent.registration.split(/,\s+/).map(d => d.trim()) : [];
+      const prices = updatedStudent.price ? updatedStudent.price.split(/,\s+/).map(p => p.trim()) : [];
+      
       let totalDeduction = 0;
       const newLastChargedDates = [...lastChargedDates];
       
@@ -292,8 +327,8 @@ export function useStudents() {
       if (studentUpdated) {
         updated = true;
         return {
-          ...student,
-          balance: student.balance - totalDeduction,
+          ...updatedStudent,
+          balance: updatedStudent.balance - totalDeduction,
           lastChargedDate: newLastChargedDates.join(', ')
         };
       }

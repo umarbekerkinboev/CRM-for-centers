@@ -81,7 +81,6 @@ export default function AnalyticsPage() {
               <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{stat.label}</div>
               <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-baseline gap-2">
                 {stat.value}
-                <span className="text-xs font-medium text-emerald-500">{stat.trend}</span>
               </div>
             </div>
           </motion.div>
@@ -225,7 +224,7 @@ export default function AnalyticsPage() {
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
                   {courses.map(course => {
                     const courseStudents = students.filter(s => s.courses.includes(course.name));
-                    const priceNum = parseInt(course.price.replace(/\D/g, '')) || 0;
+                    const priceNum = parseFloat(course.price.replace(/[^\d.]/g, '')) || 0;
                     const estimatedRevenue = courseStudents.length * priceNum;
                     return (
                       <tr key={course.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30">
@@ -243,7 +242,7 @@ export default function AnalyticsPage() {
                     <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400">
                       {courses.reduce((acc, course) => {
                         const courseStudents = students.filter(s => s.courses.includes(course.name));
-                        const priceNum = parseInt(course.price.replace(/\D/g, '')) || 0;
+                        const priceNum = parseFloat(course.price.replace(/[^\d.]/g, '')) || 0;
                         return acc + (courseStudents.length * priceNum);
                       }, 0).toLocaleString()} UZS
                     </td>

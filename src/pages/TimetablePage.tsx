@@ -391,8 +391,8 @@ export default function TimetablePage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
-        <div className="min-w-[1400px] relative">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
+        <div className="min-w-[1400px] relative pb-32">
           {/* Background grid lines */}
           <div className="absolute top-[53px] bottom-0 left-24 right-0 flex pointer-events-none">
             {timeSlots.map(time => (

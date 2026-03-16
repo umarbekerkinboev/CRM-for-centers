@@ -100,7 +100,7 @@ export default function GroupDetailsPage() {
       gender: item.gender || 'Male', 
       dob: item.dob || '', 
       address: item.address || '',
-      courseName: item.courses ? item.courses.split(',')[0].trim() : '',
+      courseName: item.courses ? item.courses.split(/,\s+/)[0].trim() : '',
       courseRegistrationDate: item.registration ? item.registration.split('-').reverse().join('-') : ''
     });
     setStudentToEdit(item);
@@ -157,7 +157,11 @@ export default function GroupDetailsPage() {
     
     const groupCourse = courses.find(c => c.name === group.courses);
     const groupCoursePrice = groupCourse ? groupCourse.price : '350,000 UZS';
-    const coursePriceToUse = formData.coursePrice || groupCoursePrice;
+    let coursePriceToUse = groupCoursePrice;
+    if (formData.coursePrice) {
+      const num = parseInt(formData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
+      coursePriceToUse = `${num.toLocaleString()} UZS`;
+    }
     const initialBalance = -parseInt(coursePriceToUse.replace(/[^0-9]/g, ''), 10) || 0;
 
     if (addTab === 'new') {
@@ -179,11 +183,11 @@ export default function GroupDetailsPage() {
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
       selectedStudents.forEach(s => {
-        const currentGroups = s.group ? s.group.split(',').map(g => g.trim()) : [];
-        const currentCourses = s.courses ? s.courses.split(',').map(c => c.trim()) : [];
-        const currentPrices = s.price ? s.price.split(',').map(p => p.trim()) : [];
-        const currentRegistrations = s.registration ? s.registration.split(',').map(r => r.trim()) : [];
-        const currentLastCharged = s.lastChargedDate ? s.lastChargedDate.split(',').map(d => d.trim()) : [];
+        const currentGroups = s.group ? s.group.split(/,\s+/).map(g => g.trim()) : [];
+        const currentCourses = s.courses ? s.courses.split(/,\s+/).map(c => c.trim()) : [];
+        const currentPrices = s.price ? s.price.split(/,\s+/).map(p => p.trim()) : [];
+        const currentRegistrations = s.registration ? s.registration.split(/,\s+/).map(r => r.trim()) : [];
+        const currentLastCharged = s.lastChargedDate ? s.lastChargedDate.split(/,\s+/).map(d => d.trim()) : [];
 
         // Pad arrays to match currentCourses length to maintain parallel structure
         while (currentGroups.length < currentCourses.length) currentGroups.push('');
@@ -196,10 +200,19 @@ export default function GroupDetailsPage() {
         
         // Only proceed if student is not already in this specific group
         if (!currentGroups.includes(group.name)) {
+          let actualInitialBalance = initialBalance;
           if (courseIndex !== -1 && (!currentGroups[courseIndex] || currentGroups[courseIndex] === '')) {
             // Course exists but has no group, update it
             currentGroups[courseIndex] = group.name;
-            currentPrices[courseIndex] = coursePriceToUse;
+            
+            // Use existing price if no new price is provided
+            if (!formData.coursePrice && currentPrices[courseIndex] && currentPrices[courseIndex] !== '0 UZS') {
+              const existingPrice = parseInt(currentPrices[courseIndex].replace(/[^0-9]/g, ''), 10) || 0;
+              actualInitialBalance = -existingPrice;
+            } else {
+              currentPrices[courseIndex] = coursePriceToUse;
+            }
+            
             if (formData.courseRegistrationDate) {
               const formattedDate = formData.courseRegistrationDate.split('-').reverse().join('-');
               currentRegistrations[courseIndex] = formattedDate;
@@ -219,7 +232,7 @@ export default function GroupDetailsPage() {
             ...s,
             group: currentGroups.join(', '),
             courses: currentCourses.join(', '),
-            balance: s.balance + initialBalance,
+            balance: s.balance + actualInitialBalance,
             price: currentPrices.join(', '),
             registration: currentRegistrations.join(', '),
             lastChargedDate: currentLastCharged.join(', ')
@@ -842,28 +855,30 @@ export default function GroupDetailsPage() {
           if (studentToDelete !== null) {
             const student = allStudents.find(s => s.id === studentToDelete);
             if (student && student.group) {
-              const currentGroups = student.group.split(',').map(g => g.trim());
-              const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
-              const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
-              const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
-              const currentLastCharged = student.lastChargedDate ? student.lastChargedDate.split(',').map(d => d.trim()) : [];
+              const currentGroups = student.group.split(/,\s+/).map(g => g.trim());
+              const currentCourses = student.courses ? student.courses.split(/,\s+/).map(c => c.trim()) : [];
+              const currentPrices = student.price ? student.price.split(/,\s+/).map(p => p.trim()) : [];
+              const currentRegistrations = student.registration ? student.registration.split(/,\s+/).map(r => r.trim()) : [];
+              const currentLastCharged = student.lastChargedDate ? student.lastChargedDate.split(/,\s+/).map(d => d.trim()) : [];
 
               const indexToRemove = currentGroups.indexOf(group.name);
               
               if (indexToRemove !== -1) {
-                // Remove the item at the specific index from all parallel arrays
-                currentGroups.splice(indexToRemove, 1);
-                if (currentCourses.length > indexToRemove) currentCourses.splice(indexToRemove, 1);
-                if (currentPrices.length > indexToRemove) currentPrices.splice(indexToRemove, 1);
-                if (currentRegistrations.length > indexToRemove) currentRegistrations.splice(indexToRemove, 1);
-                if (currentLastCharged.length > indexToRemove) currentLastCharged.splice(indexToRemove, 1);
+                // Get the price to refund before removing it
+                const removedPriceStr = currentPrices.length > indexToRemove ? currentPrices[indexToRemove] : '0 UZS';
+                const removedPrice = parseInt(removedPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+
+                // Remove the group but keep the course, price, etc. so they can be reused
+                currentGroups[indexToRemove] = '';
 
                 updateStudent(studentToDelete, { 
+                  ...student,
                   group: currentGroups.join(', '),
                   courses: currentCourses.join(', '),
                   price: currentPrices.join(', '),
                   registration: currentRegistrations.join(', '),
-                  lastChargedDate: currentLastCharged.join(', ')
+                  lastChargedDate: currentLastCharged.join(', '),
+                  balance: student.balance + removedPrice
                 });
               }
             }

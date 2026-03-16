@@ -6,8 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(value: string): string {
-  const digits = value.replace(/\D/g, '');
-  if (!digits) return '';
-  const formatted = parseInt(digits, 10).toLocaleString('en-US');
+  if (!value) return '';
+  // Remove all non-digit and non-period characters, except if we want to keep spaces?
+  // Better: remove spaces, commas, UZS, etc.
+  const cleanStr = value.replace(/[^\d.]/g, '');
+  if (!cleanStr) return value;
+  
+  const num = parseFloat(cleanStr);
+  if (isNaN(num)) return value;
+  
+  const formatted = num.toLocaleString('en-US');
   return `${formatted} UZS`;
 }

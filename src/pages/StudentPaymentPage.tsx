@@ -5,6 +5,7 @@ import { ChevronsUpDown, Plus, X, MoreVertical, Edit, Trash2 } from 'lucide-reac
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
 import { cn } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 export default function StudentPaymentPage() {
   const { id } = useParams();
@@ -24,10 +25,10 @@ export default function StudentPaymentPage() {
     registration: ''
   };
 
-  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
+  const courses = student.courses ? student.courses.split(/,\s+/).map((courseName, index) => {
     const courseNameTrimmed = courseName.trim();
     const course = allCourses.find(c => c.name === courseNameTrimmed);
-    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    const groupNames = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
     
     // Find the correct group for this course
     let groupName = 'N/A';
@@ -50,7 +51,7 @@ export default function StudentPaymentPage() {
         // Fallback to the index if it exists and we haven't found a match
         // But only if that group doesn't belong to another course we have!
         const fallbackGroup = allGroups.find(g => g.name === groupNames[index]);
-        const studentCourses = student.courses.split(',').map(c => c.trim());
+        const studentCourses = student.courses.split(/,\s+/).map(c => c.trim());
         if (fallbackGroup && studentCourses.includes(fallbackGroup.courses)) {
            // This group belongs to another course the student has, so don't use it here
            groupName = 'N/A';
@@ -62,8 +63,8 @@ export default function StudentPaymentPage() {
     
     const group = allGroups.find(g => g.name === groupName);
     
-    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
-    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(',')[groupIndex]?.trim() || student.lastChargedDate.split(',')[0]?.trim() || registration : registration;
+    const registration = student.registration ? student.registration.split(/,\s+/)[groupIndex]?.trim() || student.registration.split(/,\s+/)[0]?.trim() || 'N/A' : 'N/A';
+    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(/,\s+/)[groupIndex]?.trim() || student.lastChargedDate.split(/,\s+/)[0]?.trim() || registration : registration;
 
     let nextPayment = 'N/A';
     if (lastChargedDateStr !== 'N/A' && registration !== 'N/A') {
@@ -95,11 +96,11 @@ export default function StudentPaymentPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(/,\s+/)[groupIndex]?.trim() || student.price.split(/,\s+/)[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
       registration
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
+  }).filter(c => c.group !== 'N/A' || student.courses.split(/,\s+/).length === 1) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -108,6 +109,8 @@ export default function StudentPaymentPage() {
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const { user } = useAuth();
+  const currentUserString = `${user?.name} (${user?.role})`;
 
   useEffect(() => {
     if (isAddModalOpen || isEditModalOpen) {
@@ -126,7 +129,7 @@ export default function StudentPaymentPage() {
     type: '',
     date: '',
     notes: '',
-    addedBy: 'Umarbek Erkinboev (Admin)'
+    addedBy: currentUserString
   });
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -140,12 +143,12 @@ export default function StudentPaymentPage() {
       
       const updatedPayment = {
         course: formData.course || 'Grammar',
-        amount: formData.amount + ' UZS',
+        amount: paymentAmount.toLocaleString() + ' UZS',
         type: formData.type || 'Cash',
         date: formData.date || new Date().toISOString().split('T')[0],
         notes: formData.notes,
         editedDate: new Date().toISOString().split('T')[0],
-        editedBy: formData.addedBy
+        editedBy: currentUserString
       };
       
       updatePayment(editPaymentId, updatedPayment);
@@ -163,11 +166,11 @@ export default function StudentPaymentPage() {
       const newPayment = {
         studentId: Number(id),
         course: formData.course || 'Grammar',
-        amount: formData.amount + ' UZS',
+        amount: paymentAmount.toLocaleString() + ' UZS',
         type: formData.type || 'Cash',
         date: formData.date || new Date().toISOString().split('T')[0],
         notes: formData.notes,
-        addedBy: formData.addedBy,
+        addedBy: currentUserString,
         editedDate: '',
         editedBy: ''
       };
@@ -185,7 +188,7 @@ export default function StudentPaymentPage() {
       setIsAddModalOpen(false);
     }
     
-    setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: 'Umarbek Erkinboev (Admin)' });
+    setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: currentUserString });
   };
 
   const handleEditPayment = (payment: any) => {
@@ -343,7 +346,7 @@ export default function StudentPaymentPage() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setEditPaymentId(null);
-                setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: 'Umarbek Erkinboev (Admin)' });
+                setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: currentUserString });
               }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
@@ -409,15 +412,12 @@ export default function StudentPaymentPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('added_by')}</label>
-                <select 
+                <input 
+                  type="text"
                   value={formData.addedBy}
-                  onChange={e => setFormData({...formData, addedBy: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                >
-                  <option value="Umarbek Erkinboev (Admin)">Umarbek Erkinboev (Admin)</option>
-                  <option value="Eldor Bohramov (Admin)">Eldor Bohramov (Admin)</option>
-                  <option value="Admin">Admin</option>
-                </select>
+                  disabled
+                  className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+                />
               </div>
 
               <div className="space-y-2">

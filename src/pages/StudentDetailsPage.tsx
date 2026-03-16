@@ -5,6 +5,7 @@ import { ChevronsUpDown, X, DollarSign, Edit, Trash2, MoreVertical } from 'lucid
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
 import { cn } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 export default function StudentDetailsPage() {
   const { id } = useParams();
@@ -30,10 +31,10 @@ export default function StudentDetailsPage() {
     registration: ''
   };
 
-  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
+  const courses = student.courses ? student.courses.split(/,\s+/).map((courseName, index) => {
     const courseNameTrimmed = courseName.trim();
     const course = allCourses.find(c => c.name === courseNameTrimmed);
-    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    const groupNames = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
     
     // Find the correct group for this course
     let groupName = 'N/A';
@@ -56,7 +57,7 @@ export default function StudentDetailsPage() {
         // Fallback to the index if it exists and we haven't found a match
         // But only if that group doesn't belong to another course we have!
         const fallbackGroup = allGroups.find(g => g.name === groupNames[index]);
-        const studentCourses = student.courses.split(',').map(c => c.trim());
+        const studentCourses = student.courses.split(/,\s+/).map(c => c.trim());
         if (fallbackGroup && studentCourses.includes(fallbackGroup.courses)) {
            // This group belongs to another course the student has, so don't use it here
            groupName = 'N/A';
@@ -68,8 +69,8 @@ export default function StudentDetailsPage() {
     
     const group = allGroups.find(g => g.name === groupName);
     
-    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
-    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(',')[groupIndex]?.trim() || student.lastChargedDate.split(',')[0]?.trim() || registration : registration;
+    const registration = student.registration ? student.registration.split(/,\s+/)[groupIndex]?.trim() || student.registration.split(/,\s+/)[0]?.trim() || 'N/A' : 'N/A';
+    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(/,\s+/)[groupIndex]?.trim() || student.lastChargedDate.split(/,\s+/)[0]?.trim() || registration : registration;
 
     let nextPayment = 'N/A';
     if (lastChargedDateStr !== 'N/A') {
@@ -87,30 +88,35 @@ export default function StudentDetailsPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(/,\s+/)[groupIndex]?.trim() || student.price.split(/,\s+/)[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
       registration
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
+  }).filter(c => c.group !== 'N/A' || student.courses.split(/,\s+/).length === 1) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editPaymentId, setEditPaymentId] = useState<number | null>(null);
   const [isEditPaymentModalOpen, setIsEditPaymentModalOpen] = useState(false);
+  const { user } = useAuth();
+  const currentUserString = `${user?.name} (${user?.role})`;
+
   const [editPaymentData, setEditPaymentData] = useState({
     course: '',
     amount: '0',
     type: '',
     date: '',
     notes: '',
-    addedBy: 'Umarbek Erkinboev (Admin)'
+    addedBy: currentUserString
   });
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
+  const [isEditBalanceModalOpen, setIsEditBalanceModalOpen] = useState(false);
+  const [editBalanceAmount, setEditBalanceAmount] = useState('');
 
   useEffect(() => {
     if (isEditModalOpen || isEditPaymentModalOpen) {
@@ -167,12 +173,12 @@ export default function StudentDetailsPage() {
       
       const updatedPayment = {
         course: editPaymentData.course || 'Grammar',
-        amount: editPaymentData.amount + ' UZS',
+        amount: paymentAmount.toLocaleString() + ' UZS',
         type: editPaymentData.type || 'Cash',
         date: editPaymentData.date || new Date().toISOString().split('T')[0],
         notes: editPaymentData.notes,
         editedDate: new Date().toISOString().split('T')[0],
-        editedBy: editPaymentData.addedBy
+        editedBy: currentUserString
       };
       
       updatePayment(editPaymentId, updatedPayment);
@@ -197,28 +203,56 @@ export default function StudentDetailsPage() {
     gender: student.gender, 
     dob: student.dob, 
     address: student.address,
-    course: student.courses ? student.courses.split(',')[0].trim() : '',
-    group: student.group ? student.group.split(',')[0].trim() : '',
-    courseRegistrationDate: student.registration ? student.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
+    course: student.courses ? student.courses.split(/,\s+/)[0].trim() : '',
+    group: student.group ? student.group.split(/,\s+/)[0].trim() : '',
+    courseRegistrationDate: student.registration ? student.registration.split(/,\s+/)[0].trim().split('-').reverse().join('-') : ''
   });
+
+  const handleEditBalanceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newBalance = parseInt(editBalanceAmount.replace(/[^0-9-]/g, ''), 10);
+    if (!isNaN(newBalance)) {
+      updateStudent(student.id, { ...student, balance: newBalance });
+      setIsEditBalanceModalOpen(false);
+    }
+  };
 
   const handleEditStudent = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
-    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
-    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
-    const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
+    const currentCourses = student.courses ? student.courses.split(/,\s+/).map(c => c.trim()) : [];
+    const currentGroups = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
+    const currentPrices = student.price ? student.price.split(/,\s+/).map(p => p.trim()) : [];
+    const currentRegistrations = student.registration ? student.registration.split(/,\s+/).map(r => r.trim()) : [];
     
     const selectedGroup = allGroups.find(g => g.name === editFormData.group);
     const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || editFormData.course));
     const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
 
+    const oldGroup = currentGroups[0] || '';
+    const newGroup = editFormData.group;
+    let balanceChange = 0;
+
+    if (oldGroup !== newGroup) {
+      if (oldGroup) {
+        const oldGroupObj = allGroups.find(g => g.name === oldGroup);
+        const oldCourseObj = allCourses.find(c => c.name === oldGroupObj?.courses);
+        const oldPrice = oldCourseObj ? parseInt(oldCourseObj.price.replace(/[^0-9]/g, ''), 10) : 0;
+        balanceChange += oldPrice;
+      }
+      if (newGroup) {
+        const newPrice = selectedCourse ? parseInt(selectedCourse.price.replace(/[^0-9]/g, ''), 10) : 0;
+        balanceChange -= newPrice;
+      }
+    }
+
     if (currentCourses.length > 0) {
-      currentCourses[0] = editFormData.course;
-      currentGroups[0] = editFormData.group;
-      currentPrices[0] = coursePriceStr;
-      currentRegistrations[0] = editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : '';
+      if (currentCourses[0] !== editFormData.course || currentGroups[0] !== editFormData.group) {
+        currentCourses[0] = editFormData.course;
+        currentGroups[0] = editFormData.group;
+        currentPrices[0] = coursePriceStr;
+      }
+      currentRegistrations[0] = editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
     } else if (editFormData.course) {
       currentCourses.push(editFormData.course);
       currentGroups.push(editFormData.group);
@@ -238,7 +272,8 @@ export default function StudentDetailsPage() {
       courses: currentCourses.join(', '),
       group: currentGroups.join(', '),
       registration: currentRegistrations.join(', '),
-      price: currentPrices.join(', ')
+      price: currentPrices.join(', '),
+      balance: student.balance + balanceChange
     });
     setIsEditModalOpen(false);
   };
@@ -266,7 +301,20 @@ export default function StudentDetailsPage() {
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('date_of_birth')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.dob}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('address_of_residence')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.address}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('course_registration_date')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.registration || 'N/A'}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> 
+              <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span>
+              <button 
+                onClick={() => {
+                  setEditBalanceAmount(student.balance.toLocaleString() + ' UZS');
+                  setIsEditBalanceModalOpen(true);
+                }} 
+                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                title={t('edit_balance', 'Edit Balance')}
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -486,6 +534,58 @@ export default function StudentDetailsPage() {
                 <input type="date" value={editFormData.courseRegistrationDate} onChange={e => setEditFormData({...editFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isEditBalanceModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{t('edit_balance', 'Edit Balance')}</h2>
+              <button onClick={() => setIsEditBalanceModalOpen(false)} className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditBalanceSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{t('balance')}</label>
+                <input
+                  type="text"
+                  value={editBalanceAmount}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9-]/g, '');
+                    if (value === '' || value === '-') {
+                      setEditBalanceAmount(value);
+                      return;
+                    }
+                    const num = parseInt(value, 10);
+                    if (!isNaN(num)) {
+                      setEditBalanceAmount(num.toLocaleString() + ' UZS');
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-zinc-100"
+                  required
+                />
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditBalanceModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                >
+                  {t('save')}
+                </button>
+              </div>
             </form>
           </div>
         </div>
