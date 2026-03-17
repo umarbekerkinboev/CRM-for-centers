@@ -166,6 +166,7 @@ export default function AddEmployeePage() {
               <input 
                 type="date" 
                 required
+                max={new Date().toISOString().split('T')[0]}
                 value={formData.dob}
                 onChange={e => setFormData({...formData, dob: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
@@ -242,6 +243,7 @@ export default function AddEmployeePage() {
             <input 
               type="date" 
               required
+              max={new Date().toISOString().split('T')[0]}
               value={formData.joined}
               onChange={e => setFormData({...formData, joined: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"

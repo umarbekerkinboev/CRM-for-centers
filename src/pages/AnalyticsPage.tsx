@@ -4,6 +4,7 @@ import { Users, GraduationCap, Contact2, BookOpen, TrendingUp, DollarSign } from
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useGroups, useStudents, useEmployees, useCourses } from '../lib/mockData.ts';
+import { displayPrice } from '../lib/utils.ts';
 import { Modal } from '../components/Modal.tsx';
 
 export default function AnalyticsPage() {
@@ -92,7 +93,7 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
         >
           <div className="mb-6">
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_groups')}</h2>
@@ -134,7 +135,7 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/50 rounded-xl p-6"
         >
           <div className="mb-6">
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_students')}</h2>
@@ -230,7 +231,7 @@ export default function AnalyticsPage() {
                       <tr key={course.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30">
                         <td className="px-6 py-4 font-medium text-zinc-900 dark:text-zinc-100">{course.name}</td>
                         <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{courseStudents.length}</td>
-                        <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.price}</td>
+                        <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                         <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">
                           {estimatedRevenue.toLocaleString()} UZS
                         </td>

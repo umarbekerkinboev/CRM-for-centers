@@ -176,7 +176,7 @@ export default function EmployeeDetailsPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('gender')}:</span>
-              <span className="text-zinc-600 dark:text-zinc-400">{employee.gender || '-'}</span>
+              <span className="text-zinc-600 dark:text-zinc-400 capitalize">{employee.gender || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('phone')}:</span>
@@ -205,7 +205,7 @@ export default function EmployeeDetailsPage() {
           {isActionsOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsActionsOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
                 <button 
                   onClick={openEditModal}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
@@ -279,7 +279,7 @@ export default function EmployeeDetailsPage() {
       {/* Edit Details Modal */}
       {editItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-xl bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setEditItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -387,7 +387,7 @@ export default function EmployeeDetailsPage() {
       {/* Edit Credentials Modal */}
       {credentialsItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
             <button 
               onClick={() => setCredentialsItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

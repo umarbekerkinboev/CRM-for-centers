@@ -64,18 +64,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center relative font-sans">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center relative font-sans">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <svg width="40" height="48" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 8V4H8V0H12V4H28V0H32V4H36V8H40V24C40 36 32 44 20 48C8 44 0 36 0 24V8H4ZM36 12H4V24C4 33.5 10.5 40 20 43.5C29.5 40 36 33.5 36 24V12Z" fill="white"/>
-            <path d="M12 16H16V32H12V16Z" fill="white"/>
-            <path d="M16 24L26 16H31L21 24L31 32H26L16 24Z" fill="white"/>
+          <svg width="40" height="48" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="fill-zinc-900 dark:fill-white">
+            <path d="M4 8V4H8V0H12V4H28V0H32V4H36V8H40V24C40 36 32 44 20 48C8 44 0 36 0 24V8H4ZM36 12H4V24C4 33.5 10.5 40 20 43.5C29.5 40 36 33.5 36 24V12Z" />
+            <path d="M12 16H16V32H12V16Z" />
+            <path d="M16 24L26 16H31L21 24L31 32H26L16 24Z" />
           </svg>
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-white leading-none tracking-wide">KINGSTON</span>
-            <span className="text-sm text-white font-light tracking-wide mt-1">learning center</span>
+            <span className="text-2xl font-bold text-zinc-900 dark:text-white leading-none tracking-wide">KINGSTON</span>
+            <span className="text-sm text-zinc-600 dark:text-white font-light tracking-wide mt-1">learning center</span>
           </div>
         </div>
         

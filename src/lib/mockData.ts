@@ -12,6 +12,7 @@ export type Student = {
   dob: string;
   address: string;
   balance: number;
+  groupBalances?: { [groupName: string]: number };
   price: string;
   registration: string;
   lastChargedDate?: string;
@@ -71,61 +72,79 @@ export type Payment = {
   editedBy: string;
 };
 
-const initialMockStudents: Student[] = [
-  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: 'General English', group: 'Grammar | E-15:30-Quvonchoy', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '94...', dob: '12-05-2005', address: 'Urganch', balance: 0, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
-  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: 'Matematika\nCEFR', group: 'Matematika | O-14:00-Aziza', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '95...', dob: '12-02-2007', address: 'Yangibozor', balance: -350000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
-  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '97...', dob: '12-05-2005', address: 'Urganch', balance: 100000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
-  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: 'Pre-IELTS', group: 'IELTS | E-15:30-Akmal', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '95...', dob: '12-05-2005', address: 'Urganch', balance: -700000, price: '350,000 UZS', registration: '13-09-2025', lastChargedDate: '13-09-2025' },
-];
+const initialMockStudents: Student[] = [];
 
-const initialMockGroups: Group[] = [
-  { id: 1, name: 'Pre-IELTS | O-10:00-Akmal', students: 15, teachers: 'Akmalbek Xandurdiyev', courses: 'Pre-IELTS', rooms: 'Room A', days: ['odd'], startTime: '10:00', endTime: '11:30' },
-  { id: 2, name: 'Grammar | O-14:00-Suhrob', students: 12, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room A', days: ['odd'], startTime: '15:00', endTime: '16:30' },
-  { id: 3, name: 'CEFR | O-15:30-Suhrob', students: 10, teachers: 'Suhrob Shuhratov', courses: 'CEFR', rooms: 'Room A', days: ['odd'], startTime: '16:30', endTime: '18:00' },
-  { id: 4, name: 'Pre-IELTS | O-15:30-Akmal', students: 14, teachers: 'Akmalbek Xandurdiyev', courses: 'Pre-IELTS', rooms: 'Room B', days: ['odd'], startTime: '16:30', endTime: '18:00' },
-  { id: 5, name: 'KIDS | E-10:00-Husniya', students: 8, teachers: 'Husniya Botirova', courses: 'KIDS', rooms: 'Room A', days: ['even'], startTime: '10:30', endTime: '12:00' },
-  { id: 6, name: 'Grammar | E-14:00-Husniya', students: 14, teachers: 'Husniya Botirova', courses: 'Grammar', rooms: 'Room A', days: ['even'], startTime: '14:30', endTime: '16:00' },
-  { id: 7, name: 'IELTS | E-15:30-Akmal', students: 19, teachers: 'Akmalbek Xandurdiyev', courses: 'IELTS', rooms: 'Room A', days: ['even'], startTime: '16:00', endTime: '18:00' },
-  { id: 8, name: 'Beginner | E-14:00-Sharifa', students: 11, teachers: 'Sharifa Madrahimova', courses: 'Beginner', rooms: 'Room B', days: ['even'], startTime: '14:30', endTime: '16:00' },
-  { id: 9, name: 'KIDS | E-15:30-Husniya', students: 9, teachers: 'Husniya Botirova', courses: 'KIDS', rooms: 'Room B', days: ['even'], startTime: '16:00', endTime: '17:30' },
-  { id: 10, name: 'Grammar | E-14:00-Suhrob', students: 13, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room C', days: ['even'], startTime: '14:30', endTime: '16:00' },
-  { id: 11, name: 'Grammar | E-15:30-Suhrob', students: 12, teachers: 'Suhrob Shuhratov', courses: 'Grammar', rooms: 'Room C', days: ['even'], startTime: '16:00', endTime: '17:30' },
-  { id: 12, name: 'Grammar | E-14:00-Quvonchoy', students: 14, teachers: 'Quvonchoy Razzakova', courses: 'Grammar', rooms: 'Room D', days: ['even'], startTime: '14:30', endTime: '16:00' },
-  { id: 13, name: 'Grammar | E-15:30-Quvonchoy', students: 14, teachers: 'Quvonchoy Razzakova', courses: 'Grammar', rooms: 'Room D', days: ['even'], startTime: '16:00', endTime: '17:30' },
-  { id: 14, name: 'Beginner | O-10:30-Sharifa', students: 10, teachers: 'Sharifa Madrahimova', courses: 'Beginner', rooms: 'Room D', days: ['even'], startTime: '10:30', endTime: '12:00' },
-  { id: 15, name: 'Matematika | O-14:00-Aziza', students: 13, teachers: 'Aziza Ro\'zmatova', courses: 'Matematika', rooms: 'Room C', days: ['odd'], startTime: '14:00', endTime: '15:30' },
-  { id: 16, name: 'Grammar | O-10:00-Umar (finished)', students: 2, teachers: 'Khakimbek Erkinboev', courses: 'Grammar', rooms: '-', days: [], startTime: '', endTime: '' },
-];
+const initialMockGroups: Group[] = [];
 
-const initialMockEmployees: Employee[] = [
-  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'IELTS 7.5', gender: 'Male', exp: 1, dob: '11-12-2005', joined: '01-09-2023', username: 'suhrob', password: '123', employeeType: 'English Teacher' },
-  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '03-10-2000', joined: '11-09-2023', username: 'khakimbek', password: '123', employeeType: 'English Teacher' },
-  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '26-06-1995', joined: '01-09-2023', username: 'gulnur', password: '123', employeeType: 'English Teacher' },
-  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '21-12-2005', joined: '25-09-2023', username: 'quvonchoy', password: '123', employeeType: 'English Teacher' },
-  { id: 5, name: 'Aziza Ro\'zmatova', phone: '991234567', qualification: 'Math Degree', gender: 'Female', exp: 3, dob: '15-05-1998', joined: '01-09-2023', username: 'aziza', password: '123', employeeType: 'Math Teacher' },
-];
+const initialMockEmployees: Employee[] = [];
 
-const initialMockCourses: Course[] = [
-  { id: 1, name: 'IELTS', price: '550,000 UZS', reference: '' },
-  { id: 2, name: 'Grammar', price: '450,000 UZS', reference: 'https://t.me/c/2121869342/8' },
-  { id: 3, name: 'Matematika', price: '450,000 UZS', reference: '' },
-  { id: 4, name: 'KID\'s English', price: '400,000 UZS', reference: '' },
-  { id: 5, name: 'Pre-IELTS', price: '450,000 UZS', reference: '' },
-  { id: 6, name: 'CEFR', price: '550,000 UZS', reference: 'https://t.me/c/2121869342/110' },
-  { id: 7, name: 'General English', price: '450,000 UZS', reference: '' },
-];
+const initialMockCourses: Course[] = [];
 
-const initialMockRooms: Room[] = [
-  { id: 1, name: 'Room D', size: 16 },
-  { id: 2, name: 'Room C', size: 16 },
-  { id: 3, name: 'Room A', size: 22 },
-  { id: 4, name: 'Room B', size: 16 },
-];
+const initialMockRooms: Room[] = [];
 
-const initialMockPayments: Payment[] = [
-  { id: 1, studentId: 1, course: 'Grammar', amount: '400,000 UZS', type: 'Cash', date: '11-11-2025', notes: 'Sep 22 - Oct 22', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '', editedBy: '' },
-  { id: 2, studentId: 2, course: 'Matematika', amount: '350,000 UZS', type: 'Card', date: '01-01-2026', notes: 'Monthly payment', addedBy: 'Umarbek Erkinboev (Admin)', editedDate: '01-02-2026', editedBy: 'Umarbek Erkinboev (Admin)' },
-];
+const initialMockPayments: Payment[] = [];
+
+// Migration to reset student details and payments
+const migrationKey = 'migration_reset_students_v2';
+if (!localStorage.getItem(migrationKey)) {
+  const storedStudents = localStorage.getItem('mock_students');
+  if (storedStudents) {
+    try {
+      const students = JSON.parse(storedStudents);
+      const resetStudents = students.map((s: any) => ({
+        ...s,
+        courses: '',
+        group: '',
+        balance: 0,
+        price: '',
+        registration: '',
+        lastChargedDate: ''
+      }));
+      localStorage.setItem('mock_students', JSON.stringify(resetStudents));
+    } catch (e) {}
+  }
+  
+  const storedGroups = localStorage.getItem('mock_groups');
+  if (storedGroups) {
+    try {
+      const groups = JSON.parse(storedGroups);
+      const resetGroups = groups.map((g: any) => ({
+        ...g,
+        students: 0
+      }));
+      localStorage.setItem('mock_groups', JSON.stringify(resetGroups));
+    } catch (e) {}
+  }
+
+  localStorage.setItem('mock_payments', JSON.stringify([]));
+  localStorage.setItem(migrationKey, 'true');
+}
+
+const migrationKeyV3 = 'migration_remove_commas_from_prices_v2';
+if (!localStorage.getItem(migrationKeyV3)) {
+  try {
+    const storedCourses = localStorage.getItem('mock_courses');
+    if (storedCourses) {
+      const courses = JSON.parse(storedCourses);
+      const updatedCourses = courses.map((c: any) => ({
+        ...c,
+        price: c.price ? c.price.replace(/(\d),(\d)/g, '$1$2') : c.price
+      }));
+      localStorage.setItem('mock_courses', JSON.stringify(updatedCourses));
+    }
+
+    const storedStudents = localStorage.getItem('mock_students');
+    if (storedStudents) {
+      const students = JSON.parse(storedStudents);
+      const updatedStudents = students.map((s: any) => ({
+        ...s,
+        price: s.price ? s.price.replace(/(\d),(\d)/g, '$1$2') : s.price
+      }));
+      localStorage.setItem('mock_students', JSON.stringify(updatedStudents));
+    }
+  } catch (e) {}
+  localStorage.setItem(migrationKeyV3, 'true');
+}
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {
   return function useEntity() {
@@ -157,6 +176,18 @@ function createUseEntityHook<T extends { id: number }>(key: string, initialData:
       return () => window.removeEventListener(`${key}_updated`, handleStorageChange);
     }, []);
 
+    const getItems = (): T[] => {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          return initialData;
+        }
+      }
+      return initialData;
+    };
+
     const setItems = (newItems: T[]) => {
       setItemsState(newItems);
       localStorage.setItem(key, JSON.stringify(newItems));
@@ -164,23 +195,26 @@ function createUseEntityHook<T extends { id: number }>(key: string, initialData:
     };
 
     const addItem = (item: Omit<T, 'id'>) => {
+      const currentItems = getItems();
       const newItem = {
         ...item,
-        id: Math.max(0, ...items.map(i => i.id)) + 1,
+        id: Math.max(0, ...currentItems.map(i => i.id)) + 1,
       } as T;
-      setItems([...items, newItem]);
+      setItems([...currentItems, newItem]);
       return newItem;
     };
 
     const updateItem = (id: number, data: Partial<T>) => {
-      setItems(items.map(i => i.id === id ? { ...i, ...data } : i));
+      const currentItems = getItems();
+      setItems(currentItems.map(i => i.id === id ? { ...i, ...data } : i));
     };
 
     const deleteItem = (id: number) => {
-      setItems(items.filter(i => i.id !== id));
+      const currentItems = getItems();
+      setItems(currentItems.filter(i => i.id !== id));
     };
 
-    return { items, setItems, addItem, updateItem, deleteItem };
+    return { items, setItems, addItem, updateItem, deleteItem, getItems };
   };
 }
 
@@ -188,7 +222,7 @@ const useGroupsBase = createUseEntityHook<Group>('mock_groups', initialMockGroup
 
 export function useGroups() {
   const { items, setItems, addItem, updateItem: baseUpdateItem, deleteItem } = useGroupsBase();
-  const { items: students, setItems: setStudents } = useStudentsBase();
+  const { items: students, setItems: setStudents, getItems: getStudents } = useStudentsBase();
 
   const updateItem = (id: number, data: Partial<Group>) => {
     const oldGroup = items.find(g => g.id === id);
@@ -196,7 +230,8 @@ export function useGroups() {
 
     if (oldGroup && data.name && oldGroup.name !== data.name) {
       // Update students' group name
-      const newStudents = students.map(s => {
+      const currentStudents = getStudents();
+      const newStudents = currentStudents.map(s => {
         if (!s.group) return s;
         const currentGroups = s.group.split(', ');
         if (currentGroups.includes(oldGroup.name)) {
@@ -234,114 +269,62 @@ export const useEmployeeTypes = createUseEntityHook<EmployeeType>('mock_employee
 const useStudentsBase = createUseEntityHook<Student>('mock_students', initialMockStudents);
 export function useStudents() {
   const { items, setItems, addItem, updateItem, deleteItem } = useStudentsBase();
+  const { items: payments } = usePayments();
   
-  useEffect(() => {
-    if (items.length === 0) return;
-    
-    let updated = false;
-    const newItems = items.map(student => {
-      let studentUpdated = false;
-      let updatedStudent = { ...student };
-      
-      // Data cleanup for malformed arrays (caused by previous split bug)
-      const currentGroups = updatedStudent.group ? updatedStudent.group.split(/,\s+/).map(g => g.trim()) : [];
-      const currentCourses = updatedStudent.courses ? updatedStudent.courses.split(/,\s+/).map(c => c.trim()) : [];
-      let currentPrices = updatedStudent.price ? updatedStudent.price.split(/,\s+/).map(p => p.trim()) : [];
-      const currentRegistrations = updatedStudent.registration ? updatedStudent.registration.split(/,\s+/).map(r => r.trim()) : [];
-      const currentLastCharged = updatedStudent.lastChargedDate ? updatedStudent.lastChargedDate.split(/,\s+/).map(d => d.trim()) : [];
+  const computedStudents = items.map(student => {
+    const studentPayments = payments.filter(p => p.studentId === student.id);
+    const totalPayments = studentPayments.reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
 
-      // Fix malformed prices like "000 UZS"
-      let pricesChanged = false;
-      currentPrices = currentPrices.map(p => {
-        if (p === '000 UZS' || p === '0 UZS' || p === '000') {
-          pricesChanged = true;
-          // Find a valid price to use as fallback
-          const validPrice = currentPrices.find(price => price !== '000 UZS' && price !== '0 UZS' && price !== '000');
-          return validPrice || '0 UZS';
-        }
-        return p;
-      });
+    let totalCharges = 0;
+    const registrationDates = student.registration ? student.registration.split(',').map(d => d.trim()) : [];
+    const prices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+    const courses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+    const groups = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    const groupBalances: { [groupName: string]: number } = {};
 
-      // Remove empty groups and their corresponding parallel data
-      if (currentGroups.some(g => g === '') || pricesChanged) {
-        const validIndices = currentGroups.map((g, i) => g !== '' ? i : -1).filter(i => i !== -1);
-        
-        if (validIndices.length > 0 && validIndices.length < currentGroups.length) {
-          updatedStudent.group = validIndices.map(i => currentGroups[i] || '').join(', ');
-          updatedStudent.courses = validIndices.map(i => currentCourses[i] || currentCourses[0] || '').join(', ');
-          updatedStudent.price = validIndices.map(i => currentPrices[i] || currentPrices[0] || '0 UZS').join(', ');
-          updatedStudent.registration = validIndices.map(i => currentRegistrations[i] || currentRegistrations[0] || '').join(', ');
-          updatedStudent.lastChargedDate = validIndices.map(i => currentLastCharged[i] || currentLastCharged[0] || '').join(', ');
-          studentUpdated = true;
-        } else if (pricesChanged) {
-          updatedStudent.price = currentPrices.join(', ');
-          studentUpdated = true;
-        }
-      }
-
-      if (!updatedStudent.lastChargedDate) return studentUpdated ? updatedStudent : student;
+    courses.forEach((course, index) => {
+      if (!course) return;
+      const groupName = groups[index];
+      const regStr = registrationDates[index] || registrationDates[0];
+      const priceStr = prices[index] || prices[0] || '0';
+      const price = parseInt(priceStr.replace(/[^0-9]/g, ''), 10) || 0;
       
-      const lastChargedDates = updatedStudent.lastChargedDate.split(/,\s+/).map(d => d.trim());
-      const registrationDates = updatedStudent.registration ? updatedStudent.registration.split(/,\s+/).map(d => d.trim()) : [];
-      const prices = updatedStudent.price ? updatedStudent.price.split(/,\s+/).map(p => p.trim()) : [];
-      
-      let totalDeduction = 0;
-      const newLastChargedDates = [...lastChargedDates];
-      
-      lastChargedDates.forEach((dateStr, index) => {
-        const parts = dateStr.split('-');
-        const regStr = registrationDates[index] || registrationDates[0] || dateStr;
-        const regParts = regStr.split('-');
-        
-        if (parts.length !== 3 || regParts.length !== 3) return;
-        
-        const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        const regDay = parseInt(regParts[0]);
-        const now = new Date();
-        
-        let monthsPassed = (now.getFullYear() - lastCharged.getFullYear()) * 12 + (now.getMonth() - lastCharged.getMonth());
-        if (now.getDate() < regDay) {
-          monthsPassed--;
-        }
-        
-        if (monthsPassed > 0) {
-          studentUpdated = true;
-          const priceStr = prices[index] || prices[0] || '0';
-          const price = parseInt(priceStr.replace(/[^0-9]/g, ''), 10) || 0;
+      let courseCharges = 0;
+      if (regStr) {
+        const parts = regStr.split('-');
+        if (parts.length === 3) {
+          const regDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          const now = new Date();
           
-          totalDeduction += price * monthsPassed;
-          
-          let newMonth = lastCharged.getMonth() + monthsPassed;
-          let newYear = lastCharged.getFullYear() + Math.floor(newMonth / 12);
-          newMonth = newMonth % 12;
-          
-          const newChargeDate = new Date(newYear, newMonth, regDay);
-          if (newChargeDate.getMonth() !== newMonth) {
-            newChargeDate.setDate(0); // Cap to last day of the month
+          let monthsPassed = (now.getFullYear() - regDate.getFullYear()) * 12 + (now.getMonth() - regDate.getMonth());
+          if (now.getDate() < regDate.getDate()) {
+            monthsPassed--;
           }
           
-          newLastChargedDates[index] = `${newChargeDate.getDate().toString().padStart(2, '0')}-${(newChargeDate.getMonth() + 1).toString().padStart(2, '0')}-${newChargeDate.getFullYear()}`;
+          const chargesCount = Math.max(0, monthsPassed + 1);
+          courseCharges = chargesCount * price;
+          totalCharges += courseCharges;
         }
-      });
-      
-      if (studentUpdated) {
-        updated = true;
-        return {
-          ...updatedStudent,
-          balance: updatedStudent.balance - totalDeduction,
-          lastChargedDate: newLastChargedDates.join(', ')
-        };
       }
-      return student;
+
+      if (groupName) {
+        const coursePayments = studentPayments
+          .filter(p => p.course === course)
+          .reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
+        
+        groupBalances[groupName] = coursePayments - courseCharges;
+      }
     });
-    
-    if (updated) {
-      setItems(newItems);
-    }
-  }, [items, setItems]);
+
+    return {
+      ...student,
+      balance: totalPayments - totalCharges,
+      groupBalances
+    };
+  });
 
   return {
-    students: items,
+    students: computedStudents,
     setStudents: setItems,
     addStudent: addItem,
     updateStudent: updateItem,

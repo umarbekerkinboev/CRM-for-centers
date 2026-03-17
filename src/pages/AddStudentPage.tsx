@@ -43,7 +43,7 @@ export default function AddStudentPage() {
       parentPhone: formData.parentPhone,
       dob: formData.dob,
       address: formData.address,
-      balance: initialBalance,
+      balance: 0,
       price: selectedGroup ? coursePriceStr : '',
       registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
       lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
@@ -131,6 +131,7 @@ export default function AddStudentPage() {
               <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
               <input 
                 type="date" 
+                max={new Date().toISOString().split('T')[0]}
                 value={formData.dob}
                 onChange={e => setFormData({...formData, dob: e.target.value})}
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
@@ -144,8 +145,8 @@ export default function AddStudentPage() {
                 className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
               >
                 <option value="">{t('select_gender')}</option>
-                <option value="male">{t('male')}</option>
-                <option value="female">{t('female')}</option>
+                <option value="Male">{t('male')}</option>
+                <option value="Female">{t('female')}</option>
               </select>
             </div>
           </div>
@@ -181,6 +182,7 @@ export default function AddStudentPage() {
             <input 
               type="date" 
               required
+              max={new Date().toISOString().split('T')[0]}
               value={formData.courseRegistrationDate}
               onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"

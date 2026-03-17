@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, X, DollarSign, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
-import { cn } from '../lib/utils.ts';
+import { cn, displayPrice } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 
@@ -31,10 +31,10 @@ export default function StudentDetailsPage() {
     registration: ''
   };
 
-  const courses = student.courses ? student.courses.split(/,\s+/).map((courseName, index) => {
+  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
     const courseNameTrimmed = courseName.trim();
     const course = allCourses.find(c => c.name === courseNameTrimmed);
-    const groupNames = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
+    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
     
     // Find the correct group for this course
     let groupName = 'N/A';
@@ -57,7 +57,7 @@ export default function StudentDetailsPage() {
         // Fallback to the index if it exists and we haven't found a match
         // But only if that group doesn't belong to another course we have!
         const fallbackGroup = allGroups.find(g => g.name === groupNames[index]);
-        const studentCourses = student.courses.split(/,\s+/).map(c => c.trim());
+        const studentCourses = student.courses.split(',').map(c => c.trim());
         if (fallbackGroup && studentCourses.includes(fallbackGroup.courses)) {
            // This group belongs to another course the student has, so don't use it here
            groupName = 'N/A';
@@ -69,16 +69,24 @@ export default function StudentDetailsPage() {
     
     const group = allGroups.find(g => g.name === groupName);
     
-    const registration = student.registration ? student.registration.split(/,\s+/)[groupIndex]?.trim() || student.registration.split(/,\s+/)[0]?.trim() || 'N/A' : 'N/A';
-    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(/,\s+/)[groupIndex]?.trim() || student.lastChargedDate.split(/,\s+/)[0]?.trim() || registration : registration;
+    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
 
     let nextPayment = 'N/A';
-    if (lastChargedDateStr !== 'N/A') {
-      const parts = lastChargedDateStr.split('-');
+    if (registration !== 'N/A') {
+      const parts = registration.split('-');
       if (parts.length === 3) {
-        const lastCharged = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        const nextDate = new Date(lastCharged);
-        nextDate.setMonth(nextDate.getMonth() + 1);
+        const regDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const now = new Date();
+        
+        let monthsPassed = (now.getFullYear() - regDate.getFullYear()) * 12 + (now.getMonth() - regDate.getMonth());
+        if (now.getDate() < regDate.getDate()) {
+          monthsPassed--;
+        }
+        
+        const chargesCount = Math.max(0, monthsPassed + 1);
+        
+        const nextDate = new Date(regDate);
+        nextDate.setMonth(nextDate.getMonth() + chargesCount);
         nextPayment = `${nextDate.getDate().toString().padStart(2, '0')}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}-${nextDate.getFullYear()}`;
       }
     }
@@ -88,11 +96,11 @@ export default function StudentDetailsPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(/,\s+/)[groupIndex]?.trim() || student.price.split(/,\s+/)[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
       registration
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(/,\s+/).length === 1) : [];
+  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -104,7 +112,7 @@ export default function StudentDetailsPage() {
 
   const [editPaymentData, setEditPaymentData] = useState({
     course: '',
-    amount: '0',
+    amount: '',
     type: '',
     date: '',
     notes: '',
@@ -113,13 +121,18 @@ export default function StudentDetailsPage() {
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
-  const [isEditBalanceModalOpen, setIsEditBalanceModalOpen] = useState(false);
-  const [editBalanceAmount, setEditBalanceAmount] = useState('');
+
+  const [addCourseData, setAddCourseData] = useState({
+    course: '',
+    group: '',
+    registrationDate: new Date().toISOString().split('T')[0]
+  });
 
   useEffect(() => {
-    if (isEditModalOpen || isEditPaymentModalOpen) {
+    if (isEditModalOpen || isEditPaymentModalOpen || isAddCourseModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -127,7 +140,35 @@ export default function StudentDetailsPage() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isEditModalOpen, isEditPaymentModalOpen]);
+  }, [isEditModalOpen, isEditPaymentModalOpen, isAddCourseModalOpen]);
+
+  const handleAddCourseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedGroup = allGroups.find(g => g.name === addCourseData.group);
+    const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || addCourseData.course));
+    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
+
+    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+    const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
+
+    currentCourses.push(addCourseData.course);
+    currentGroups.push(addCourseData.group);
+    currentPrices.push(coursePriceStr);
+    currentRegistrations.push(addCourseData.registrationDate ? addCourseData.registrationDate.split('-').reverse().join('-') : '');
+
+    updateStudent(Number(id), {
+      ...student,
+      courses: currentCourses.join(', '),
+      group: currentGroups.join(', '),
+      price: currentPrices.join(', '),
+      registration: currentRegistrations.join(', ')
+    });
+
+    setIsAddCourseModalOpen(false);
+    setAddCourseData({ course: '', group: '', registrationDate: new Date().toISOString().split('T')[0] });
+  };
 
   const handleEditPayment = (payment: any) => {
     setEditPaymentData({
@@ -150,14 +191,6 @@ export default function StudentDetailsPage() {
 
   const confirmDeletePayment = () => {
     if (itemToDelete !== null) {
-      const paymentToDelete = payments.find(p => p.id === itemToDelete);
-      if (paymentToDelete && student.id) {
-        const amount = parseInt(paymentToDelete.amount.replace(/[^0-9]/g, ''), 10) || 0;
-        updateStudent(student.id, {
-          ...student,
-          balance: student.balance - amount
-        });
-      }
       deletePayment(itemToDelete);
       setItemToDelete(null);
     }
@@ -183,12 +216,6 @@ export default function StudentDetailsPage() {
       
       updatePayment(editPaymentId, updatedPayment);
       
-      if (student.id) {
-        updateStudent(student.id, {
-          ...student,
-          balance: student.balance - oldAmount + paymentAmount
-        });
-      }
       setIsEditPaymentModalOpen(false);
       setEditPaymentId(null);
     }
@@ -203,48 +230,22 @@ export default function StudentDetailsPage() {
     gender: student.gender, 
     dob: student.dob, 
     address: student.address,
-    course: student.courses ? student.courses.split(/,\s+/)[0].trim() : '',
-    group: student.group ? student.group.split(/,\s+/)[0].trim() : '',
-    courseRegistrationDate: student.registration ? student.registration.split(/,\s+/)[0].trim().split('-').reverse().join('-') : ''
+    course: student.courses ? student.courses.split(',')[0].trim() : '',
+    group: student.group ? student.group.split(',')[0].trim() : '',
+    courseRegistrationDate: student.registration ? student.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
   });
-
-  const handleEditBalanceSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newBalance = parseInt(editBalanceAmount.replace(/[^0-9-]/g, ''), 10);
-    if (!isNaN(newBalance)) {
-      updateStudent(student.id, { ...student, balance: newBalance });
-      setIsEditBalanceModalOpen(false);
-    }
-  };
 
   const handleEditStudent = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentCourses = student.courses ? student.courses.split(/,\s+/).map(c => c.trim()) : [];
-    const currentGroups = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
-    const currentPrices = student.price ? student.price.split(/,\s+/).map(p => p.trim()) : [];
-    const currentRegistrations = student.registration ? student.registration.split(/,\s+/).map(r => r.trim()) : [];
+    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
+    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+    const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
     
     const selectedGroup = allGroups.find(g => g.name === editFormData.group);
     const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || editFormData.course));
     const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
-
-    const oldGroup = currentGroups[0] || '';
-    const newGroup = editFormData.group;
-    let balanceChange = 0;
-
-    if (oldGroup !== newGroup) {
-      if (oldGroup) {
-        const oldGroupObj = allGroups.find(g => g.name === oldGroup);
-        const oldCourseObj = allCourses.find(c => c.name === oldGroupObj?.courses);
-        const oldPrice = oldCourseObj ? parseInt(oldCourseObj.price.replace(/[^0-9]/g, ''), 10) : 0;
-        balanceChange += oldPrice;
-      }
-      if (newGroup) {
-        const newPrice = selectedCourse ? parseInt(selectedCourse.price.replace(/[^0-9]/g, ''), 10) : 0;
-        balanceChange -= newPrice;
-      }
-    }
 
     if (currentCourses.length > 0) {
       if (currentCourses[0] !== editFormData.course || currentGroups[0] !== editFormData.group) {
@@ -273,7 +274,7 @@ export default function StudentDetailsPage() {
       group: currentGroups.join(', '),
       registration: currentRegistrations.join(', '),
       price: currentPrices.join(', '),
-      balance: student.balance + balanceChange
+      balance: 0
     });
     setIsEditModalOpen(false);
   };
@@ -297,24 +298,10 @@ export default function StudentDetailsPage() {
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('phone')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.phone}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('parent_name')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.parent}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('parent_phone')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.parentPhone}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('gender')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.gender}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('gender')}:</span> <span className="text-zinc-900 dark:text-zinc-100 capitalize">{student.gender}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('date_of_birth')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.dob}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('address_of_residence')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.address}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('course_registration_date')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.registration || 'N/A'}</span></p>
-            <div className="flex items-center gap-2">
-              <span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> 
-              <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span>
-              <button 
-                onClick={() => {
-                  setEditBalanceAmount(student.balance.toLocaleString() + ' UZS');
-                  setIsEditBalanceModalOpen(true);
-                }} 
-                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                title={t('edit_balance', 'Edit Balance')}
-              >
-                <Edit className="w-4 h-4" />
-              </button>
-            </div>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -329,7 +316,7 @@ export default function StudentDetailsPage() {
           {isActionsMenuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsActionsMenuOpen(false)} />
-              <div className="absolute right-0 top-12 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+              <div className="absolute right-0 top-12 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50">
                 <Link 
                   to={`/students/${student.id}/payment`}
                   className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-2"
@@ -358,7 +345,15 @@ export default function StudentDetailsPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
+          <button 
+            onClick={() => setIsAddCourseModalOpen(true)}
+            className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors flex items-center gap-2"
+          >
+            {t('add_course')}
+          </button>
+        </div>
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
             <thead className="text-sm text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800/50">
@@ -379,7 +374,7 @@ export default function StudentDetailsPage() {
                   <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{course.name}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.group}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.teacher}</td>
-                  <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.price}</td>
+                  <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.nextPayment}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.registration}</td>
                 </tr>
@@ -430,7 +425,7 @@ export default function StudentDetailsPage() {
                     {activeMenu === payment.id && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                        <div className={cn("absolute right-8 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
+                        <div className={cn("absolute right-8 w-40 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= payments.length / 2 && payments.length > 1 ? "bottom-10" : "top-10")}>
                           <button onClick={(e) => { e.stopPropagation(); handleEditPayment(payment); }} className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-2">
                             <Edit className="w-4 h-4" />
                             {t('edit_details')}
@@ -451,7 +446,7 @@ export default function StudentDetailsPage() {
       </div>
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-8">
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative my-auto">
+          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative my-auto">
             <button 
               onClick={() => setIsEditModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"
@@ -465,24 +460,24 @@ export default function StudentDetailsPage() {
             <form className="space-y-4" onSubmit={handleEditStudent}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
-                <input required value={editFormData.firstName} onChange={e => setEditFormData({...editFormData, firstName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={editFormData.firstName} onChange={e => setEditFormData({...editFormData, firstName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
-                <input required value={editFormData.lastName} onChange={e => setEditFormData({...editFormData, lastName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={editFormData.lastName} onChange={e => setEditFormData({...editFormData, lastName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
-                <input type="text" value={t('student')} disabled className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
+                <input type="text" value={t('student')} disabled className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
-                  <input type="date" value={editFormData.dob} onChange={e => setEditFormData({...editFormData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                  <input type="date" max={new Date().toISOString().split('T')[0]} value={editFormData.dob} onChange={e => setEditFormData({...editFormData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
-                  <select value={editFormData.gender} onChange={e => setEditFormData({...editFormData, gender: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
+                  <select value={editFormData.gender} onChange={e => setEditFormData({...editFormData, gender: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
                     <option value="Male">{t('male')}</option>
                     <option value="Female">{t('female')}</option>
                   </select>
@@ -490,26 +485,26 @@ export default function StudentDetailsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
-                <input required maxLength={9} value={editFormData.phone} onChange={e => setEditFormData({...editFormData, phone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required maxLength={9} value={editFormData.phone} onChange={e => setEditFormData({...editFormData, phone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
-                <input value={editFormData.address} onChange={e => setEditFormData({...editFormData, address: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input value={editFormData.address} onChange={e => setEditFormData({...editFormData, address: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
-                <input value={editFormData.parentName} onChange={e => setEditFormData({...editFormData, parentName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input value={editFormData.parentName} onChange={e => setEditFormData({...editFormData, parentName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
-                <input maxLength={9} value={editFormData.parentPhone} onChange={e => setEditFormData({...editFormData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input maxLength={9} value={editFormData.parentPhone} onChange={e => setEditFormData({...editFormData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
                 <select 
                   value={editFormData.course}
                   onChange={e => setEditFormData({...editFormData, course: e.target.value, group: ''})}
-                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
                 >
                   <option value="">{t('select_course')}</option>
                   {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -520,7 +515,7 @@ export default function StudentDetailsPage() {
                 <select 
                   value={editFormData.group}
                   onChange={e => setEditFormData({...editFormData, group: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
                   disabled={!editFormData.course}
                 >
                   <option value="">{t('select_group')}</option>
@@ -531,7 +526,7 @@ export default function StudentDetailsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
-                <input type="date" value={editFormData.courseRegistrationDate} onChange={e => setEditFormData({...editFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                <input type="date" max={new Date().toISOString().split('T')[0]} value={editFormData.courseRegistrationDate} onChange={e => setEditFormData({...editFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>
@@ -539,61 +534,9 @@ export default function StudentDetailsPage() {
         </div>
       )}
 
-      {isEditBalanceModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{t('edit_balance', 'Edit Balance')}</h2>
-              <button onClick={() => setIsEditBalanceModalOpen(false)} className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleEditBalanceSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{t('balance')}</label>
-                <input
-                  type="text"
-                  value={editBalanceAmount}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9-]/g, '');
-                    if (value === '' || value === '-') {
-                      setEditBalanceAmount(value);
-                      return;
-                    }
-                    const num = parseInt(value, 10);
-                    if (!isNaN(num)) {
-                      setEditBalanceAmount(num.toLocaleString() + ' UZS');
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-zinc-100"
-                  required
-                />
-              </div>
-              
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsEditBalanceModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-                >
-                  {t('cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-                >
-                  {t('save')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {isEditPaymentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setIsEditPaymentModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"
@@ -610,7 +553,7 @@ export default function StudentDetailsPage() {
                 <select 
                   value={editPaymentData.course}
                   onChange={e => setEditPaymentData({...editPaymentData, course: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
                 >
                   <option value="">{t('select_course')}</option>
                   {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -623,7 +566,7 @@ export default function StudentDetailsPage() {
                   required
                   value={editPaymentData.amount}
                   onChange={e => setEditPaymentData({...editPaymentData, amount: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -632,7 +575,7 @@ export default function StudentDetailsPage() {
                   <select 
                     value={editPaymentData.type}
                     onChange={e => setEditPaymentData({...editPaymentData, type: e.target.value})}
-                    className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
                   >
                     <option value="Cash">{t('cash')}</option>
                     <option value="Card">{t('card')}</option>
@@ -643,9 +586,10 @@ export default function StudentDetailsPage() {
                   <input 
                     type="date" 
                     required
+                    max={new Date().toISOString().split('T')[0]}
                     value={editPaymentData.date}
                     onChange={e => setEditPaymentData({...editPaymentData, date: e.target.value})}
-                    className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -655,11 +599,69 @@ export default function StudentDetailsPage() {
                   type="text" 
                   value={editPaymentData.notes}
                   onChange={e => setEditPaymentData({...editPaymentData, notes: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   placeholder={t('payment_notes')}
                 />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save_changes')}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isAddCourseModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative">
+            <button 
+              onClick={() => setIsAddCourseModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_course')}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('assign_student_to_course')}</p>
+            </div>
+            <form className="space-y-4" onSubmit={handleAddCourseSubmit}>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+                <select 
+                  required
+                  value={addCourseData.course}
+                  onChange={e => setAddCourseData({...addCourseData, course: e.target.value, group: ''})}
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                >
+                  <option value="">{t('select_course')}</option>
+                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+                <select 
+                  required
+                  value={addCourseData.group}
+                  onChange={e => setAddCourseData({...addCourseData, group: e.target.value})}
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
+                  disabled={!addCourseData.course}
+                >
+                  <option value="">{t('select_group')}</option>
+                  {allGroups
+                    .filter(g => g.courses === addCourseData.course)
+                    .map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                <input 
+                  type="date" 
+                  required
+                  max={new Date().toISOString().split('T')[0]}
+                  value={addCourseData.registrationDate} 
+                  onChange={e => setAddCourseData({...addCourseData, registrationDate: e.target.value})} 
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" 
+                />
+              </div>
+              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('add_course')}</button>
             </form>
           </div>
         </div>

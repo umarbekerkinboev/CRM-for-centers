@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cn, formatPrice } from '../lib/utils.ts';
+import { cn, formatPrice, displayPrice } from '../lib/utils.ts';
 import { useCourses, Course } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
@@ -168,7 +168,7 @@ export default function CoursesPage() {
               <tr key={course.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors group">
                 <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{course.name}</td>}
-                {visibleColumns.price && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.price}</td>}
+                {visibleColumns.price && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>}
                 {visibleColumns.reference && (
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">
                     {course.reference ? (

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, Plus, X, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
-import { cn } from '../lib/utils.ts';
+import { cn, displayPrice } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 
@@ -25,10 +25,10 @@ export default function StudentPaymentPage() {
     registration: ''
   };
 
-  const courses = student.courses ? student.courses.split(/,\s+/).map((courseName, index) => {
+  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
     const courseNameTrimmed = courseName.trim();
     const course = allCourses.find(c => c.name === courseNameTrimmed);
-    const groupNames = student.group ? student.group.split(/,\s+/).map(g => g.trim()) : [];
+    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
     
     // Find the correct group for this course
     let groupName = 'N/A';
@@ -51,7 +51,7 @@ export default function StudentPaymentPage() {
         // Fallback to the index if it exists and we haven't found a match
         // But only if that group doesn't belong to another course we have!
         const fallbackGroup = allGroups.find(g => g.name === groupNames[index]);
-        const studentCourses = student.courses.split(/,\s+/).map(c => c.trim());
+        const studentCourses = student.courses.split(',').map(c => c.trim());
         if (fallbackGroup && studentCourses.includes(fallbackGroup.courses)) {
            // This group belongs to another course the student has, so don't use it here
            groupName = 'N/A';
@@ -63,30 +63,24 @@ export default function StudentPaymentPage() {
     
     const group = allGroups.find(g => g.name === groupName);
     
-    const registration = student.registration ? student.registration.split(/,\s+/)[groupIndex]?.trim() || student.registration.split(/,\s+/)[0]?.trim() || 'N/A' : 'N/A';
-    const lastChargedDateStr = student.lastChargedDate ? student.lastChargedDate.split(/,\s+/)[groupIndex]?.trim() || student.lastChargedDate.split(/,\s+/)[0]?.trim() || registration : registration;
+    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
 
     let nextPayment = 'N/A';
-    if (lastChargedDateStr !== 'N/A' && registration !== 'N/A') {
-      const lastParts = lastChargedDateStr.split('-');
-      const regParts = registration.split('-');
-      if (lastParts.length === 3 && regParts.length === 3) {
-        const regDay = parseInt(regParts[0]);
-        const lastMonth = parseInt(lastParts[1]) - 1;
-        const lastYear = parseInt(lastParts[2]);
+    if (registration !== 'N/A') {
+      const parts = registration.split('-');
+      if (parts.length === 3) {
+        const regDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const now = new Date();
         
-        let nextMonth = lastMonth + 1;
-        let nextYear = lastYear;
-        if (nextMonth > 11) {
-          nextMonth = 0;
-          nextYear++;
+        let monthsPassed = (now.getFullYear() - regDate.getFullYear()) * 12 + (now.getMonth() - regDate.getMonth());
+        if (now.getDate() < regDate.getDate()) {
+          monthsPassed--;
         }
         
-        const nextDate = new Date(nextYear, nextMonth, regDay);
-        if (nextDate.getMonth() !== nextMonth) {
-          nextDate.setDate(0);
-        }
+        const chargesCount = Math.max(0, monthsPassed + 1);
         
+        const nextDate = new Date(regDate);
+        nextDate.setMonth(nextDate.getMonth() + chargesCount);
         nextPayment = `${nextDate.getDate().toString().padStart(2, '0')}-${(nextDate.getMonth() + 1).toString().padStart(2, '0')}-${nextDate.getFullYear()}`;
       }
     }
@@ -96,11 +90,11 @@ export default function StudentPaymentPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(/,\s+/)[groupIndex]?.trim() || student.price.split(/,\s+/)[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
       registration
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(/,\s+/).length === 1) : [];
+  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -125,7 +119,7 @@ export default function StudentPaymentPage() {
 
   const [formData, setFormData] = useState({
     course: '',
-    amount: '0',
+    amount: '',
     type: '',
     date: '',
     notes: '',
@@ -153,12 +147,6 @@ export default function StudentPaymentPage() {
       
       updatePayment(editPaymentId, updatedPayment);
       
-      if (student.id) {
-        updateStudent(student.id, {
-          ...student,
-          balance: student.balance - oldAmount + paymentAmount
-        });
-      }
       setIsEditModalOpen(false);
       setEditPaymentId(null);
     } else {
@@ -177,18 +165,10 @@ export default function StudentPaymentPage() {
       
       addPayment(newPayment);
       
-      // Update student balance
-      if (student.id) {
-        updateStudent(student.id, {
-          ...student,
-          balance: student.balance + paymentAmount
-        });
-      }
-      
       setIsAddModalOpen(false);
     }
     
-    setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: currentUserString });
+    setFormData({ course: '', amount: '', type: '', date: '', notes: '', addedBy: currentUserString });
   };
 
   const handleEditPayment = (payment: any) => {
@@ -212,14 +192,6 @@ export default function StudentPaymentPage() {
 
   const confirmDelete = () => {
     if (itemToDelete !== null) {
-      const paymentToDelete = payments.find(p => p.id === itemToDelete);
-      if (paymentToDelete && student.id) {
-        const amount = parseInt(paymentToDelete.amount.replace(/[^0-9]/g, ''), 10) || 0;
-        updateStudent(student.id, {
-          ...student,
-          balance: student.balance - amount
-        });
-      }
       deletePayment(itemToDelete);
       setItemToDelete(null);
     }
@@ -267,7 +239,7 @@ export default function StudentPaymentPage() {
                   <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{course.name}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.group}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.teacher}</td>
-                  <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.price}</td>
+                  <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.nextPayment}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.registration}</td>
                 </tr>
@@ -346,7 +318,7 @@ export default function StudentPaymentPage() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setEditPaymentId(null);
-                setFormData({ course: '', amount: '0', type: '', date: '', notes: '', addedBy: currentUserString });
+                setFormData({ course: '', amount: '', type: '', date: '', notes: '', addedBy: currentUserString });
               }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
@@ -387,7 +359,7 @@ export default function StudentPaymentPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('type')}</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('payment_type')}</label>
                 <select 
                   value={formData.type}
                   onChange={e => setFormData({...formData, type: e.target.value})}
@@ -404,6 +376,7 @@ export default function StudentPaymentPage() {
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date')}</label>
                 <input 
                   type="date" 
+                  max={new Date().toISOString().split('T')[0]}
                   value={formData.date}
                   onChange={e => setFormData({...formData, date: e.target.value})}
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"

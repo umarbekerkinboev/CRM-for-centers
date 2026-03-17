@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cn } from '../lib/utils.ts';
+import { cn, calculateGroupBalance } from '../lib/utils.ts';
 import { useGroups, Group, useStudents, useEmployees, useCourses } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
@@ -47,8 +47,12 @@ export default function GroupsPage() {
   };
 
   const getGroupStats = (groupName: string) => {
-    const groupStudents = allStudents.filter(s => s.group === groupName);
-    const balance = groupStudents.reduce((sum, s) => sum + s.balance, 0);
+    const groupStudents = allStudents.filter(s => s.group && s.group.split(/,\s+/).includes(groupName));
+    
+    const balance = groupStudents.reduce((sum, student) => {
+      return sum + calculateGroupBalance(student, groupName);
+    }, 0);
+    
     return { count: groupStudents.length, balance };
   };
 

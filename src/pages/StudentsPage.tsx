@@ -50,10 +50,10 @@ export default function StudentsPage() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editItem) {
-      const currentCourses = editItem.courses ? editItem.courses.split(/,\s+/).map(c => c.trim()) : [];
-      const currentGroups = editItem.group ? editItem.group.split(/,\s+/).map(g => g.trim()) : [];
-      const currentPrices = editItem.price ? editItem.price.split(/,\s+/).map(p => p.trim()) : [];
-      const currentRegistrations = editItem.registration ? editItem.registration.split(/,\s+/).map(r => r.trim()) : [];
+      const currentCourses = editItem.courses ? editItem.courses.split(',').map(c => c.trim()) : [];
+      const currentGroups = editItem.group ? editItem.group.split(',').map(g => g.trim()) : [];
+      const currentPrices = editItem.price ? editItem.price.split(',').map(p => p.trim()) : [];
+      const currentRegistrations = editItem.registration ? editItem.registration.split(',').map(r => r.trim()) : [];
       
       const selectedGroup = allGroups.find(g => g.name === formData.group);
       const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || formData.course));
@@ -119,9 +119,9 @@ export default function StudentsPage() {
       gender: item.gender || 'Male', 
       dob: item.dob || '', 
       address: item.address || '',
-      course: item.courses ? item.courses.split(/,\s+/)[0].trim() : '',
-      group: item.group ? item.group.split(/,\s+/)[0].trim() : '',
-      courseRegistrationDate: item.registration ? item.registration.split(/,\s+/)[0].trim().split('-').reverse().join('-') : ''
+      course: item.courses ? item.courses.split(',')[0].trim() : '',
+      group: item.group ? item.group.split(',')[0].trim() : '',
+      courseRegistrationDate: item.registration ? item.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
     });
     setEditItem(item);
     setActiveMenu(null);
@@ -263,7 +263,7 @@ export default function StudentsPage() {
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{student.name}</td>}
                 {visibleColumns.phone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.phone}</td>}
                 {visibleColumns.courses && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300 whitespace-pre-line">{student.courses}</td>}
-                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.gender}</td>}
+                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300 capitalize">{student.gender}</td>}
                 {visibleColumns.parent && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parent}</td>}
                 {visibleColumns.parentPhone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parentPhone}</td>}
                 {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.dob}</td>}
@@ -333,7 +333,7 @@ export default function StudentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
-                  <input type="date" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                  <input type="date" max={new Date().toISOString().split('T')[0]} value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
@@ -386,7 +386,7 @@ export default function StudentsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
-                <input type="date" value={formData.courseRegistrationDate} onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                <input type="date" max={new Date().toISOString().split('T')[0]} value={formData.courseRegistrationDate} onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>

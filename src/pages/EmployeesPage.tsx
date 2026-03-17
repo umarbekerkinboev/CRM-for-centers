@@ -178,7 +178,7 @@ export default function EmployeesPage() {
             {isViewMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsViewMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-2 z-50">
                   <div className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                     {t('toggle_columns')}
                   </div>
@@ -235,7 +235,7 @@ export default function EmployeesPage() {
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{employee.name}</td>}
                 {visibleColumns.phone && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.phone}</td>}
                 {visibleColumns.qualification && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.qualification}</td>}
-                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.gender}</td>}
+                {visibleColumns.gender && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300 capitalize">{employee.gender}</td>}
                 {visibleColumns.exp && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.exp}</td>}
                 {visibleColumns.dob && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.dob}</td>}
                 {visibleColumns.joined && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{employee.joined}</td>}
@@ -252,7 +252,7 @@ export default function EmployeesPage() {
                   {activeMenu === employee.id && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
-                      <div className={cn("absolute right-8 w-40 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= sortedEmployees.length / 2 && sortedEmployees.length > 1 ? "bottom-10" : "top-10")}>
+                      <div className={cn("absolute right-8 w-40 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl py-1 z-50", index >= sortedEmployees.length / 2 && sortedEmployees.length > 1 ? "bottom-10" : "top-10")}>
                         <button onClick={(e) => { e.stopPropagation(); openDetailsModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</button>
                         <button onClick={(e) => { e.stopPropagation(); openEditModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
                         <button onClick={(e) => { e.stopPropagation(); setItemToDelete(employee.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
@@ -279,7 +279,7 @@ export default function EmployeesPage() {
 
       {editItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-xl bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setEditItem(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
