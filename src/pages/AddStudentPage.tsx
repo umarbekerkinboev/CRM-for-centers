@@ -46,6 +46,7 @@ export default function AddStudentPage() {
       balance: 0,
       price: selectedGroup ? coursePriceStr : '',
       registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+      globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
       lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
     });
     navigate(-1);
@@ -178,7 +179,7 @@ export default function AddStudentPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
             <input 
               type="date" 
               required

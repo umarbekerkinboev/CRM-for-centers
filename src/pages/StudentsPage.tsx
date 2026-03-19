@@ -110,6 +110,19 @@ export default function StudentsPage() {
   };
 
   const openEditModal = (item: Student) => {
+    let formattedDate = '';
+    if (item.registration) {
+      const firstRegistration = item.registration.split(',')[0].trim();
+      const parts = firstRegistration.split('-');
+      if (parts.length === 3) {
+        if (parts[0].length === 2) {
+          formattedDate = parts.reverse().join('-');
+        } else {
+          formattedDate = firstRegistration;
+        }
+      }
+    }
+
     setFormData({ 
       firstName: item.name.split(' ')[0] || '', 
       lastName: item.name.split(' ').slice(1).join(' ') || '', 
@@ -121,7 +134,7 @@ export default function StudentsPage() {
       address: item.address || '',
       course: item.courses ? item.courses.split(',')[0].trim() : '',
       group: item.group ? item.group.split(',')[0].trim() : '',
-      courseRegistrationDate: item.registration ? item.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
+      courseRegistrationDate: formattedDate
     });
     setEditItem(item);
     setActiveMenu(null);

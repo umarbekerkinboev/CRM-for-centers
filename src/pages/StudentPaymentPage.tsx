@@ -92,9 +92,10 @@ export default function StudentPaymentPage() {
       teacher: group ? group.teachers : 'N/A',
       price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
-      registration
+      registration,
+      isActive: !!group
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
+  }) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -229,7 +230,8 @@ export default function StudentPaymentPage() {
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_price')}</th>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('next_payment_date')}</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('course_registration_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_registration_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
@@ -242,6 +244,16 @@ export default function StudentPaymentPage() {
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.nextPayment}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.registration}</td>
+                  <td className="px-6 py-4">
+                    <span className={cn(
+                      "px-2.5 py-1 rounded-full text-xs font-medium",
+                      course.isActive 
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
+                    )}>
+                      {course.isActive ? t('active') : t('passive')}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

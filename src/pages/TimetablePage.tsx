@@ -394,7 +394,7 @@ export default function TimetablePage() {
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px]">
         <div className="min-w-[1400px] relative pb-32">
           {/* Background grid lines */}
-          <div className="absolute top-[53px] bottom-0 left-24 right-0 flex pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-24 right-0 flex pointer-events-none border-l border-zinc-200 dark:border-zinc-800/50">
             {timeSlots.map(time => (
               <div key={time} className="flex-1 border-r border-zinc-200 dark:border-zinc-800/50 last:border-0"></div>
             ))}

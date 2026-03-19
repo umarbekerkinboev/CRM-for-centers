@@ -20,6 +20,7 @@ import AddStudentPage from './pages/AddStudentPage.tsx';
 import AddGroupPage from './pages/AddGroupPage.tsx';
 import AddCoursePage from './pages/AddCoursePage.tsx';
 import AddRoomPage from './pages/AddRoomPage.tsx';
+import TutorialPage from './pages/TutorialPage.tsx';
 import { ThemeProvider } from './components/ThemeProvider.tsx';
 import { AuthProvider, useAuth } from './contexts/AuthContext.tsx';
 
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to="/groups" replace />} />
         <Route path="/timetable" element={<TimetablePage />} />
+        <Route path="/tutorial" element={<TutorialPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/groups/add" element={<AddGroupPage />} />

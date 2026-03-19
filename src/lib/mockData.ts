@@ -15,6 +15,7 @@ export type Student = {
   groupBalances?: { [groupName: string]: number };
   price: string;
   registration: string;
+  globalRegistrationDate?: string;
   lastChargedDate?: string;
 };
 
@@ -144,6 +145,39 @@ if (!localStorage.getItem(migrationKeyV3)) {
     }
   } catch (e) {}
   localStorage.setItem(migrationKeyV3, 'true');
+}
+
+const migrationKeyV4 = 'migration_reset_students_v5';
+if (!localStorage.getItem(migrationKeyV4)) {
+  try {
+    const storedStudents = localStorage.getItem('mock_students');
+    if (storedStudents) {
+      const students = JSON.parse(storedStudents);
+      const resetStudents = students.map((s: any) => ({
+        ...s,
+        courses: '',
+        group: '',
+        balance: 0,
+        price: '',
+        registration: '',
+        lastChargedDate: ''
+      }));
+      localStorage.setItem('mock_students', JSON.stringify(resetStudents));
+    }
+
+    const storedGroups = localStorage.getItem('mock_groups');
+    if (storedGroups) {
+      const groups = JSON.parse(storedGroups);
+      const resetGroups = groups.map((g: any) => ({
+        ...g,
+        students: 0
+      }));
+      localStorage.setItem('mock_groups', JSON.stringify(resetGroups));
+    }
+    
+    localStorage.setItem('mock_payments', JSON.stringify([]));
+  } catch (e) {}
+  localStorage.setItem(migrationKeyV4, 'true');
 }
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {

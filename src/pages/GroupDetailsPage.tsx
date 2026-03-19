@@ -25,6 +25,9 @@ export default function GroupDetailsPage() {
     courses: '',
     rooms: '',
     students: 0,
+    days: [],
+    startTime: '',
+    endTime: ''
   };
 
   const groupStudents = allStudents.filter(s => s.group && s.group.split(', ').includes(group.name));
@@ -35,7 +38,7 @@ export default function GroupDetailsPage() {
   const [addTab, setAddTab] = useState<'existing' | 'new'>('existing');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
-  const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', courseName: '', courseRegistrationDate: '', coursePrice: '' });
+  const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: '', coursePrice: '' });
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -54,8 +57,10 @@ export default function GroupDetailsPage() {
     gender: '', 
     dob: '', 
     address: '',
-    courseName: '',
-    courseRegistrationDate: ''
+    course: '',
+    group: '',
+    courseRegistrationDate: '',
+    coursePrice: ''
   });
 
   useEffect(() => {
@@ -74,6 +79,64 @@ export default function GroupDetailsPage() {
   const handleEditStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (studentToEdit) {
+      const groupsList = studentToEdit.group ? studentToEdit.group.split(',').map(g => g.trim()) : [];
+      const coursesList = studentToEdit.courses ? studentToEdit.courses.split(',').map(c => c.trim()) : [];
+      const registrationsList = studentToEdit.registration ? studentToEdit.registration.split(',').map(r => r.trim()) : [];
+      const pricesList = studentToEdit.price ? studentToEdit.price.split(',').map(p => p.trim()) : [];
+      
+      const groupIndex = groupsList.indexOf(group.name);
+      let balanceChange = 0;
+
+      if (groupIndex !== -1) {
+        while (coursesList.length <= groupIndex) coursesList.push('');
+        while (registrationsList.length <= groupIndex) registrationsList.push('');
+        while (pricesList.length <= groupIndex) pricesList.push('0 UZS');
+        
+        const oldGroup = groupsList[groupIndex];
+        const newGroup = editStudentFormData.group;
+        const oldPriceStr = pricesList[groupIndex];
+        const oldPriceNum = parseInt(oldPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+        
+        let newPriceStr = oldPriceStr;
+        
+        if (oldGroup !== newGroup) {
+          balanceChange += oldPriceNum; // Refund old price
+          
+          if (newGroup) {
+            const selectedGroup = groups.find(g => g.name === newGroup);
+            const selectedCourse = courses.find(c => c.name === (selectedGroup?.courses || editStudentFormData.course));
+            
+            if (editStudentFormData.coursePrice) {
+              const num = parseInt(editStudentFormData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
+              newPriceStr = `${num} UZS`;
+            } else {
+              newPriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
+            }
+            
+            const newPriceNum = parseInt(newPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+            balanceChange -= newPriceNum; // Charge new price
+          } else {
+            newPriceStr = '0 UZS';
+          }
+        } else {
+          // Group didn't change, but price might have
+          if (editStudentFormData.coursePrice) {
+            const num = parseInt(editStudentFormData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
+            newPriceStr = `${num} UZS`;
+            const newPriceNum = parseInt(newPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+            
+            // Refund old, charge new
+            balanceChange += oldPriceNum;
+            balanceChange -= newPriceNum;
+          }
+        }
+
+        pricesList[groupIndex] = newPriceStr;
+        coursesList[groupIndex] = editStudentFormData.course;
+        groupsList[groupIndex] = editStudentFormData.group;
+        registrationsList[groupIndex] = editStudentFormData.courseRegistrationDate ? editStudentFormData.courseRegistrationDate.split('-').reverse().join('-') : '';
+      }
+
       updateStudent(studentToEdit.id, {
         ...studentToEdit,
         name: `${editStudentFormData.firstName} ${editStudentFormData.lastName}`.trim(),
@@ -83,14 +146,37 @@ export default function GroupDetailsPage() {
         gender: editStudentFormData.gender,
         dob: editStudentFormData.dob,
         address: editStudentFormData.address,
-        courses: editStudentFormData.courseName,
-        registration: editStudentFormData.courseRegistrationDate ? editStudentFormData.courseRegistrationDate.split('-').reverse().join('-') : ''
+        courses: coursesList.join(', '),
+        group: groupsList.join(', '),
+        price: pricesList.join(', '),
+        registration: registrationsList.join(', '),
+        balance: studentToEdit.balance + balanceChange
       });
       setStudentToEdit(null);
     }
   };
 
   const openEditStudentModal = (item: Student) => {
+    const groups = item.group ? item.group.split(',').map(g => g.trim()) : [];
+    const courses = item.courses ? item.courses.split(',').map(c => c.trim()) : [];
+    const registrations = item.registration ? item.registration.split(',').map(r => r.trim()) : [];
+    const prices = item.price ? item.price.split(',').map(p => p.trim()) : [];
+    const groupIndex = groups.indexOf(group.name);
+    
+    let formattedDate = '';
+    if (groupIndex !== -1 && registrations[groupIndex]) {
+      const parts = registrations[groupIndex].split('-');
+      if (parts.length === 3) {
+        // If it's DD-MM-YYYY, reverse to YYYY-MM-DD
+        if (parts[0].length === 2) {
+          formattedDate = parts.reverse().join('-');
+        } else {
+          // If it's already YYYY-MM-DD, keep it
+          formattedDate = registrations[groupIndex];
+        }
+      }
+    }
+    
     setEditStudentFormData({ 
       firstName: item.name.split(' ')[0] || '', 
       lastName: item.name.split(' ').slice(1).join(' ') || '', 
@@ -100,8 +186,10 @@ export default function GroupDetailsPage() {
       gender: item.gender || 'Male', 
       dob: item.dob || '', 
       address: item.address || '',
-      courseName: item.courses ? item.courses.split(',')[0].trim() : '',
-      courseRegistrationDate: item.registration ? item.registration.split('-').reverse().join('-') : ''
+      course: groupIndex !== -1 && courses[groupIndex] ? courses[groupIndex] : '',
+      group: groupIndex !== -1 && groups[groupIndex] ? groups[groupIndex] : '',
+      courseRegistrationDate: formattedDate,
+      coursePrice: groupIndex !== -1 && prices[groupIndex] ? prices[groupIndex] : ''
     });
     setStudentToEdit(item);
     setActiveStudentMenu(null);
@@ -169,16 +257,17 @@ export default function GroupDetailsPage() {
         name: `${formData.name} ${formData.lastName}`,
         balance: initialBalance,
         price: coursePriceToUse,
-        registration: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
-        lastChargedDate: formData.courseRegistrationDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
         phone: formData.phone,
         gender: formData.gender,
         parent: formData.parentName,
         parentPhone: formData.parentPhone,
         dob: formData.dob,
         address: formData.address,
-        courses: formData.courseName || group.courses,
-        group: group.name
+        courses: formData.course || group.courses,
+        group: formData.group || group.name,
+        globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
       });
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
@@ -195,15 +284,16 @@ export default function GroupDetailsPage() {
         while (currentRegistrations.length < currentCourses.length) currentRegistrations.push(currentRegistrations[0] || '');
         while (currentLastCharged.length < currentCourses.length) currentLastCharged.push(currentLastCharged[0] || '');
 
-        const newCourse = formData.courseName || group.courses;
+        const newCourse = group.courses;
+        const newGroup = group.name;
         const courseIndex = currentCourses.indexOf(newCourse);
         
         // Only proceed if student is not already in this specific group
-        if (!currentGroups.includes(group.name)) {
+        if (!currentGroups.includes(newGroup)) {
           let actualInitialBalance = initialBalance;
           if (courseIndex !== -1 && (!currentGroups[courseIndex] || currentGroups[courseIndex] === '')) {
             // Course exists but has no group, update it
-            currentGroups[courseIndex] = group.name;
+            currentGroups[courseIndex] = newGroup;
             
             // Use existing price if no new price is provided
             if (!formData.coursePrice && currentPrices[courseIndex] && currentPrices[courseIndex] !== '0 UZS') {
@@ -221,7 +311,7 @@ export default function GroupDetailsPage() {
           } else {
             // Add new course and group entry
             currentCourses.push(newCourse);
-            currentGroups.push(group.name);
+            currentGroups.push(newGroup);
             currentPrices.push(coursePriceToUse);
             const dateToUse = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
             currentRegistrations.push(dateToUse);
@@ -230,6 +320,7 @@ export default function GroupDetailsPage() {
 
           updateStudent(s.id, {
             ...s,
+            globalRegistrationDate: s.globalRegistrationDate || (formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-')),
             group: currentGroups.join(', '),
             courses: currentCourses.join(', '),
             balance: s.balance + actualInitialBalance,
@@ -242,7 +333,7 @@ export default function GroupDetailsPage() {
     }
     
     setIsAddModalOpen(false);
-    setFormData({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', courseName: '', courseRegistrationDate: '', coursePrice: '' });
+    setFormData({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: '', coursePrice: '' });
     setSelectedStudentIds([]);
     setSearchQuery('');
   };
@@ -377,7 +468,10 @@ export default function GroupDetailsPage() {
               )}
             </div>
             <button 
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setFormData({ ...formData, course: group.courses, group: group.name });
+                setIsAddModalOpen(true);
+              }}
               className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-sm font-medium text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition-colors flex items-center gap-2"
             >
               {t('add_student')}
@@ -498,7 +592,7 @@ export default function GroupDetailsPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
                     <input 
                       type="date" 
                       max={new Date().toISOString().split('T')[0]}
@@ -534,7 +628,7 @@ export default function GroupDetailsPage() {
                       <tr>
                         <th className="px-4 py-3 font-bold w-12">#</th>
                         <th className="px-4 py-3 font-bold">{t('full_name')}</th>
-                        <th className="px-4 py-3 font-bold">{t('course_registration_date')}</th>
+                        <th className="px-4 py-3 font-bold">{t('registration_date')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-60 overflow-y-auto block w-full" style={{ display: 'table-row-group' }}>
@@ -555,7 +649,7 @@ export default function GroupDetailsPage() {
                             />
                           </td>
                           <td className="px-4 py-3 text-zinc-900 dark:text-zinc-100">{student.name}</td>
-                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{student.registration}</td>
+                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{student.globalRegistrationDate || (student.registration ? student.registration.split(',')[0].trim() : '')}</td>
                         </tr>
                       ))}
                       {filteredExistingStudents.length === 0 && (
@@ -669,20 +763,52 @@ export default function GroupDetailsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
-                  <input 
-                    type="text" 
-                    value={formData.courseName}
-                    onChange={e => setFormData({...formData, courseName: e.target.value})}
-                    placeholder={group.courses}
-                    className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_course')}</label>
+                    <div className="relative">
+                      <select
+                        required
+                        disabled
+                        value={formData.course}
+                        onChange={e => setFormData({...formData, course: e.target.value, group: ''})}
+                        className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">{t('select_course')}</option>
+                        {courses.map(c => (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                        <ChevronsUpDown className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_group')}</label>
+                    <div className="relative">
+                      <select
+                        required
+                        disabled
+                        value={formData.group}
+                        onChange={e => setFormData({...formData, group: e.target.value})}
+                        className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">{t('select_group')}</option>
+                        {groups.filter(g => g.courses === formData.course).map(g => (
+                          <option key={g.id} value={g.name}>{g.name}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                        <ChevronsUpDown className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
                     <input 
                       type="date" 
                       max={new Date().toISOString().split('T')[0]}
@@ -950,12 +1076,46 @@ export default function GroupDetailsPage() {
                 <input maxLength={9} value={editStudentFormData.parentPhone} onChange={e => setEditStudentFormData({...editStudentFormData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
-                <input value={editStudentFormData.courseName} onChange={e => setEditStudentFormData({...editStudentFormData, courseName: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+                <select 
+                  disabled
+                  value={editStudentFormData.course}
+                  onChange={e => setEditStudentFormData({...editStudentFormData, course: e.target.value, group: ''})}
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">{t('select_course')}</option>
+                  {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
-                <input type="date" max={new Date().toISOString().split('T')[0]} value={editStudentFormData.courseRegistrationDate} onChange={e => setEditStudentFormData({...editStudentFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+                <select 
+                  disabled
+                  value={editStudentFormData.group}
+                  onChange={e => setEditStudentFormData({...editStudentFormData, group: e.target.value})}
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">{t('select_group')}</option>
+                  {groups
+                    .filter(g => g.courses === editStudentFormData.course)
+                    .map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+                  <input type="date" max={new Date().toISOString().split('T')[0]} value={editStudentFormData.courseRegistrationDate} onChange={e => setEditStudentFormData({...editStudentFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')}</label>
+                  <input 
+                    type="text" 
+                    value={editStudentFormData.coursePrice}
+                    onChange={e => setEditStudentFormData({...editStudentFormData, coursePrice: e.target.value})}
+                    placeholder={t('e_g_price')}
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                  />
+                </div>
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>

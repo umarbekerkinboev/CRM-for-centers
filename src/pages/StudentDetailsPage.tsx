@@ -19,7 +19,7 @@ export default function StudentDetailsPage() {
     id: Number(id),
     name: "Unknown Student",
     phone: '',
-    parentName: '',
+    parent: '',
     parentPhone: '',
     gender: '',
     dob: '',
@@ -98,9 +98,10 @@ export default function StudentDetailsPage() {
       teacher: group ? group.teachers : 'N/A',
       price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
       nextPayment,
-      registration
+      registration,
+      isActive: !!group
     };
-  }).filter(c => c.group !== 'N/A' || student.courses.split(',').length === 1) : [];
+  }) : [];
 
   const { items: allPayments, addItem: addPayment, updateItem: updatePayment, deleteItem: deletePayment } = usePayments();
   const payments = allPayments.filter(p => p.studentId === Number(id));
@@ -221,6 +222,19 @@ export default function StudentDetailsPage() {
     }
   };
 
+  let initialFormattedDate = '';
+  if (student.registration) {
+    const firstRegistration = student.registration.split(',')[0].trim();
+    const parts = firstRegistration.split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 2) {
+        initialFormattedDate = parts.reverse().join('-');
+      } else {
+        initialFormattedDate = firstRegistration;
+      }
+    }
+  }
+
   const [editFormData, setEditFormData] = useState({ 
     firstName: student.name.split(' ')[0] || '', 
     lastName: student.name.split(' ').slice(1).join(' ') || '', 
@@ -232,7 +246,7 @@ export default function StudentDetailsPage() {
     address: student.address,
     course: student.courses ? student.courses.split(',')[0].trim() : '',
     group: student.group ? student.group.split(',')[0].trim() : '',
-    courseRegistrationDate: student.registration ? student.registration.split(',')[0].trim().split('-').reverse().join('-') : ''
+    courseRegistrationDate: initialFormattedDate
   });
 
   const handleEditStudent = (e: React.FormEvent) => {
@@ -247,14 +261,26 @@ export default function StudentDetailsPage() {
     const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || editFormData.course));
     const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
 
+    let balanceChange = 0;
+
     if (currentCourses.length > 0) {
       if (currentCourses[0] !== editFormData.course || currentGroups[0] !== editFormData.group) {
+        const oldPriceStr = currentPrices[0];
+        const oldPriceNum = parseInt(oldPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+        const newPriceNum = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+        
+        balanceChange += oldPriceNum; // Refund old price
+        balanceChange -= newPriceNum; // Charge new price
+        
         currentCourses[0] = editFormData.course;
         currentGroups[0] = editFormData.group;
         currentPrices[0] = coursePriceStr;
       }
       currentRegistrations[0] = editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
     } else if (editFormData.course) {
+      const newPriceNum = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
+      balanceChange -= newPriceNum; // Charge new price
+      
       currentCourses.push(editFormData.course);
       currentGroups.push(editFormData.group);
       currentPrices.push(coursePriceStr);
@@ -274,7 +300,7 @@ export default function StudentDetailsPage() {
       group: currentGroups.join(', '),
       registration: currentRegistrations.join(', '),
       price: currentPrices.join(', '),
-      balance: 0
+      balance: student.balance + balanceChange
     });
     setIsEditModalOpen(false);
   };
@@ -364,19 +390,32 @@ export default function StudentDetailsPage() {
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_price')}</th>
                 <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('next_payment_date')}</th>
-                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('course_registration_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_registration_date')}</th>
+                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
               {courses.map((course, index) => (
                 <tr key={course.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                   <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
-                  <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{course.name}</td>
+                  <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">
+                    {course.name}
+                  </td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.group}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.teacher}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.nextPayment}</td>
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.registration}</td>
+                  <td className="px-6 py-4">
+                    <span className={cn(
+                      "px-2.5 py-1 rounded-full text-xs font-medium",
+                      course.isActive 
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
+                    )}>
+                      {course.isActive ? t('active') : t('passive')}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
