@@ -45,9 +45,9 @@ export default function AddStudentPage() {
       address: formData.address,
       balance: 0,
       price: selectedGroup ? coursePriceStr : '',
-      registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
-      globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
-      lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+      registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
+      globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
+      lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
     });
     navigate(-1);
   };

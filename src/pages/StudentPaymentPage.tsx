@@ -122,7 +122,7 @@ export default function StudentPaymentPage() {
     course: '',
     amount: '',
     type: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     notes: '',
     addedBy: currentUserString
   });
@@ -169,7 +169,7 @@ export default function StudentPaymentPage() {
       setIsAddModalOpen(false);
     }
     
-    setFormData({ course: '', amount: '', type: '', date: '', notes: '', addedBy: currentUserString });
+    setFormData({ course: '', amount: '', type: '', date: new Date().toISOString().split('T')[0], notes: '', addedBy: currentUserString });
   };
 
   const handleEditPayment = (payment: any) => {
@@ -330,7 +330,7 @@ export default function StudentPaymentPage() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setEditPaymentId(null);
-                setFormData({ course: '', amount: '', type: '', date: '', notes: '', addedBy: currentUserString });
+                setFormData({ course: '', amount: '', type: '', date: new Date().toISOString().split('T')[0], notes: '', addedBy: currentUserString });
               }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >

@@ -343,7 +343,7 @@ export function useStudents() {
 
       if (groupName) {
         const coursePayments = studentPayments
-          .filter(p => p.course === course)
+          .filter(p => p.course === groupName || p.course === course)
           .reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
         
         groupBalances[groupName] = coursePayments - courseCharges;

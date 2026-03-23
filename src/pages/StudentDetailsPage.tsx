@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown, X, DollarSign, Edit, Trash2, MoreVertical, Plus } from 'lucide-react';
+import { ChevronsUpDown, X, DollarSign, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { useStudents, useCourses, useGroups, usePayments } from '../lib/mockData.ts';
 import { cn, displayPrice } from '../lib/utils.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
@@ -122,18 +122,11 @@ export default function StudentDetailsPage() {
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
 
-  const [addCourseData, setAddCourseData] = useState({
-    course: '',
-    group: '',
-    registrationDate: new Date().toISOString().split('T')[0]
-  });
-
   useEffect(() => {
-    if (isEditModalOpen || isEditPaymentModalOpen || isAddCourseModalOpen) {
+    if (isEditModalOpen || isEditPaymentModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -141,7 +134,7 @@ export default function StudentDetailsPage() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isEditModalOpen, isEditPaymentModalOpen, isAddCourseModalOpen]);
+  }, [isEditModalOpen, isEditPaymentModalOpen]);
 
   const handleEditPayment = (payment: any) => {
     setEditPaymentData({
@@ -218,7 +211,7 @@ export default function StudentDetailsPage() {
     address: student.address,
     course: student.courses ? student.courses.split(',')[0].trim() : '',
     group: student.group ? student.group.split(',')[0].trim() : '',
-    courseRegistrationDate: initialFormattedDate
+    courseRegistrationDate: initialFormattedDate || new Date().toISOString().split('T')[0]
   });
 
   const handleEditStudent = (e: React.FormEvent) => {
@@ -275,41 +268,6 @@ export default function StudentDetailsPage() {
       balance: student.balance + balanceChange
     });
     setIsEditModalOpen(false);
-  };
-
-  const handleAddCourse = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
-    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
-    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
-    const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
-    
-    const selectedGroup = allGroups.find(g => g.name === addCourseData.group);
-    const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || addCourseData.course));
-    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
-    const newPriceNum = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
-
-    currentCourses.push(addCourseData.course);
-    currentGroups.push(addCourseData.group);
-    currentPrices.push(coursePriceStr);
-    currentRegistrations.push(addCourseData.registrationDate ? addCourseData.registrationDate.split('-').reverse().join('-') : '');
-
-    updateStudent(Number(id), {
-      ...student,
-      courses: currentCourses.join(', '),
-      group: currentGroups.join(', '),
-      price: currentPrices.join(', '),
-      registration: currentRegistrations.join(', '),
-      balance: student.balance - newPriceNum
-    });
-
-    setIsAddCourseModalOpen(false);
-    setAddCourseData({
-      course: '',
-      group: '',
-      registrationDate: new Date().toISOString().split('T')[0]
-    });
   };
 
   const handleDeleteStudent = () => {
@@ -380,13 +338,6 @@ export default function StudentDetailsPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
-          <button 
-            onClick={() => setIsAddCourseModalOpen(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            {t('add_course')}
-          </button>
         </div>
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] overflow-x-auto scrollbar-thin min-h-[300px] pb-32">
           <table className="w-full text-sm text-left">
@@ -576,64 +527,6 @@ export default function StudentDetailsPage() {
                 <input type="date" max={new Date().toISOString().split('T')[0]} value={editFormData.courseRegistrationDate} onChange={e => setEditFormData({...editFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isAddCourseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
-            <button 
-              onClick={() => setIsAddCourseModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_course')}</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('add_new_course')}</p>
-            </div>
-            <form className="space-y-4" onSubmit={handleAddCourse}>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
-                <select 
-                  value={addCourseData.course}
-                  onChange={e => setAddCourseData({...addCourseData, course: e.target.value, group: ''})}
-                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
-                  required
-                >
-                  <option value="">{t('select_course')}</option>
-                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
-                <select 
-                  value={addCourseData.group}
-                  onChange={e => setAddCourseData({...addCourseData, group: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors disabled:opacity-50"
-                  disabled={!addCourseData.course}
-                  required
-                >
-                  <option value="">{t('select_group')}</option>
-                  {allGroups
-                    .filter(g => g.courses === addCourseData.course)
-                    .map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
-                <input type="date" max={new Date().toISOString().split('T')[0]} value={addCourseData.registrationDate} onChange={e => setAddCourseData({...addCourseData, registrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" required />
-              </div>
-              <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsAddCourseModalOpen(false)} className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                  {t('cancel')}
-                </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                  {t('add_course')}
-                </button>
-              </div>
             </form>
           </div>
         </div>

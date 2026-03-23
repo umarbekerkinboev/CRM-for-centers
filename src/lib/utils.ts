@@ -24,6 +24,11 @@ export function parsePrice(value: string | number): number {
   return isNaN(num) ? 0 : num;
 }
 
+export function getCurrentDateFormatted(): string {
+  const now = new Date();
+  return `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+}
+
 export function calculateGroupBalance(student: any, groupName: string): number {
   return student.groupBalances?.[groupName] || 0;
 }

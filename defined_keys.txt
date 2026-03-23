@@ -27,9 +27,12 @@ admin_dashboard
 amount
 analytics
 are_you_sure_delete
+assign_student_to_course
+back
 balance
 cancel
 cannot_change_course
+cannot_change_credentials
 card
 cash
 close
@@ -85,6 +88,7 @@ e_g_room_name
 e_g_salary
 e_g_url
 e_g_username
+employee
 employee_counts
 employee_not_found
 employees
@@ -108,6 +112,7 @@ fill_the_form_with_new_lesson_timetable_entry_details
 filter
 filter_by_rooms
 filter_by_teachers
+finish
 first_name
 forgot_password_msg
 friday
@@ -137,6 +142,7 @@ manage_rooms
 manage_students
 monday
 new
+next
 next_payment_date
 no_groups_assigned
 no_students_found
@@ -154,6 +160,7 @@ outstanding_balances
 page_not_found
 parent_name
 parent_phone
+passive
 password
 payment
 payment_added_by
@@ -193,9 +200,11 @@ select_room
 select_start_time
 select_teacher
 select_type
+skip
 sort
 start_time
 status
+student
 student_analytics
 student_courses
 student_name
@@ -215,6 +224,17 @@ total_students
 track
 transfer
 tuesday
+tutorial
+tutorial_analytics
+tutorial_courses
+tutorial_desc
+tutorial_employees
+tutorial_groups
+tutorial_profile
+tutorial_rooms
+tutorial_students
+tutorial_timetable
+tutorial_welcome
 update_payment_details
 update_username_and_password
 username

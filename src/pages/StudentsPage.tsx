@@ -44,7 +44,7 @@ export default function StudentsPage() {
     address: '',
     course: '',
     group: '',
-    courseRegistrationDate: ''
+    courseRegistrationDate: new Date().toISOString().split('T')[0]
   });
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -134,7 +134,7 @@ export default function StudentsPage() {
       address: item.address || '',
       course: item.courses ? item.courses.split(',')[0].trim() : '',
       group: item.group ? item.group.split(',')[0].trim() : '',
-      courseRegistrationDate: formattedDate
+      courseRegistrationDate: formattedDate || new Date().toISOString().split('T')[0]
     });
     setEditItem(item);
     setActiveMenu(null);

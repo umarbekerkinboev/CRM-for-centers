@@ -21,7 +21,7 @@ export default function AddEmployeePage() {
     address: '',
     qualification: '',
     exp: '',
-    joined: '',
+    joined: new Date().toISOString().split('T')[0],
     salary: '',
     username: '',
     password: ''

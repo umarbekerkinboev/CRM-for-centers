@@ -38,7 +38,7 @@ export default function GroupDetailsPage() {
   const [addTab, setAddTab] = useState<'existing' | 'new'>('existing');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
-  const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: '', coursePrice: '' });
+  const [formData, setFormData] = useState({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: new Date().toISOString().split('T')[0], coursePrice: '' });
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -59,7 +59,7 @@ export default function GroupDetailsPage() {
     address: '',
     course: '',
     group: '',
-    courseRegistrationDate: '',
+    courseRegistrationDate: new Date().toISOString().split('T')[0],
     coursePrice: ''
   });
 
@@ -188,7 +188,7 @@ export default function GroupDetailsPage() {
       address: item.address || '',
       course: groupIndex !== -1 && courses[groupIndex] ? courses[groupIndex] : '',
       group: groupIndex !== -1 && groups[groupIndex] ? groups[groupIndex] : '',
-      courseRegistrationDate: formattedDate,
+      courseRegistrationDate: formattedDate || new Date().toISOString().split('T')[0],
       coursePrice: groupIndex !== -1 && prices[groupIndex] ? prices[groupIndex] : ''
     });
     setStudentToEdit(item);
@@ -257,8 +257,8 @@ export default function GroupDetailsPage() {
         name: `${formData.name} ${formData.lastName}`,
         balance: initialBalance,
         price: coursePriceToUse,
-        registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
-        lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
+        lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
         phone: formData.phone,
         gender: formData.gender,
         parent: formData.parentName,
@@ -267,7 +267,7 @@ export default function GroupDetailsPage() {
         address: formData.address,
         courses: formData.course || group.courses,
         group: formData.group || group.name,
-        globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
       });
     } else {
       const selectedStudents = allStudents.filter(s => selectedStudentIds.includes(s.id));
@@ -313,14 +313,14 @@ export default function GroupDetailsPage() {
             currentCourses.push(newCourse);
             currentGroups.push(newGroup);
             currentPrices.push(coursePriceToUse);
-            const dateToUse = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+            const dateToUse = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-');
             currentRegistrations.push(dateToUse);
             currentLastCharged.push(dateToUse);
           }
 
           updateStudent(s.id, {
             ...s,
-            globalRegistrationDate: s.globalRegistrationDate || (formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-')),
+            globalRegistrationDate: s.globalRegistrationDate || (formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-')),
             group: currentGroups.join(', '),
             courses: currentCourses.join(', '),
             balance: s.balance + actualInitialBalance,
@@ -333,7 +333,7 @@ export default function GroupDetailsPage() {
     }
     
     setIsAddModalOpen(false);
-    setFormData({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: '', coursePrice: '' });
+    setFormData({ name: '', lastName: '', phone: '', parentName: '', parentPhone: '', dob: '', gender: 'Male', address: '', course: '', group: '', courseRegistrationDate: new Date().toISOString().split('T')[0], coursePrice: '' });
     setSelectedStudentIds([]);
     setSearchQuery('');
   };

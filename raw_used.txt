@@ -1,0 +1,698 @@
+src/pages/StudentsPage.tsx:      const currentCourses = editItem.courses ? editItem.courses.split(',').map(c => c.trim()) : [];
+src/pages/StudentsPage.tsx:      const currentGroups = editItem.group ? editItem.group.split(',').map(g => g.trim()) : [];
+src/pages/StudentsPage.tsx:      const currentPrices = editItem.price ? editItem.price.split(',').map(p => p.trim()) : [];
+src/pages/StudentsPage.tsx:      const currentRegistrations = editItem.registration ? editItem.registration.split(',').map(r => r.trim()) : [];
+src/pages/StudentsPage.tsx:        currentRegistrations[0] = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
+src/pages/StudentsPage.tsx:        currentRegistrations.push(formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : '');
+src/pages/StudentsPage.tsx:      const firstRegistration = item.registration.split(',')[0].trim();
+src/pages/StudentsPage.tsx:      const parts = firstRegistration.split('-');
+src/pages/StudentsPage.tsx:      firstName: item.name.split(' ')[0] || '', 
+src/pages/StudentsPage.tsx:      lastName: item.name.split(' ').slice(1).join(' ') || '', 
+src/pages/StudentsPage.tsx:      course: item.courses ? item.courses.split(',')[0].trim() : '',
+src/pages/StudentsPage.tsx:      group: item.group ? item.group.split(',')[0].trim() : '',
+src/pages/StudentsPage.tsx:    { key: 'name', label: t('full_name') },
+src/pages/StudentsPage.tsx:    { key: 'phone', label: t('phone') },
+src/pages/StudentsPage.tsx:    { key: 'courses', label: t('courses') },
+src/pages/StudentsPage.tsx:    { key: 'gender', label: t('gender') },
+src/pages/StudentsPage.tsx:    { key: 'parent', label: t('parent_name') },
+src/pages/StudentsPage.tsx:    { key: 'parentPhone', label: t('parent_phone') },
+src/pages/StudentsPage.tsx:    { key: 'dob', label: t('date_of_birth') },
+src/pages/StudentsPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('students')}</h1>
+src/pages/StudentsPage.tsx:              {t('view')}
+src/pages/StudentsPage.tsx:                    {t('toggle_columns')}
+src/pages/StudentsPage.tsx:            {t('add_student')}
+src/pages/StudentsPage.tsx:                        <Link to={`/students/${student.id}`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</Link>
+src/pages/StudentsPage.tsx:                        <Link to={`/students/${student.id}/payment`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('payment')}</Link>
+src/pages/StudentsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(student); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/StudentsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(student.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/StudentsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_student_details')}</h2>
+src/pages/StudentsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_student_details')}</p>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/StudentsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/StudentsPage.tsx:                  <input type="date" max={new Date().toISOString().split('T')[0]} value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/StudentsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/StudentsPage.tsx:                    <option value="Male">{t('male')}</option>
+src/pages/StudentsPage.tsx:                    <option value="Female">{t('female')}</option>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/StudentsPage.tsx:                  <option value="">{t('select_course')}</option>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/StudentsPage.tsx:                  <option value="">{t('select_group')}</option>
+src/pages/StudentsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+src/pages/StudentsPage.tsx:                <input type="date" max={new Date().toISOString().split('T')[0]} value={formData.courseRegistrationDate} onChange={e => setFormData({...formData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/StudentsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+src/pages/AddRoomPage.tsx:          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_room')}</h1>
+src/pages/AddRoomPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_name')}</label>
+src/pages/AddRoomPage.tsx:              placeholder={t('e_g_room_name')}
+src/pages/AddRoomPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_size')}</label>
+src/pages/AddRoomPage.tsx:              placeholder={t('e_g_capacity')}
+src/pages/AddRoomPage.tsx:            {t('save')}
+src/pages/AnalyticsPage.tsx:    { label: t('total_groups'), value: groups.length.toString(), icon: Users, trend: '+12%', color: 'bg-blue-500' },
+src/pages/AnalyticsPage.tsx:    { label: t('total_students'), value: students.length.toString(), icon: GraduationCap, trend: '+5%', color: 'bg-emerald-500' },
+src/pages/AnalyticsPage.tsx:    { label: t('total_employees'), value: employees.length.toString(), icon: Contact2, trend: '0%', color: 'bg-amber-500' },
+src/pages/AnalyticsPage.tsx:    { label: t('active_courses'), value: courses.length.toString(), icon: BookOpen, trend: '+2', color: 'bg-purple-500' },
+src/pages/AnalyticsPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('analytics')}</h1>
+src/pages/AnalyticsPage.tsx:            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_groups')}</h2>
+src/pages/AnalyticsPage.tsx:            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{t('courses_by_groups_desc')}</p>
+src/pages/AnalyticsPage.tsx:            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('courses_by_students')}</h2>
+src/pages/AnalyticsPage.tsx:            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{t('courses_by_students_desc')}</p>
+src/pages/AnalyticsPage.tsx:        title={t('revenue_details')}
+src/pages/AnalyticsPage.tsx:              {t('revenue_by_course')}
+src/pages/AnalyticsPage.tsx:              {t('outstanding_balances')}
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('course_name')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('active_students')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('course_price')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('est_monthly_revenue')}</th>
+src/pages/AnalyticsPage.tsx:                    <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100" colSpan={3}>{t('total_estimated_revenue')}</td>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('student_name')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('phone')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('parent_phone')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('outstanding_balance')}</th>
+src/pages/AnalyticsPage.tsx:                        {t('no_students_with_outstanding_balances')}
+src/pages/AnalyticsPage.tsx:        title={t('student_analytics')}
+src/pages/AnalyticsPage.tsx:              {t('recent_enrollments')}
+src/pages/AnalyticsPage.tsx:              {t('course_distribution')}
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('student_name')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('registration_date')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('courses')}</th>
+src/pages/AnalyticsPage.tsx:                    <th className="px-6 py-4 font-bold">{t('status')}</th>
+src/pages/AnalyticsPage.tsx:                          {t('active')}
+src/pages/AnalyticsPage.tsx:                      <span className="text-sm text-zinc-500 dark:text-zinc-400">{courseStudents.length} {t('students').toLowerCase()}</span>
+src/pages/AnalyticsPage.tsx:                      {percentage}% {t('of_total_students')}
+src/pages/TimetablePage.tsx:  const [startH, startM] = start.split(':').map(Number);
+src/pages/TimetablePage.tsx:  const [endH, endM] = end.split(':').map(Number);
+src/pages/TimetablePage.tsx:              {t('details')}
+src/pages/TimetablePage.tsx:              {t('edit')}
+src/pages/TimetablePage.tsx:              {t('delete')}
+src/pages/TimetablePage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('timetable')}</h1>
+src/pages/TimetablePage.tsx:                      {t('filter_by_teachers')}
+src/pages/TimetablePage.tsx:                            placeholder={t('search')} 
+src/pages/TimetablePage.tsx:                      {t('filter_by_rooms')}
+src/pages/TimetablePage.tsx:                            placeholder={t('search')} 
+src/pages/TimetablePage.tsx:              {filter === 'all' ? t('odd_even_days') : filter === 'odd' ? t('odd_days') : t('even_days')}
+src/pages/TimetablePage.tsx:                  <button onClick={() => { setFilter('all'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('odd_even_days')}</button>
+src/pages/TimetablePage.tsx:                  <button onClick={() => { setFilter('odd'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('odd_days')}</button>
+src/pages/TimetablePage.tsx:                  <button onClick={() => { setFilter('even'); setIsFilterOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('even_days')}</button>
+src/pages/TimetablePage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_lesson_timetable_entry')}</h2>
+src/pages/TimetablePage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_the_form_with_new_lesson_timetable_entry_details')}</p>
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/TimetablePage.tsx:                  <option value="">{t('select_group')}</option>
+src/pages/TimetablePage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
+src/pages/TimetablePage.tsx:                    <option value="">{t('select_start_time')}</option>
+src/pages/TimetablePage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+src/pages/TimetablePage.tsx:                    <option value="">{t('select_end_time')}</option>
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('lesson_days')}</label>
+src/pages/TimetablePage.tsx:                    {formData.days.length > 0 ? formData.days.map(d => t(d.toLowerCase())).join(', ') : t('select_lesson_days')}
+src/pages/TimetablePage.tsx:                            placeholder={t('search')} 
+src/pages/TimetablePage.tsx:                          {t('close')}
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
+src/pages/TimetablePage.tsx:                  <option value="">{t('select_room')}</option>
+src/pages/TimetablePage.tsx:                {t('save')}
+src/pages/TimetablePage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('details')}</h2>
+src/pages/TimetablePage.tsx:                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('title')}</div>
+src/pages/TimetablePage.tsx:                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('teacher')}</div>
+src/pages/TimetablePage.tsx:                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('room')}</div>
+src/pages/TimetablePage.tsx:                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('time')}</div>
+src/pages/TimetablePage.tsx:                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('lesson_days')}</div>
+src/pages/TimetablePage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit')}</h2>
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/TimetablePage.tsx:                  <option value="">{t('select_group')}</option>
+src/pages/TimetablePage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
+src/pages/TimetablePage.tsx:                    <option value="">{t('select_start_time')}</option>
+src/pages/TimetablePage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('end_time')}</label>
+src/pages/TimetablePage.tsx:                    <option value="">{t('select_end_time')}</option>
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('lesson_days')}</label>
+src/pages/TimetablePage.tsx:                    {formData.days.length > 0 ? formData.days.map(d => t(d.toLowerCase())).join(', ') : t('select_lesson_days')}
+src/pages/TimetablePage.tsx:                            placeholder={t('search')} 
+src/pages/TimetablePage.tsx:                          {t('close')}
+src/pages/TimetablePage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room')}</label>
+src/pages/TimetablePage.tsx:                  <option value="">{t('select_room')}</option>
+src/pages/TimetablePage.tsx:                {t('save')}
+src/pages/RoomsPage.tsx:    { key: 'name', label: t('room_name') },
+src/pages/RoomsPage.tsx:    { key: 'size', label: t('room_size') },
+src/pages/RoomsPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('rooms')}</h1>
+src/pages/RoomsPage.tsx:              {t('view')}
+src/pages/RoomsPage.tsx:                    {t('toggle_columns')}
+src/pages/RoomsPage.tsx:            {t('add_room')}
+src/pages/RoomsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(room); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/RoomsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); handleDuplicate(room); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('duplicate')}</button>
+src/pages/RoomsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(room.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/RoomsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+src/pages/RoomsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_name')}</label>
+src/pages/RoomsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_size')}</label>
+src/pages/RoomsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+src/pages/AddCoursePage.tsx:          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_course')}</h1>
+src/pages/AddCoursePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
+src/pages/AddCoursePage.tsx:              placeholder={t('e_g_course_name')}
+src/pages/AddCoursePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('price')}</label>
+src/pages/AddCoursePage.tsx:              placeholder={t('e_g_price')}
+src/pages/AddCoursePage.tsx:              {t('course_material_reference')} <span className="text-zinc-400 dark:text-zinc-500 font-normal">({t('optional')})</span>
+src/pages/AddCoursePage.tsx:              placeholder={t('e_g_url')}
+src/pages/AddCoursePage.tsx:            {t('save')}
+src/pages/AddStudentPage.tsx:    courseRegistrationDate: new Date().toISOString().split('T')[0],
+src/pages/AddStudentPage.tsx:      registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/AddStudentPage.tsx:      globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/AddStudentPage.tsx:      lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/AddStudentPage.tsx:          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_student')}</h1>
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_first_name')}
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_last_name')}
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('student')}
+src/pages/AddStudentPage.tsx:              defaultValue={t('student')}
+src/pages/AddStudentPage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/AddStudentPage.tsx:                <option value="">{t('select_course')}</option>
+src/pages/AddStudentPage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/AddStudentPage.tsx:                <option value="">{t('select_group')}</option>
+src/pages/AddStudentPage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/AddStudentPage.tsx:                max={new Date().toISOString().split('T')[0]}
+src/pages/AddStudentPage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/AddStudentPage.tsx:                <option value="">{t('select_gender')}</option>
+src/pages/AddStudentPage.tsx:                <option value="Male">{t('male')}</option>
+src/pages/AddStudentPage.tsx:                <option value="Female">{t('female')}</option>
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_phone')}
+src/pages/AddStudentPage.tsx:              {t('address_of_residence')}
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_address')}
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
+src/pages/AddStudentPage.tsx:              max={new Date().toISOString().split('T')[0]}
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_parent_name')}
+src/pages/AddStudentPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+src/pages/AddStudentPage.tsx:              placeholder={t('e_g_parent_phone')}
+src/pages/AddStudentPage.tsx:            {t('save')}
+src/pages/LoginPage.tsx:              <button onClick={() => changeLanguage('en')} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100">{t('english')}</button>
+src/pages/LoginPage.tsx:              <button onClick={() => changeLanguage('ru')} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100">{t('russian')}</button>
+src/pages/LoginPage.tsx:              <button onClick={() => changeLanguage('uz')} className="block w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100">{t('uzbek')}</button>
+src/pages/LoginPage.tsx:            <div className="font-medium text-sm">{t('login_error_title')}</div>
+src/pages/LoginPage.tsx:            <div className="text-xs opacity-80">{t('login_error_desc')}</div>
+src/pages/LoginPage.tsx:        <h1 className="text-xl font-bold text-zinc-100 text-center mb-8">{t('login_to_account')}</h1>
+src/pages/LoginPage.tsx:            <label className="text-sm font-medium text-zinc-300">{t('username')}</label>
+src/pages/LoginPage.tsx:            <label className="text-sm font-medium text-zinc-300">{t('password')}</label>
+src/pages/LoginPage.tsx:            {t('login_button')}
+src/pages/LoginPage.tsx:          {t('forgot_password_msg')}
+src/pages/EmployeeTypesPage.tsx:    { key: 'type', label: t('employee_type') },
+src/pages/EmployeeTypesPage.tsx:    { key: 'count', label: t('employee_counts') },
+src/pages/EmployeeTypesPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('employee_types')}</h1>
+src/pages/EmployeeTypesPage.tsx:              {t('view')}
+src/pages/EmployeeTypesPage.tsx:                    {t('toggle_columns')}
+src/pages/EmployeeTypesPage.tsx:            {t('add_employee_type')}
+src/pages/EmployeeTypesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(type); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/EmployeeTypesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); handleDuplicate(type); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('duplicate')}</button>
+src/pages/EmployeeTypesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(type.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/EmployeeTypesPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+src/pages/EmployeeTypesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
+src/pages/EmployeeTypesPage.tsx:                {t('save')}
+src/pages/EmployeeTypesPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_employee_type')}</h2>
+src/pages/EmployeeTypesPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_employee_type_details')}</p>
+src/pages/EmployeeTypesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
+src/pages/EmployeeTypesPage.tsx:                {t('save')}
+src/pages/AddGroupPage.tsx:    const [hours, minutes] = start.split(':').map(Number);
+src/pages/AddGroupPage.tsx:          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_group')}</h1>
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
+src/pages/AddGroupPage.tsx:              placeholder={t('e_g_group_name')}
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('courses')}</label>
+src/pages/AddGroupPage.tsx:              <option value="">{t('select_course')}</option>
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('teachers')}</label>
+src/pages/AddGroupPage.tsx:                {formData.teacher ? formData.teacher.split(', ').map(teacher => (
+src/pages/AddGroupPage.tsx:                          teacher: prev.teacher.split(', ').filter(t => t !== teacher).join(', ')
+src/pages/AddGroupPage.tsx:                  <span className="text-zinc-500">{t('select_teacher')}</span>
+src/pages/AddGroupPage.tsx:                        placeholder={t('search')} 
+src/pages/AddGroupPage.tsx:                      const isSelected = formData.teacher ? formData.teacher.split(', ').includes(employee.name) : false;
+src/pages/AddGroupPage.tsx:                                const currentTeachers = prev.teacher ? prev.teacher.split(', ').filter(Boolean) : [];
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('rooms')}</label>
+src/pages/AddGroupPage.tsx:              <option value="">{t('select_room')}</option>
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('days')}</label>
+src/pages/AddGroupPage.tsx:              <option value="">{t('select_days')}</option>
+src/pages/AddGroupPage.tsx:              <option value="odd">{t('odd')}</option>
+src/pages/AddGroupPage.tsx:              <option value="even">{t('even')}</option>
+src/pages/AddGroupPage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('start_time')}</label>
+src/pages/AddGroupPage.tsx:            {t('save')}
+src/pages/AddEmployeePage.tsx:          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('add_new_employee')}</h1>
+src/pages/AddEmployeePage.tsx:          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_employee_details')}</p>
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_first_name')}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_last_name')}
+src/pages/AddEmployeePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/AddEmployeePage.tsx:              placeholder={t('employee')}
+src/pages/AddEmployeePage.tsx:              defaultValue={t('employee')}
+src/pages/AddEmployeePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
+src/pages/AddEmployeePage.tsx:              <option value="">{t('select_employee_type')}</option>
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_username')}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_password')}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/AddEmployeePage.tsx:                max={new Date().toISOString().split('T')[0]}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/AddEmployeePage.tsx:                <option value="">{t('select_gender')}</option>
+src/pages/AddEmployeePage.tsx:                <option value="Male">{t('male')}</option>
+src/pages/AddEmployeePage.tsx:                <option value="Female">{t('female')}</option>
+src/pages/AddEmployeePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/AddEmployeePage.tsx:              placeholder={t('e_g_phone')}
+src/pages/AddEmployeePage.tsx:              {t('address_of_residence')} <span className="text-zinc-400 dark:text-zinc-500 font-normal">({t('optional')})</span>
+src/pages/AddEmployeePage.tsx:              placeholder={t('e_g_address')}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_degree')}
+src/pages/AddEmployeePage.tsx:              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('years_of_experience')}</label>
+src/pages/AddEmployeePage.tsx:                placeholder={t('e_g_salary')}
+src/pages/AddEmployeePage.tsx:            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('joined_date')}</label>
+src/pages/AddEmployeePage.tsx:              max={new Date().toISOString().split('T')[0]}
+src/pages/AddEmployeePage.tsx:              {t('salary')} <span className="text-zinc-400 dark:text-zinc-500 font-normal">({t('optional')})</span>
+src/pages/AddEmployeePage.tsx:              placeholder={t('e_g_salary')}
+src/pages/AddEmployeePage.tsx:            {t('save')}
+src/pages/StudentPaymentPage.tsx:  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
+src/pages/StudentPaymentPage.tsx:    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
+src/pages/StudentPaymentPage.tsx:        const studentCourses = student.courses.split(',').map(c => c.trim());
+src/pages/StudentPaymentPage.tsx:    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
+src/pages/StudentPaymentPage.tsx:      const parts = registration.split('-');
+src/pages/StudentPaymentPage.tsx:      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+src/pages/StudentPaymentPage.tsx:        date: formData.date || new Date().toISOString().split('T')[0],
+src/pages/StudentPaymentPage.tsx:        editedDate: new Date().toISOString().split('T')[0],
+src/pages/StudentPaymentPage.tsx:        date: formData.date || new Date().toISOString().split('T')[0],
+src/pages/StudentPaymentPage.tsx:          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{t('payment')}</h1>
+src/pages/StudentPaymentPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('student_name')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.name}</span></p>
+src/pages/StudentPaymentPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+src/pages/StudentPaymentPage.tsx:            {t('add_payment')}
+src/pages/StudentPaymentPage.tsx:        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('group_name')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_price')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('next_payment_date')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_registration_date')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('status')}</th>
+src/pages/StudentPaymentPage.tsx:                      {course.isActive ? t('active') : t('passive')}
+src/pages/StudentPaymentPage.tsx:        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('payment_history')}</h2>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('amount')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_type')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_date')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('notes')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_added_by')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_date')}</th>
+src/pages/StudentPaymentPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_by')}</th>
+src/pages/StudentPaymentPage.tsx:                            {t('edit_details')}
+src/pages/StudentPaymentPage.tsx:                            {t('delete')}
+src/pages/StudentPaymentPage.tsx:                {isEditModalOpen ? t('edit_payment') : t('add_new_student_payment')}
+src/pages/StudentPaymentPage.tsx:                {isEditModalOpen ? t('update_payment_details') : t('fill_new_student_payment_details')}
+src/pages/StudentPaymentPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/StudentPaymentPage.tsx:                  <option value="">{t('select_course')}</option>
+src/pages/StudentPaymentPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('amount')}</label>
+src/pages/StudentPaymentPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('payment_type')}</label>
+src/pages/StudentPaymentPage.tsx:                  <option value="">{t('select_payment_type')}</option>
+src/pages/StudentPaymentPage.tsx:                  <option value="Cash">{t('cash')}</option>
+src/pages/StudentPaymentPage.tsx:                  <option value="Card">{t('card')}</option>
+src/pages/StudentPaymentPage.tsx:                  <option value="Transfer">{t('transfer')}</option>
+src/pages/StudentPaymentPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date')}</label>
+src/pages/StudentPaymentPage.tsx:                  max={new Date().toISOString().split('T')[0]}
+src/pages/StudentPaymentPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('added_by')}</label>
+src/pages/StudentPaymentPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('notes')} ({t('optional')})</label>
+src/pages/StudentPaymentPage.tsx:                  placeholder={t('payment_notes')}
+src/pages/StudentPaymentPage.tsx:                {t('save')}
+src/pages/CoursesPage.tsx:    { key: 'name', label: t('course_name') },
+src/pages/CoursesPage.tsx:    { key: 'price', label: t('price') },
+src/pages/CoursesPage.tsx:    { key: 'reference', label: t('course_material_reference') },
+src/pages/CoursesPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('courses')}</h1>
+src/pages/CoursesPage.tsx:              {t('view')}
+src/pages/CoursesPage.tsx:                    {t('toggle_columns')}
+src/pages/CoursesPage.tsx:            {t('add_course')}
+src/pages/CoursesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(course); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/CoursesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); handleDuplicate(course); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('duplicate')}</button>
+src/pages/CoursesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(course.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/CoursesPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+src/pages/CoursesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
+src/pages/CoursesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('price')}</label>
+src/pages/CoursesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_material_reference')}</label>
+src/pages/CoursesPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+src/pages/GroupDetailsPage.tsx:  const groupStudents = allStudents.filter(s => s.group && s.group.split(', ').includes(group.name));
+src/pages/GroupDetailsPage.tsx:      const groupsList = studentToEdit.group ? studentToEdit.group.split(',').map(g => g.trim()) : [];
+src/pages/GroupDetailsPage.tsx:      const coursesList = studentToEdit.courses ? studentToEdit.courses.split(',').map(c => c.trim()) : [];
+src/pages/GroupDetailsPage.tsx:      const registrationsList = studentToEdit.registration ? studentToEdit.registration.split(',').map(r => r.trim()) : [];
+src/pages/GroupDetailsPage.tsx:      const pricesList = studentToEdit.price ? studentToEdit.price.split(',').map(p => p.trim()) : [];
+src/pages/GroupDetailsPage.tsx:        registrationsList[groupIndex] = editStudentFormData.courseRegistrationDate ? editStudentFormData.courseRegistrationDate.split('-').reverse().join('-') : '';
+src/pages/GroupDetailsPage.tsx:    const groups = item.group ? item.group.split(',').map(g => g.trim()) : [];
+src/pages/GroupDetailsPage.tsx:    const courses = item.courses ? item.courses.split(',').map(c => c.trim()) : [];
+src/pages/GroupDetailsPage.tsx:    const registrations = item.registration ? item.registration.split(',').map(r => r.trim()) : [];
+src/pages/GroupDetailsPage.tsx:    const prices = item.price ? item.price.split(',').map(p => p.trim()) : [];
+src/pages/GroupDetailsPage.tsx:      const parts = registrations[groupIndex].split('-');
+src/pages/GroupDetailsPage.tsx:      firstName: item.name.split(' ')[0] || '', 
+src/pages/GroupDetailsPage.tsx:      lastName: item.name.split(' ').slice(1).join(' ') || '', 
+src/pages/GroupDetailsPage.tsx:        registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/GroupDetailsPage.tsx:        lastChargedDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/GroupDetailsPage.tsx:        globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+src/pages/GroupDetailsPage.tsx:        const currentGroups = s.group ? s.group.split(',').map(g => g.trim()) : [];
+src/pages/GroupDetailsPage.tsx:        const currentCourses = s.courses ? s.courses.split(',').map(c => c.trim()) : [];
+src/pages/GroupDetailsPage.tsx:        const currentPrices = s.price ? s.price.split(',').map(p => p.trim()) : [];
+src/pages/GroupDetailsPage.tsx:        const currentRegistrations = s.registration ? s.registration.split(',').map(r => r.trim()) : [];
+src/pages/GroupDetailsPage.tsx:        const currentLastCharged = s.lastChargedDate ? s.lastChargedDate.split(',').map(d => d.trim()) : [];
+src/pages/GroupDetailsPage.tsx:              const formattedDate = formData.courseRegistrationDate.split('-').reverse().join('-');
+src/pages/GroupDetailsPage.tsx:            const dateToUse = formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+src/pages/GroupDetailsPage.tsx:            globalRegistrationDate: s.globalRegistrationDate || (formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toLocaleDateString('en-GB').replace(/\//g, '-')),
+src/pages/GroupDetailsPage.tsx:    { key: 'name', label: t('full_name') },
+src/pages/GroupDetailsPage.tsx:    { key: 'balance', label: t('balance') },
+src/pages/GroupDetailsPage.tsx:    { key: 'price', label: t('course_price') },
+src/pages/GroupDetailsPage.tsx:    { key: 'registration', label: t('course_registration_date') },
+src/pages/GroupDetailsPage.tsx:    { key: 'phone', label: t('phone') },
+src/pages/GroupDetailsPage.tsx:    { key: 'gender', label: t('gender') },
+src/pages/GroupDetailsPage.tsx:    { key: 'parentName', label: t('parent_name') },
+src/pages/GroupDetailsPage.tsx:    { key: 'parentPhone', label: t('parent_phone') },
+src/pages/GroupDetailsPage.tsx:    { key: 'dob', label: t('date_of_birth') },
+src/pages/GroupDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('teacher')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
+src/pages/GroupDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('course')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
+src/pages/GroupDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('room')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
+src/pages/GroupDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
+src/pages/GroupDetailsPage.tsx:            {t('actions')}
+src/pages/GroupDetailsPage.tsx:                  {t('edit_details')}
+src/pages/GroupDetailsPage.tsx:                  {t('delete')}
+src/pages/GroupDetailsPage.tsx:          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('students')}</h2>
+src/pages/GroupDetailsPage.tsx:                {t('view')}
+src/pages/GroupDetailsPage.tsx:                      {t('toggle_columns')}
+src/pages/GroupDetailsPage.tsx:              {t('add_student')}
+src/pages/GroupDetailsPage.tsx:                          <Link to={`/students/${student.id}`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</Link>
+src/pages/GroupDetailsPage.tsx:                          <Link to={`/students/${student.id}/payment`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('payment')}</Link>
+src/pages/GroupDetailsPage.tsx:                          <button onClick={(e) => { e.stopPropagation(); openEditStudentModal(student); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/GroupDetailsPage.tsx:                          <button onClick={(e) => { e.stopPropagation(); setStudentToDelete(student.id); setActiveStudentMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/GroupDetailsPage.tsx:                  {t('existing')}
+src/pages/GroupDetailsPage.tsx:                  {t('new')}
+src/pages/GroupDetailsPage.tsx:                {addTab === 'existing' ? t('list_of_students') : t('add_new_student')}
+src/pages/GroupDetailsPage.tsx:                {addTab === 'existing' ? t('select_and_add_students') : t('fill_student_details')}
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
+src/pages/GroupDetailsPage.tsx:                      max={new Date().toISOString().split('T')[0]}
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')} ({t('optional')})</label>
+src/pages/GroupDetailsPage.tsx:                      placeholder={t('e_g_price')}
+src/pages/GroupDetailsPage.tsx:                    placeholder={t('search')}
+src/pages/GroupDetailsPage.tsx:                        <th className="px-4 py-3 font-bold">{t('full_name')}</th>
+src/pages/GroupDetailsPage.tsx:                        <th className="px-4 py-3 font-bold">{t('registration_date')}</th>
+src/pages/GroupDetailsPage.tsx:                          <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{student.globalRegistrationDate || (student.registration ? student.registration.split(',')[0].trim() : '')}</td>
+src/pages/GroupDetailsPage.tsx:                            {t('no_students_found')}
+src/pages/GroupDetailsPage.tsx:                  {t('save')}
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/GroupDetailsPage.tsx:                      max={new Date().toISOString().split('T')[0]}
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/GroupDetailsPage.tsx:                      <option value="Male">{t('male')}</option>
+src/pages/GroupDetailsPage.tsx:                      <option value="Female">{t('female')}</option>
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_course')}</label>
+src/pages/GroupDetailsPage.tsx:                        <option value="">{t('select_course')}</option>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_group')}</label>
+src/pages/GroupDetailsPage.tsx:                        <option value="">{t('select_group')}</option>
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('registration_date')}</label>
+src/pages/GroupDetailsPage.tsx:                      max={new Date().toISOString().split('T')[0]}
+src/pages/GroupDetailsPage.tsx:                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')}</label>
+src/pages/GroupDetailsPage.tsx:                      placeholder={t('e_g_price')}
+src/pages/GroupDetailsPage.tsx:                  {t('save')}
+src/pages/GroupDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_group')}</h2>
+src/pages/GroupDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_group_details')}</p>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employees')}</label>
+src/pages/GroupDetailsPage.tsx:                    {editFormData.teacher ? editFormData.teacher.split(', ').map(teacher => (
+src/pages/GroupDetailsPage.tsx:                              teacher: prev.teacher.split(', ').filter(t => t !== teacher).join(', ')
+src/pages/GroupDetailsPage.tsx:                      <span className="text-zinc-500">{t('select_teacher')}</span>
+src/pages/GroupDetailsPage.tsx:                            placeholder={t('search')} 
+src/pages/GroupDetailsPage.tsx:                          const isSelected = editFormData.teacher ? editFormData.teacher.split(', ').includes(employee.name) : false;
+src/pages/GroupDetailsPage.tsx:                                    const currentTeachers = prev.teacher ? prev.teacher.split(', ').filter(Boolean) : [];
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/GroupDetailsPage.tsx:                    <option value="">{t('select_course')}</option>
+src/pages/GroupDetailsPage.tsx:                <p className="text-xs text-zinc-500 mt-1">{t('cannot_change_course')}</p>
+src/pages/GroupDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+src/pages/GroupDetailsPage.tsx:              const currentGroups = student.group.split(',').map(g => g.trim());
+src/pages/GroupDetailsPage.tsx:              const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+src/pages/GroupDetailsPage.tsx:              const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+src/pages/GroupDetailsPage.tsx:              const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
+src/pages/GroupDetailsPage.tsx:              const currentLastCharged = student.lastChargedDate ? student.lastChargedDate.split(',').map(d => d.trim()) : [];
+src/pages/GroupDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_student_details')}</h2>
+src/pages/GroupDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_student_details')}</p>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/GroupDetailsPage.tsx:                  <input type="date" max={new Date().toISOString().split('T')[0]} value={editStudentFormData.dob} onChange={e => setEditStudentFormData({...editStudentFormData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/GroupDetailsPage.tsx:                    <option value="Male">{t('male')}</option>
+src/pages/GroupDetailsPage.tsx:                    <option value="Female">{t('female')}</option>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/GroupDetailsPage.tsx:                  <option value="">{t('select_course')}</option>
+src/pages/GroupDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/GroupDetailsPage.tsx:                  <option value="">{t('select_group')}</option>
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+src/pages/GroupDetailsPage.tsx:                  <input type="date" max={new Date().toISOString().split('T')[0]} value={editStudentFormData.courseRegistrationDate} onChange={e => setEditStudentFormData({...editStudentFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/GroupDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_price')}</label>
+src/pages/GroupDetailsPage.tsx:                    placeholder={t('e_g_price')}
+src/pages/GroupDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+src/pages/StudentDetailsPage.tsx:  const courses = student.courses ? student.courses.split(',').map((courseName, index) => {
+src/pages/StudentDetailsPage.tsx:    const groupNames = student.group ? student.group.split(',').map(g => g.trim()) : [];
+src/pages/StudentDetailsPage.tsx:        const studentCourses = student.courses.split(',').map(c => c.trim());
+src/pages/StudentDetailsPage.tsx:    const registration = student.registration ? student.registration.split(',')[groupIndex]?.trim() || student.registration.split(',')[0]?.trim() || 'N/A' : 'N/A';
+src/pages/StudentDetailsPage.tsx:      const parts = registration.split('-');
+src/pages/StudentDetailsPage.tsx:      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+src/pages/StudentDetailsPage.tsx:        date: editPaymentData.date || new Date().toISOString().split('T')[0],
+src/pages/StudentDetailsPage.tsx:        editedDate: new Date().toISOString().split('T')[0],
+src/pages/StudentDetailsPage.tsx:    const firstRegistration = student.registration.split(',')[0].trim();
+src/pages/StudentDetailsPage.tsx:    const parts = firstRegistration.split('-');
+src/pages/StudentDetailsPage.tsx:    firstName: student.name.split(' ')[0] || '', 
+src/pages/StudentDetailsPage.tsx:    lastName: student.name.split(' ').slice(1).join(' ') || '', 
+src/pages/StudentDetailsPage.tsx:    course: student.courses ? student.courses.split(',')[0].trim() : '',
+src/pages/StudentDetailsPage.tsx:    group: student.group ? student.group.split(',')[0].trim() : '',
+src/pages/StudentDetailsPage.tsx:    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+src/pages/StudentDetailsPage.tsx:    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
+src/pages/StudentDetailsPage.tsx:    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+src/pages/StudentDetailsPage.tsx:    const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
+src/pages/StudentDetailsPage.tsx:      currentRegistrations[0] = editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
+src/pages/StudentDetailsPage.tsx:      currentRegistrations.push(editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : '');
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('phone')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.phone}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('parent_name')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.parent}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('parent_phone')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.parentPhone}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('gender')}:</span> <span className="text-zinc-900 dark:text-zinc-100 capitalize">{student.gender}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('date_of_birth')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.dob}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('address_of_residence')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.address}</span></p>
+src/pages/StudentDetailsPage.tsx:            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+src/pages/StudentDetailsPage.tsx:            {t('actions')}
+src/pages/StudentDetailsPage.tsx:                  {t('payment')}
+src/pages/StudentDetailsPage.tsx:                  {t('edit_details')}
+src/pages/StudentDetailsPage.tsx:                  {t('delete')}
+src/pages/StudentDetailsPage.tsx:          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('student_courses')}</h2>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('group_name')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_price')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('next_payment_date')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_registration_date')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30 rounded-tr-xl">{t('status')}</th>
+src/pages/StudentDetailsPage.tsx:                      {course.isActive ? t('active') : t('passive')}
+src/pages/StudentDetailsPage.tsx:        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('payment_history')}</h2>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('course_name')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('amount')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_type')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_date')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('notes')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('payment_added_by')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_date')}</th>
+src/pages/StudentDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('edited_by')}</th>
+src/pages/StudentDetailsPage.tsx:                            {t('edit_details')}
+src/pages/StudentDetailsPage.tsx:                            {t('delete')}
+src/pages/StudentDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_student')}</h2>
+src/pages/StudentDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_student_details')}</p>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/StudentDetailsPage.tsx:                <input type="text" value={t('student')} disabled className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
+src/pages/StudentDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/StudentDetailsPage.tsx:                  <input type="date" max={new Date().toISOString().split('T')[0]} value={editFormData.dob} onChange={e => setEditFormData({...editFormData, dob: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/StudentDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/StudentDetailsPage.tsx:                    <option value="Male">{t('male')}</option>
+src/pages/StudentDetailsPage.tsx:                    <option value="Female">{t('female')}</option>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_name')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/StudentDetailsPage.tsx:                  <option value="">{t('select_course')}</option>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+src/pages/StudentDetailsPage.tsx:                  <option value="">{t('select_group')}</option>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>
+src/pages/StudentDetailsPage.tsx:                <input type="date" max={new Date().toISOString().split('T')[0]} value={editFormData.courseRegistrationDate} onChange={e => setEditFormData({...editFormData, courseRegistrationDate: e.target.value})} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/StudentDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+src/pages/StudentDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_payment')}</h2>
+src/pages/StudentDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('update_payment_details')}</p>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/StudentDetailsPage.tsx:                  <option value="">{t('select_course')}</option>
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('amount')}</label>
+src/pages/StudentDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('payment_type')}</label>
+src/pages/StudentDetailsPage.tsx:                    <option value="Cash">{t('cash')}</option>
+src/pages/StudentDetailsPage.tsx:                    <option value="Card">{t('card')}</option>
+src/pages/StudentDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date')}</label>
+src/pages/StudentDetailsPage.tsx:                    max={new Date().toISOString().split('T')[0]}
+src/pages/StudentDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('notes')} ({t('optional')})</label>
+src/pages/StudentDetailsPage.tsx:                  placeholder={t('payment_notes')}
+src/pages/StudentDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save_changes')}</button>
+src/pages/EmployeeDetailsPage.tsx:    return <div className="p-6 text-zinc-500">{t('employee_not_found')}</div>;
+src/pages/EmployeeDetailsPage.tsx:    const [firstName = '', ...lastNameParts] = (employee.name || '').split(' ');
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('employee_type')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('qualification')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('years_of_experience')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('gender')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('phone')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('date_of_birth')}:</span>
+src/pages/EmployeeDetailsPage.tsx:              <span className="font-medium text-zinc-900 dark:text-zinc-100">{t('joined_date')}:</span>
+src/pages/EmployeeDetailsPage.tsx:            {t('actions')}
+src/pages/EmployeeDetailsPage.tsx:                  {t('edit_details')}
+src/pages/EmployeeDetailsPage.tsx:                  {t('edit_credentials')}
+src/pages/EmployeeDetailsPage.tsx:                  {t('delete')}
+src/pages/EmployeeDetailsPage.tsx:        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">{t('groups')}</h2>
+src/pages/EmployeeDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('group_name')}</th>
+src/pages/EmployeeDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('number_of_students')}</th>
+src/pages/EmployeeDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('teachers')}</th>
+src/pages/EmployeeDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('courses')}</th>
+src/pages/EmployeeDetailsPage.tsx:                <th className="px-6 py-4 font-bold bg-zinc-50 dark:bg-zinc-900/30">{t('rooms')}</th>
+src/pages/EmployeeDetailsPage.tsx:                    {t('no_groups_assigned')}
+src/pages/EmployeeDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_the_employee')}</h2>
+src/pages/EmployeeDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_employee_details')}</p>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <input disabled value={t('employee')} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 dark:text-zinc-500 focus:outline-none cursor-not-allowed" />
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
+src/pages/EmployeeDetailsPage.tsx:                  <option value="">{t('select_type')}</option>
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/EmployeeDetailsPage.tsx:                  <input required max={new Date().toISOString().split('T')[0]} value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} type="date" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/EmployeeDetailsPage.tsx:                    <option value="">{t('select_gender')}</option>
+src/pages/EmployeeDetailsPage.tsx:                    <option value="Male">{t('male')}</option>
+src/pages/EmployeeDetailsPage.tsx:                    <option value="Female">{t('female')}</option>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('years_of_experience')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('joined_date')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <input required max={new Date().toISOString().split('T')[0]} value={formData.joined} onChange={e => setFormData({...formData, joined: e.target.value})} type="date" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('salary')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
+src/pages/EmployeeDetailsPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
+src/pages/EmployeeDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+src/pages/EmployeeDetailsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_credentials')}</h2>
+src/pages/EmployeeDetailsPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('update_username_and_password')}</p>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
+src/pages/EmployeeDetailsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
+src/pages/EmployeeDetailsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save_credentials')}</button>
+src/pages/EmployeesPage.tsx:    const [firstName = '', ...lastNameParts] = (item.name || '').split(' ');
+src/pages/EmployeesPage.tsx:    { key: 'name', label: t('full_name') },
+src/pages/EmployeesPage.tsx:    { key: 'phone', label: t('phone') },
+src/pages/EmployeesPage.tsx:    { key: 'qualification', label: t('qualification') },
+src/pages/EmployeesPage.tsx:    { key: 'gender', label: t('gender') },
+src/pages/EmployeesPage.tsx:    { key: 'exp', label: t('years_of_experience') },
+src/pages/EmployeesPage.tsx:    { key: 'dob', label: t('date_of_birth') },
+src/pages/EmployeesPage.tsx:    { key: 'joined', label: t('joined_date') },
+src/pages/EmployeesPage.tsx:    { key: 'salary', label: t('salary') },
+src/pages/EmployeesPage.tsx:    { key: 'employeeType', label: t('employee_type') },
+src/pages/EmployeesPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('employees')}</h1>
+src/pages/EmployeesPage.tsx:              {t('view')}
+src/pages/EmployeesPage.tsx:                    {t('toggle_columns')}
+src/pages/EmployeesPage.tsx:            {t('add_employee')}
+src/pages/EmployeesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openDetailsModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</button>
+src/pages/EmployeesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(employee); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/EmployeesPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(employee.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/EmployeesPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">{t('edit_employee_details')}</h2>
+src/pages/EmployeesPage.tsx:              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('fill_edit_employee_details')}</p>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('first_name')}</label>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('last_name')}</label>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employee_type')}</label>
+src/pages/EmployeesPage.tsx:                  <option value="">{t('select_type')}</option>
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('date_of_birth')}</label>
+src/pages/EmployeesPage.tsx:                  <input required max={new Date().toISOString().split('T')[0]} value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} type="date" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('gender')}</label>
+src/pages/EmployeesPage.tsx:                    <option value="">{t('select_gender')}</option>
+src/pages/EmployeesPage.tsx:                    <option value="Male">{t('male')}</option>
+src/pages/EmployeesPage.tsx:                    <option value="Female">{t('female')}</option>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('phone')}</label>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('address_of_residence')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('qualification')}</label>
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('years_of_experience')}</label>
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('joined_date')}</label>
+src/pages/EmployeesPage.tsx:                <input required max={new Date().toISOString().split('T')[0]} value={formData.joined} onChange={e => setFormData({...formData, joined: e.target.value})} type="date" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]" />
+src/pages/EmployeesPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('salary')} <span className="text-zinc-500 font-normal">({t('optional')})</span></label>
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('username')}</label>
+src/pages/EmployeesPage.tsx:                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('password')}</label>
+src/pages/EmployeesPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
+src/pages/GroupsPage.tsx:    { key: 'name', label: t('group_name') },
+src/pages/GroupsPage.tsx:    { key: 'students', label: t('number_of_students') },
+src/pages/GroupsPage.tsx:    { key: 'balance', label: t('group_balance') },
+src/pages/GroupsPage.tsx:    { key: 'teachers', label: t('teachers') },
+src/pages/GroupsPage.tsx:    { key: 'courses', label: t('courses') },
+src/pages/GroupsPage.tsx:    { key: 'rooms', label: t('rooms') },
+src/pages/GroupsPage.tsx:        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('groups')}</h1>
+src/pages/GroupsPage.tsx:              {t('view')}
+src/pages/GroupsPage.tsx:                    {t('toggle_columns')}
+src/pages/GroupsPage.tsx:            {t('add_group')}
+src/pages/GroupsPage.tsx:                        <Link to={`/groups/${group.id}`} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('details')}</Link>
+src/pages/GroupsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); openEditModal(group); }} className="block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100">{t('edit_details')}</button>
+src/pages/GroupsPage.tsx:                        <button onClick={(e) => { e.stopPropagation(); setItemToDelete(group.id); setActiveMenu(null); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300">{t('delete')}</button>
+src/pages/GroupsPage.tsx:              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
+src/pages/GroupsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
+src/pages/GroupsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('employees')}</label>
+src/pages/GroupsPage.tsx:                    {formData.teachers ? formData.teachers.split(', ').map(teacher => (
+src/pages/GroupsPage.tsx:                              teachers: prev.teachers.split(', ').filter(t => t !== teacher).join(', ')
+src/pages/GroupsPage.tsx:                      <span className="text-zinc-500">{t('select_teacher')}</span>
+src/pages/GroupsPage.tsx:                            placeholder={t('search')} 
+src/pages/GroupsPage.tsx:                          const isSelected = formData.teachers ? formData.teachers.split(', ').includes(employee.name) : false;
+src/pages/GroupsPage.tsx:                                    const currentTeachers = prev.teachers ? prev.teachers.split(', ').filter(Boolean) : [];
+src/pages/GroupsPage.tsx:                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+src/pages/GroupsPage.tsx:                    <option value="">{t('select_course')}</option>
+src/pages/GroupsPage.tsx:                <p className="text-xs text-zinc-500 mt-1">{t('cannot_change_course')}</p>
+src/pages/GroupsPage.tsx:              <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
+src/components/Layout.tsx:    { id: 'timetable', label: t('timetable'), icon: CalendarDays, path: '/timetable' },
+src/components/Layout.tsx:    { id: 'analytics', label: t('analytics'), icon: BarChart2, path: '/analytics' },
+src/components/Layout.tsx:      label: t('groups'), 
+src/components/Layout.tsx:        { label: t('manage_groups'), path: '/groups' },
+src/components/Layout.tsx:        { label: t('add_new_group'), path: '/groups/add' }
+src/components/Layout.tsx:      label: t('students'), 
+src/components/Layout.tsx:        { label: t('manage_students'), path: '/students' },
+src/components/Layout.tsx:        { label: t('add_new_student'), path: '/students/add' }
+src/components/Layout.tsx:      label: t('employees'), 
+src/components/Layout.tsx:        { label: t('manage_employees'), path: '/employees' },
+src/components/Layout.tsx:        { label: t('manage_employee_types'), path: '/employees/types' },
+src/components/Layout.tsx:        { label: t('add_new_employee'), path: '/employees/add' }
+src/components/Layout.tsx:      label: t('courses'), 
+src/components/Layout.tsx:        { label: t('manage_courses'), path: '/courses' },
+src/components/Layout.tsx:        { label: t('add_new_course'), path: '/courses/add' }
+src/components/Layout.tsx:      label: t('rooms'), 
+src/components/Layout.tsx:        { label: t('manage_rooms'), path: '/rooms' },
+src/components/Layout.tsx:        { label: t('add_new_room'), path: '/rooms/add' }
+src/components/Layout.tsx:  const userRole = user?.role || t('employee');
+src/components/Layout.tsx:            {isSidebarOpen && <span className="font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{t('admin_dashboard')}</span>}
+src/components/Layout.tsx:                  {t('account')}
+src/components/Layout.tsx:                  {t('tutorial')}
+src/components/Layout.tsx:                  {t('logout')}
+src/components/Layout.tsx:              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{t('account')}</h2>
+src/components/Layout.tsx:                    {t('username')}
+src/components/Layout.tsx:                    {t('password')}
+src/components/Layout.tsx:                  {t('cannot_change_credentials')}
+src/components/Layout.tsx:                {t('close')}
+src/components/ConfirmDeleteModal.tsx:            {title || t('confirm_delete')}
+src/components/ConfirmDeleteModal.tsx:            {message || t('are_you_sure_delete')}
+src/components/ConfirmDeleteModal.tsx:              {t('cancel')}
+src/components/ConfirmDeleteModal.tsx:              {t('delete')}
+src/lib/mockData.ts:        const currentGroups = s.group.split(', ');
+src/lib/mockData.ts:    const registrationDates = student.registration ? student.registration.split(',').map(d => d.trim()) : [];
+src/lib/mockData.ts:    const prices = student.price ? student.price.split(',').map(p => p.trim()) : [];
+src/lib/mockData.ts:    const courses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
+src/lib/mockData.ts:    const groups = student.group ? student.group.split(',').map(g => g.trim()) : [];
+src/lib/mockData.ts:        const parts = regStr.split('-');
+src/lib/utils.ts:    return strValue.split(',').map(part => {
