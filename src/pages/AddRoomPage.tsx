@@ -7,11 +7,18 @@ import { useRooms } from '../lib/mockData.ts';
 export default function AddRoomPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addItem } = useRooms();
+  const { items: rooms, addItem } = useRooms();
   const [formData, setFormData] = useState({ name: '', size: 0 });
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (rooms.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
+      setError(t('room_already_exists') || 'A room with this name already exists');
+      return;
+    }
+
     addItem(formData);
     navigate(-1);
   };
@@ -31,6 +38,11 @@ export default function AddRoomPage() {
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_name')}</label>
             <input 

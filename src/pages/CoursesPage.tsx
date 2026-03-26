@@ -20,15 +20,21 @@ export default function CoursesPage() {
   const [editItem, setEditItem] = useState<Course | null>(null);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: '', price: '', reference: '' });
+  const [error, setError] = useState('');
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editItem) {
+      if (courses.some(c => c.id !== editItem.id && c.name.toLowerCase() === formData.name.toLowerCase())) {
+        setError(t('course_already_exists') || 'A course with this name already exists');
+        return;
+      }
       updateItem(editItem.id, {
         ...formData,
         price: formatPrice(formData.price)
       });
       setEditItem(null);
+      setError('');
     }
   };
 
@@ -36,12 +42,19 @@ export default function CoursesPage() {
     setFormData({ name: item.name, price: item.price, reference: item.reference });
     setEditItem(item);
     setActiveMenu(null);
+    setError('');
   };
 
   const handleDuplicate = (course: Course) => {
+    let newName = `${course.name} (Copy)`;
+    let counter = 1;
+    while (courses.some(c => c.name.toLowerCase() === newName.toLowerCase())) {
+      counter++;
+      newName = `${course.name} (Copy ${counter})`;
+    }
     addItem({
       ...course,
-      name: `${course.name} (Copy)`
+      name: newName
     });
     setActiveMenu(null);
   };
@@ -218,7 +231,7 @@ export default function CoursesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <button 
-              onClick={() => setEditItem(null)}
+              onClick={() => { setEditItem(null); setError(''); }}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -227,6 +240,11 @@ export default function CoursesPage() {
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
             </div>
             <form className="space-y-6" onSubmit={handleEditSubmit}>
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
                 <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />

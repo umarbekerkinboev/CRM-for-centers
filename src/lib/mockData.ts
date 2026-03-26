@@ -73,17 +73,49 @@ export type Payment = {
   editedBy: string;
 };
 
-const initialMockStudents: Student[] = [];
+const initialMockStudents: Student[] = [
+  { id: 1, name: 'Alice Brown', phone: '+998911112233', courses: 'General English', group: 'GE-101', gender: 'Female', parent: 'Mr. Brown', parentPhone: '+998911112244', dob: '2005-04-12', address: 'Tashkent', balance: 0, price: '300000', registration: '10-01-2024' },
+  { id: 2, name: 'Bob White', phone: '+998912223344', courses: 'General English', group: 'GE-101', gender: 'Male', parent: 'Mrs. White', parentPhone: '+998912223355', dob: '2006-08-22', address: 'Tashkent', balance: 0, price: '300000', registration: '15-01-2024' },
+  { id: 3, name: 'Charlie Green', phone: '+998913334455', courses: 'IELTS Foundation', group: 'IELTS-201', gender: 'Male', parent: 'Mr. Green', parentPhone: '+998913334466', dob: '2004-11-05', address: 'Tashkent', balance: 0, price: '400000', registration: '01-02-2024' },
+  { id: 4, name: 'David Black', phone: '+998914445566', courses: 'Math in English', group: 'MATH-101', gender: 'Male', parent: 'Mrs. Black', parentPhone: '+998914445577', dob: '2007-02-18', address: 'Tashkent', balance: 0, price: '350000', registration: '10-02-2024' },
+  { id: 5, name: 'Eva Gray', phone: '+998915556677', courses: 'IELTS Foundation', group: 'IELTS-201', gender: 'Female', parent: 'Mr. Gray', parentPhone: '+998915556688', dob: '2005-09-30', address: 'Tashkent', balance: 0, price: '400000', registration: '15-02-2024' },
+];
 
-const initialMockGroups: Group[] = [];
+const initialMockGroups: Group[] = [
+  { id: 1, name: 'GE-101', students: 2, teachers: 'John Doe', courses: 'General English', rooms: 'Room 1', days: ['Mon', 'Wed', 'Fri'], startTime: '14:00', endTime: '15:30' },
+  { id: 2, name: 'IELTS-201', students: 2, teachers: 'Sarah Williams', courses: 'IELTS Foundation', rooms: 'Room 2', days: ['Tue', 'Thu', 'Sat'], startTime: '16:00', endTime: '17:30' },
+  { id: 3, name: 'MATH-101', students: 1, teachers: 'Jane Smith', courses: 'Math in English', rooms: 'Room 3', days: ['Mon', 'Wed', 'Fri'], startTime: '16:00', endTime: '17:30' },
+];
 
-const initialMockEmployees: Employee[] = [];
+const initialMockEmployees: Employee[] = [
+  { id: 1, name: 'John Doe', phone: '+998901234567', qualification: 'CELTA', gender: 'Male', exp: 5, dob: '1990-05-15', joined: '2020-08-01', employeeType: 'English Teacher', address: 'Tashkent', salary: '5000000' },
+  { id: 2, name: 'Jane Smith', phone: '+998902345678', qualification: 'BSc Math', gender: 'Female', exp: 3, dob: '1992-10-20', joined: '2021-09-15', employeeType: 'Math Teacher', address: 'Tashkent', salary: '4500000' },
+  { id: 3, name: 'Mike Johnson', phone: '+998903456789', qualification: 'BBA', gender: 'Male', exp: 7, dob: '1988-03-10', joined: '2019-11-01', employeeType: 'Sales Manager', address: 'Tashkent', salary: '6000000' },
+  { id: 4, name: 'Sarah Williams', phone: '+998904567890', qualification: 'IELTS 8.5', gender: 'Female', exp: 2, dob: '1995-07-25', joined: '2022-01-10', employeeType: 'English Teacher', address: 'Tashkent', salary: '4000000' },
+];
 
-const initialMockCourses: Course[] = [];
+const initialMockCourses: Course[] = [
+  { id: 1, name: 'General English', price: '300000', reference: 'GE' },
+  { id: 2, name: 'IELTS Foundation', price: '400000', reference: 'IELTS-F' },
+  { id: 3, name: 'IELTS Graduation', price: '500000', reference: 'IELTS-G' },
+  { id: 4, name: 'Math in English', price: '350000', reference: 'MATH-E' },
+  { id: 5, name: 'SAT Math', price: '450000', reference: 'SAT-M' },
+];
 
-const initialMockRooms: Room[] = [];
+const initialMockRooms: Room[] = [
+  { id: 1, name: 'Room 1', size: 15 },
+  { id: 2, name: 'Room 2', size: 20 },
+  { id: 3, name: 'Room 3', size: 12 },
+  { id: 4, name: 'Room 4', size: 15 },
+];
 
-const initialMockPayments: Payment[] = [];
+const initialMockPayments: Payment[] = [
+  { id: 1, studentId: 1, course: 'General English', amount: '300000', type: 'Cash', date: '2024-01-10', notes: 'First month', addedBy: 'Admin', editedDate: '', editedBy: '' },
+  { id: 2, studentId: 2, course: 'General English', amount: '300000', type: 'Card', date: '2024-01-15', notes: 'First month', addedBy: 'Admin', editedDate: '', editedBy: '' },
+  { id: 3, studentId: 3, course: 'IELTS Foundation', amount: '400000', type: 'Cash', date: '2024-02-01', notes: 'First month', addedBy: 'Admin', editedDate: '', editedBy: '' },
+  { id: 4, studentId: 4, course: 'Math in English', amount: '350000', type: 'Transfer', date: '2024-02-10', notes: 'First month', addedBy: 'Admin', editedDate: '', editedBy: '' },
+  { id: 5, studentId: 5, course: 'IELTS Foundation', amount: '400000', type: 'Cash', date: '2024-02-15', notes: 'First month', addedBy: 'Admin', editedDate: '', editedBy: '' },
+];
 
 // Migration to reset student details and payments
 const migrationKey = 'migration_reset_students_v2';
@@ -178,6 +210,19 @@ if (!localStorage.getItem(migrationKeyV4)) {
     localStorage.setItem('mock_payments', JSON.stringify([]));
   } catch (e) {}
   localStorage.setItem(migrationKeyV4, 'true');
+}
+
+const migrationKeyV5 = 'migration_populate_initial_data_v1';
+if (!localStorage.getItem(migrationKeyV5)) {
+  try {
+    localStorage.setItem('mock_students', JSON.stringify(initialMockStudents));
+    localStorage.setItem('mock_groups', JSON.stringify(initialMockGroups));
+    localStorage.setItem('mock_employees', JSON.stringify(initialMockEmployees));
+    localStorage.setItem('mock_courses', JSON.stringify(initialMockCourses));
+    localStorage.setItem('mock_rooms', JSON.stringify(initialMockRooms));
+    localStorage.setItem('mock_payments', JSON.stringify(initialMockPayments));
+  } catch (e) {}
+  localStorage.setItem(migrationKeyV5, 'true');
 }
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {

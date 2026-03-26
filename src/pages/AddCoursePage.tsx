@@ -8,7 +8,8 @@ import { formatPrice } from '../lib/utils.ts';
 export default function AddCoursePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addItem } = useCourses();
+  const { items: courses, addItem } = useCourses();
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -19,6 +20,11 @@ export default function AddCoursePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price) return;
+
+    if (courses.some(c => c.name.toLowerCase() === formData.name.toLowerCase())) {
+      setError(t('course_already_exists') || 'A course with this name already exists');
+      return;
+    }
 
     addItem({
       name: formData.name,
@@ -43,6 +49,11 @@ export default function AddCoursePage() {
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_name')}</label>
             <input 
