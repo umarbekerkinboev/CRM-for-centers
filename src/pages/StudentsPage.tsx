@@ -204,9 +204,9 @@ export default function StudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{t('students')}</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <button 
               onClick={() => setIsViewMenuOpen(!isViewMenuOpen)}

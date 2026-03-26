@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   CalendarDays, 
@@ -42,8 +42,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const location = useLocation();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -138,10 +150,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="h-screen overflow-hidden bg-zinc-50 dark:bg-[#0a0a0a] text-zinc-900 dark:text-zinc-300 flex font-sans transition-colors duration-200">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)} 
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={cn(
-        "border-r border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] flex flex-col shrink-0 transition-all duration-300 relative z-20",
-        isSidebarOpen ? "w-[260px]" : "w-[68px]"
+        "fixed md:relative border-r border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] flex flex-col shrink-0 transition-all duration-300 z-30 h-full",
+        isSidebarOpen ? "w-[260px] translate-x-0" : "w-[260px] md:w-[68px] -translate-x-full md:translate-x-0"
       )}>
         <div className={cn("h-16 flex items-center border-b border-transparent shrink-0", isSidebarOpen ? "px-6" : "justify-center")}>
           <div className="flex items-center gap-3">
@@ -283,9 +303,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-200">
+      <main className="flex-1 flex flex-col min-w-0 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-200 w-full md:w-auto">
         {/* Topbar */}
-        <header className="h-16 flex items-center justify-between px-6 shrink-0 border-b border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] transition-colors duration-200">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 shrink-0 border-b border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-[#0a0a0a] transition-colors duration-200">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -339,7 +359,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
           <div className="max-w-[1600px] mx-auto">
             {children}
           </div>

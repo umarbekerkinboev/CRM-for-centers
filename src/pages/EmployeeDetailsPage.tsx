@@ -158,7 +158,7 @@ export default function EmployeeDetailsPage() {
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{employee.name}</h1>
           <div className="space-y-2 text-sm">

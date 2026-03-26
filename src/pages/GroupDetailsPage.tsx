@@ -379,7 +379,7 @@ export default function GroupDetailsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{group.name}</h1>
           <div className="space-y-1 text-sm">
@@ -427,9 +427,9 @@ export default function GroupDetailsPage() {
       />
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('students')}</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
               <button 
                 onClick={() => setIsViewMenuOpen(!isViewMenuOpen)}

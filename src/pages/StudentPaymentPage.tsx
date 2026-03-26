@@ -200,7 +200,7 @@ export default function StudentPaymentPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{t('payment')}</h1>
           <div className="space-y-1 text-sm">
