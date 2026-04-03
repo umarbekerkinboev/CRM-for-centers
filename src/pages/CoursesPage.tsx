@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn, formatPrice, displayPrice } from '../lib/utils.ts';
-import { useCourses, Course } from '../lib/mockData.ts';
+import { useCourses, useGroups, Course } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 type SortConfig = {
@@ -14,12 +14,18 @@ type SortConfig = {
 export default function CoursesPage() {
   const { t } = useTranslation();
   const { items: courses, addItem, updateItem, deleteItem } = useCourses();
+  const { items: groups, updateItem: updateGroup } = useGroups();
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [editItem, setEditItem] = useState<Course | null>(null);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: '', price: '', reference: '' });
+  const [formData, setFormData] = useState<{
+    name: string;
+    price: string;
+    reference: string;
+    duration: number | '';
+  }>({ name: '', price: '', reference: '', duration: '' });
   const [error, setError] = useState('');
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -29,17 +35,74 @@ export default function CoursesPage() {
         setError(t('course_already_exists') || 'A course with this name already exists');
         return;
       }
+      
+      const newDuration = Number(formData.duration) || undefined;
+      
+      // Check for overlaps before applying
+      if (newDuration && newDuration !== editItem.duration) {
+        const affectedGroups = groups.filter(g => g.courses === editItem.name);
+        
+        for (const group of affectedGroups) {
+          if (group.startTime && group.days && group.rooms) {
+            const [hours, minutes] = group.startTime.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes + (newDuration * 60);
+            const endHours = Math.floor(totalMinutes / 60);
+            const endMinutes = totalMinutes % 60;
+            const newEndTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+            
+            const newStartNum = parseInt(group.startTime.replace(':', ''));
+            const newEndNum = parseInt(newEndTime.replace(':', ''));
+            
+            const hasOverlap = groups.some(otherGroup => {
+              if (otherGroup.id === group.id) return false;
+              if (!otherGroup.days || !otherGroup.startTime || !otherGroup.endTime) return false;
+              if (otherGroup.rooms !== group.rooms) return false;
+              
+              const hasCommonDay = otherGroup.days.some(d => group.days.includes(d));
+              if (!hasCommonDay) return false;
+              
+              const otherStartNum = parseInt(otherGroup.startTime.replace(':', ''));
+              const otherEndNum = parseInt(otherGroup.endTime.replace(':', ''));
+              
+              return (newStartNum < otherEndNum && newEndNum > otherStartNum);
+            });
+            
+            if (hasOverlap) {
+              setError(t('course_duration_conflict_error', `Cannot update duration: it would cause a timetable clash for group ${group.name}.`));
+              return;
+            }
+          }
+        }
+      }
+      
       updateItem(editItem.id, {
         ...formData,
-        price: formatPrice(formData.price)
+        price: formatPrice(formData.price),
+        duration: newDuration
       });
+
+      // Update end time for all groups that use this course
+      if (newDuration && newDuration !== editItem.duration) {
+        const affectedGroups = groups.filter(g => g.courses === editItem.name);
+        affectedGroups.forEach(group => {
+          if (group.startTime) {
+            const [hours, minutes] = group.startTime.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes + (newDuration * 60);
+            const endHours = Math.floor(totalMinutes / 60);
+            const endMinutes = totalMinutes % 60;
+            const newEndTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+            updateGroup(group.id, { endTime: newEndTime });
+          }
+        });
+      }
+
       setEditItem(null);
       setError('');
     }
   };
 
   const openEditModal = (item: Course) => {
-    setFormData({ name: item.name, price: item.price, reference: item.reference });
+    setFormData({ name: item.name, price: item.price, reference: item.reference, duration: item.duration || '' });
     setEditItem(item);
     setActiveMenu(null);
     setError('');
@@ -62,6 +125,7 @@ export default function CoursesPage() {
   const columns = [
     { key: 'name', label: t('course_name') },
     { key: 'price', label: t('price') },
+    { key: 'duration', label: t('duration_hours') || 'Duration (hours)' },
     { key: 'reference', label: t('course_material_reference') },
   ];
 
@@ -182,6 +246,7 @@ export default function CoursesPage() {
                 <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{course.name}</td>}
                 {visibleColumns.price && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>}
+                {visibleColumns.duration && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{course.duration ? `${course.duration}h` : '-'}</td>}
                 {visibleColumns.reference && (
                   <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">
                     {course.reference ? (
@@ -252,6 +317,10 @@ export default function CoursesPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('price')}</label>
                 <input required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} type="text" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('duration_hours') || 'Duration (hours)'}</label>
+                <input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value === '' ? '' : parseFloat(e.target.value)})} type="number" step="0.5" min="0" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_material_reference')}</label>

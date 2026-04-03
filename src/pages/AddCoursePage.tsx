@@ -11,10 +11,16 @@ export default function AddCoursePage() {
   const { items: courses, addItem } = useCourses();
   const [error, setError] = useState('');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    price: string;
+    reference: string;
+    duration: number | '';
+  }>({
     name: '',
     price: '',
-    reference: ''
+    reference: '',
+    duration: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,7 +35,8 @@ export default function AddCoursePage() {
     addItem({
       name: formData.name,
       price: formatPrice(formData.price),
-      reference: formData.reference
+      reference: formData.reference,
+      duration: Number(formData.duration) || undefined
     });
     navigate(-1);
   };
@@ -75,6 +82,21 @@ export default function AddCoursePage() {
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder={t('e_g_price')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              {t('duration_hours') || 'Duration (hours)'} <span className="text-zinc-400 dark:text-zinc-500 font-normal">({t('optional')})</span>
+            </label>
+            <input 
+              type="number" 
+              step="0.5"
+              min="0"
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+              className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+              placeholder="1.5"
             />
           </div>
 

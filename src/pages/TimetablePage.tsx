@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, MoreVertical, Plus, X, Filter, Search, Check } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
-import { useGroups, useEmployees, useRooms, Group } from '../lib/mockData.ts';
+import { useGroups, useEmployees, useRooms, useCourses, Group } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 const timeSlots = [
@@ -35,6 +35,7 @@ export default function TimetablePage() {
   const { items: groups, updateItem } = useGroups();
   const { items: employees } = useEmployees();
   const { items: rooms } = useRooms();
+  const { items: courses } = useCourses();
   const [filter, setFilter] = useState<'all' | 'odd' | 'even'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
@@ -64,6 +65,16 @@ export default function TimetablePage() {
     end: '',
     days: [] as string[]
   });
+
+  const calculateEndTime = (start: string, courseName: string) => {
+    const selectedCourse = courses.find(c => c.name === courseName);
+    const durationHours = selectedCourse?.duration || 1.5;
+    const [hours, minutes] = start.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + (durationHours * 60);
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  };
 
   const checkOverlap = (excludeId?: number) => {
     const newStart = parseInt(formData.start.replace(':', ''));
@@ -483,7 +494,12 @@ export default function TimetablePage() {
                   <select 
                     required 
                     value={formData.start} 
-                    onChange={e => setFormData({...formData, start: e.target.value})} 
+                    onChange={e => {
+                      const newStart = e.target.value;
+                      const group = groups.find(g => g.name === formData.title);
+                      const newEnd = newStart && group ? calculateEndTime(newStart, group.courses) : formData.end;
+                      setFormData({...formData, start: newStart, end: newEnd});
+                    }} 
                     className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   >
                     <option value="">{t('select_start_time')}</option>
@@ -680,7 +696,12 @@ export default function TimetablePage() {
                   <select 
                     required 
                     value={formData.start} 
-                    onChange={e => setFormData({...formData, start: e.target.value})} 
+                    onChange={e => {
+                      const newStart = e.target.value;
+                      const group = groups.find(g => g.name === formData.title);
+                      const newEnd = newStart && group ? calculateEndTime(newStart, group.courses) : formData.end;
+                      setFormData({...formData, start: newStart, end: newEnd});
+                    }} 
                     className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   >
                     <option value="">{t('select_start_time')}</option>

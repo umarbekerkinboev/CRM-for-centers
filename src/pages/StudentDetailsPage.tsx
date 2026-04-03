@@ -209,46 +209,17 @@ export default function StudentDetailsPage() {
     gender: student.gender, 
     dob: student.dob, 
     address: student.address,
-    course: student.courses ? student.courses.split(',')[0].trim() : '',
-    group: student.group ? student.group.split(',')[0].trim() : '',
     courseRegistrationDate: initialFormattedDate || new Date().toISOString().split('T')[0]
   });
 
   const handleEditStudent = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentCourses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
-    const currentGroups = student.group ? student.group.split(',').map(g => g.trim()) : [];
-    const currentPrices = student.price ? student.price.split(',').map(p => p.trim()) : [];
     const currentRegistrations = student.registration ? student.registration.split(',').map(r => r.trim()) : [];
     
-    const selectedGroup = allGroups.find(g => g.name === editFormData.group);
-    const selectedCourse = allCourses.find(c => c.name === (selectedGroup?.courses || editFormData.course));
-    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
-
-    let balanceChange = 0;
-
-    if (currentCourses.length > 0) {
-      if (currentCourses[0] !== editFormData.course || currentGroups[0] !== editFormData.group) {
-        const oldPriceStr = currentPrices[0];
-        const oldPriceNum = parseInt(oldPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
-        const newPriceNum = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
-        
-        balanceChange += oldPriceNum; // Refund old price
-        balanceChange -= newPriceNum; // Charge new price
-        
-        currentCourses[0] = editFormData.course;
-        currentGroups[0] = editFormData.group;
-        currentPrices[0] = coursePriceStr;
-      }
+    if (currentRegistrations.length > 0) {
       currentRegistrations[0] = editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : currentRegistrations[0];
-    } else if (editFormData.course) {
-      const newPriceNum = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
-      balanceChange -= newPriceNum; // Charge new price
-      
-      currentCourses.push(editFormData.course);
-      currentGroups.push(editFormData.group);
-      currentPrices.push(coursePriceStr);
+    } else {
       currentRegistrations.push(editFormData.courseRegistrationDate ? editFormData.courseRegistrationDate.split('-').reverse().join('-') : '');
     }
 
@@ -261,11 +232,7 @@ export default function StudentDetailsPage() {
       gender: editFormData.gender,
       dob: editFormData.dob,
       address: editFormData.address,
-      courses: currentCourses.join(', '),
-      group: currentGroups.join(', '),
       registration: currentRegistrations.join(', '),
-      price: currentPrices.join(', '),
-      balance: student.balance + balanceChange
     });
     setIsEditModalOpen(false);
   };
@@ -496,31 +463,6 @@ export default function StudentDetailsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('parent_phone')}</label>
                 <input maxLength={9} value={editFormData.parentPhone} onChange={e => setEditFormData({...editFormData, parentPhone: e.target.value.replace(/\D/g, '')})} type="text" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
-                <select 
-                  value={editFormData.course}
-                  onChange={e => setEditFormData({...editFormData, course: e.target.value, group: ''})}
-                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
-                >
-                  <option value="">{t('select_course')}</option>
-                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
-                <select 
-                  value={editFormData.group}
-                  onChange={e => setEditFormData({...editFormData, group: e.target.value})}
-                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
-                  disabled={!editFormData.course}
-                >
-                  <option value="">{t('select_group')}</option>
-                  {allGroups
-                    .filter(g => g.courses === editFormData.course)
-                    .map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course_registration_date')}</label>

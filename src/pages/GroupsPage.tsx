@@ -37,11 +37,53 @@ export default function GroupsPage() {
   }, [editItem]);
 
   const [formData, setFormData] = useState({ name: '', students: 0, teachers: '', courses: '' });
+  const [error, setError] = useState('');
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     if (editItem) {
-      updateItem(editItem.id, formData);
+      const updatedData: Partial<Group> = { ...formData };
+      
+      // Recalculate end time if course changed and group has a start time
+      if (formData.courses !== editItem.courses && editItem.startTime) {
+        const selectedCourse = courses.find(c => c.name === formData.courses);
+        const durationHours = selectedCourse?.duration || 1.5;
+        const [hours, minutes] = editItem.startTime.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes + (durationHours * 60);
+        const endHours = Math.floor(totalMinutes / 60);
+        const endMinutes = totalMinutes % 60;
+        const newEndTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+        updatedData.endTime = newEndTime;
+        
+        // Check for overlaps
+        if (editItem.days && editItem.rooms) {
+          const newStartNum = parseInt(editItem.startTime.replace(':', ''));
+          const newEndNum = parseInt(newEndTime.replace(':', ''));
+          
+          const hasOverlap = groups.some(otherGroup => {
+            if (otherGroup.id === editItem.id) return false;
+            if (!otherGroup.days || !otherGroup.startTime || !otherGroup.endTime) return false;
+            if (otherGroup.rooms !== editItem.rooms) return false;
+            
+            const hasCommonDay = otherGroup.days.some(d => editItem.days.includes(d));
+            if (!hasCommonDay) return false;
+            
+            const otherStartNum = parseInt(otherGroup.startTime.replace(':', ''));
+            const otherEndNum = parseInt(otherGroup.endTime.replace(':', ''));
+            
+            return (newStartNum < otherEndNum && newEndNum > otherStartNum);
+          });
+          
+          if (hasOverlap) {
+            setError(t('course_duration_conflict_error', `Cannot update course: the new duration would cause a timetable clash.`));
+            return;
+          }
+        }
+      }
+      
+      updateItem(editItem.id, updatedData);
       setEditItem(null);
     }
   };
@@ -258,6 +300,11 @@ export default function GroupsPage() {
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t('edit_details')}</h2>
             </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group_name')}</label>
@@ -363,7 +410,7 @@ export default function GroupsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
                 <div className="relative">
-                  <select disabled value={formData.courses} onChange={e => setFormData({...formData, courses: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors appearance-none cursor-not-allowed">
+                  <select value={formData.courses} onChange={e => setFormData({...formData, courses: e.target.value})} className="w-full bg-zinc-50 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none">
                     <option value="">{t('select_course')}</option>
                     {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
@@ -371,7 +418,6 @@ export default function GroupsPage() {
                     <ChevronsUpDown className="w-4 h-4" />
                   </div>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1">{t('cannot_change_course')}</p>
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors mt-6">{t('save')}</button>
             </form>

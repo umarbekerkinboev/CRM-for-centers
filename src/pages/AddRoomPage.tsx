@@ -8,7 +8,7 @@ export default function AddRoomPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { items: rooms, addItem } = useRooms();
-  const [formData, setFormData] = useState({ name: '', size: 0 });
+  const [formData, setFormData] = useState<{ name: string; size: number | '' }>({ name: '', size: '' });
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,7 +19,10 @@ export default function AddRoomPage() {
       return;
     }
 
-    addItem(formData);
+    addItem({
+      name: formData.name,
+      size: Number(formData.size) || 0
+    });
     navigate(-1);
   };
 
@@ -60,8 +63,8 @@ export default function AddRoomPage() {
             <input 
               required
               type="number" 
-              value={formData.size || ''}
-              onChange={e => setFormData({ ...formData, size: parseInt(e.target.value) || 0 })}
+              value={formData.size}
+              onChange={e => setFormData({ ...formData, size: e.target.value === '' ? '' : parseInt(e.target.value) })}
               className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               placeholder={t('e_g_capacity')}
             />

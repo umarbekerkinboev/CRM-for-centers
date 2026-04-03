@@ -25,9 +25,11 @@ export default function AddGroupPage() {
   const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
   const [teacherSearch, setTeacherSearch] = useState('');
 
-  const calculateEndTime = (start: string) => {
+  const calculateEndTime = (start: string, courseName: string) => {
+    const selectedCourse = courses.find(c => c.name === courseName);
+    const durationHours = selectedCourse?.duration || 1.5;
     const [hours, minutes] = start.split(':').map(Number);
-    const totalMinutes = hours * 60 + minutes + 90; // 1.5 hours
+    const totalMinutes = hours * 60 + minutes + (durationHours * 60);
     const endHours = Math.floor(totalMinutes / 60);
     const endMinutes = totalMinutes % 60;
     return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
@@ -37,7 +39,7 @@ export default function AddGroupPage() {
     e.preventDefault();
     setError('');
 
-    const endTime = calculateEndTime(formData.startTime);
+    const endTime = calculateEndTime(formData.startTime, formData.course);
     const newStart = parseInt(formData.startTime.replace(':', ''));
     const newEnd = parseInt(endTime.replace(':', ''));
 

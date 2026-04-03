@@ -52,6 +52,7 @@ export type Course = {
   name: string;
   price: string;
   reference: string;
+  duration?: number;
 };
 
 export type Room = {
@@ -95,11 +96,11 @@ const initialMockEmployees: Employee[] = [
 ];
 
 const initialMockCourses: Course[] = [
-  { id: 1, name: 'General English', price: '300000', reference: 'GE' },
-  { id: 2, name: 'IELTS Foundation', price: '400000', reference: 'IELTS-F' },
-  { id: 3, name: 'IELTS Graduation', price: '500000', reference: 'IELTS-G' },
-  { id: 4, name: 'Math in English', price: '350000', reference: 'MATH-E' },
-  { id: 5, name: 'SAT Math', price: '450000', reference: 'SAT-M' },
+  { id: 1, name: 'General English', price: '300000', reference: 'GE', duration: 1.5 },
+  { id: 2, name: 'IELTS Foundation', price: '400000', reference: 'IELTS-F', duration: 1.5 },
+  { id: 3, name: 'IELTS Graduation', price: '500000', reference: 'IELTS-G', duration: 2 },
+  { id: 4, name: 'Math in English', price: '350000', reference: 'MATH-E', duration: 1.5 },
+  { id: 5, name: 'SAT Math', price: '450000', reference: 'SAT-M', duration: 2 },
 ];
 
 const initialMockRooms: Room[] = [
@@ -388,7 +389,7 @@ export function useStudents() {
 
       if (groupName) {
         const coursePayments = studentPayments
-          .filter(p => p.course === groupName || p.course === course)
+          .filter(p => p.course?.trim() === groupName?.trim() || p.course?.trim() === course?.trim())
           .reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
         
         groupBalances[groupName] = coursePayments - courseCharges;

@@ -19,7 +19,7 @@ export default function RoomsPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [editItem, setEditItem] = useState<Room | null>(null);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: '', size: 0 });
+  const [formData, setFormData] = useState<{ name: string; size: number | '' }>({ name: '', size: '' });
   const [error, setError] = useState('');
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -29,14 +29,17 @@ export default function RoomsPage() {
         setError(t('room_already_exists') || 'A room with this name already exists');
         return;
       }
-      updateItem(editItem.id, formData);
+      updateItem(editItem.id, {
+        name: formData.name,
+        size: Number(formData.size) || 0
+      });
       setEditItem(null);
       setError('');
     }
   };
 
   const openEditModal = (item: Room) => {
-    setFormData({ name: item.name, size: item.size });
+    setFormData({ name: item.name, size: item.size || '' });
     setEditItem(item);
     setActiveMenu(null);
     setError('');
@@ -238,7 +241,7 @@ export default function RoomsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('room_size')}</label>
-                <input required value={formData.size} onChange={e => setFormData({...formData, size: parseInt(e.target.value) || 0})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
+                <input required value={formData.size} onChange={e => setFormData({...formData, size: e.target.value === '' ? '' : parseInt(e.target.value)})} type="number" className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors" />
               </div>
               <button type="submit" className="w-full bg-zinc-900 dark:bg-zinc-200 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium py-2.5 rounded-lg transition-colors">{t('save')}</button>
             </form>
