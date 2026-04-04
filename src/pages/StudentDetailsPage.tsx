@@ -27,7 +27,7 @@ export default function StudentDetailsPage() {
     balance: 0,
     courses: '',
     group: '',
-    price: '0 UZS',
+    price: '0',
     registration: ''
   };
 
@@ -96,7 +96,7 @@ export default function StudentDetailsPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0' : '0',
       nextPayment,
       registration,
       isActive: !!group
@@ -172,7 +172,7 @@ export default function StudentDetailsPage() {
       
       const updatedPayment = {
         course: editPaymentData.course || 'Grammar',
-        amount: paymentAmount.toLocaleString() + ' UZS',
+        amount: paymentAmount.toString(),
         type: editPaymentData.type || 'Cash',
         date: editPaymentData.date || new Date().toISOString().split('T')[0],
         notes: editPaymentData.notes,
@@ -259,7 +259,7 @@ export default function StudentDetailsPage() {
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('gender')}:</span> <span className="text-zinc-900 dark:text-zinc-100 capitalize">{student.gender}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('date_of_birth')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.dob}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('address_of_residence')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.address}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{displayPrice(student.balance)}</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">

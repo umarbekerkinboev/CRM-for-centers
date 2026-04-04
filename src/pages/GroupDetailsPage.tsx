@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, LayoutGrid, Check, Plus, X, Search, MoreVertical } from 'lucide-react';
 import { cn, displayPrice, calculateGroupBalance, getGroupPrice, getGroupRegistrationDate } from '../lib/utils.ts';
-import { useStudents, Student, useGroups, useCourses, useEmployees, useRooms } from '../lib/mockData.ts';
+import { useStudents, Student, useGroups, useCourses, useEmployees, useRooms, usePayments } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 
 export default function GroupDetailsPage() {
@@ -17,6 +17,7 @@ export default function GroupDetailsPage() {
   const { items: courses } = useCourses();
   const { items: employees } = useEmployees();
   const { items: rooms } = useRooms();
+  const { items: allPayments, deleteItem: deletePayment } = usePayments();
 
   const group = groups.find(g => g.id === Number(id)) || {
     id: Number(id),
@@ -87,7 +88,7 @@ export default function GroupDetailsPage() {
 
       if (groupIndex !== -1) {
         while (registrationsList.length <= groupIndex) registrationsList.push('');
-        while (pricesList.length <= groupIndex) pricesList.push('0 UZS');
+        while (pricesList.length <= groupIndex) pricesList.push('0');
         
         const oldPriceStr = pricesList[groupIndex];
         const oldPriceNum = parseInt(oldPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
@@ -97,7 +98,7 @@ export default function GroupDetailsPage() {
         // Group didn't change, but price might have
         if (editStudentFormData.coursePrice) {
           const num = parseInt(editStudentFormData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
-          newPriceStr = `${num} UZS`;
+          newPriceStr = `${num}`;
           const newPriceNum = parseInt(newPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
           
           // Refund old, charge new
@@ -186,10 +187,16 @@ export default function GroupDetailsPage() {
       const newStart = parseInt(group.startTime.replace(':', ''));
       const newEnd = parseInt(newEndTime.replace(':', ''));
 
+      let overlapType: 'room' | 'teacher' | null = null;
+
       const hasOverlap = groups.some(g => {
         if (g.id === group.id) return false;
         if (!g.days || !g.startTime || !g.endTime) return false;
-        if (g.rooms !== editFormData.room) return false;
+        
+        const isSameRoom = g.rooms === editFormData.room;
+        const isSameTeacher = g.teachers === editFormData.teacher;
+        
+        if (!isSameRoom && !isSameTeacher) return false;
         
         const hasCommonDay = g.days.some(d => group.days!.includes(d));
         if (!hasCommonDay) return false;
@@ -197,11 +204,21 @@ export default function GroupDetailsPage() {
         const eventStart = parseInt(g.startTime.replace(':', ''));
         const eventEnd = parseInt(g.endTime.replace(':', ''));
         
-        return (newStart < eventEnd && newEnd > eventStart);
+        const timeOverlap = (newStart < eventEnd && newEnd > eventStart);
+        if (timeOverlap) {
+          if (isSameTeacher) overlapType = 'teacher';
+          else if (isSameRoom) overlapType = 'room';
+          return true;
+        }
+        return false;
       });
 
       if (hasOverlap) {
-        setGroupEditError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+        if (overlapType === 'teacher') {
+          setGroupEditError(t('teacher_time_conflict_error', 'This teacher is already booked for the selected time and days.'));
+        } else {
+          setGroupEditError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+        }
         return;
       }
     }
@@ -226,11 +243,11 @@ export default function GroupDetailsPage() {
     e.preventDefault();
     
     const groupCourse = courses.find(c => c.name === group.courses);
-    const groupCoursePrice = groupCourse ? groupCourse.price : '350000 UZS';
+    const groupCoursePrice = groupCourse ? groupCourse.price : '350000';
     let coursePriceToUse = groupCoursePrice;
     if (formData.coursePrice) {
       const num = parseInt(formData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
-      coursePriceToUse = `${num} UZS`;
+      coursePriceToUse = `${num}`;
     }
     const initialBalance = -parseInt(coursePriceToUse.replace(/[^0-9]/g, ''), 10) || 0;
 
@@ -262,23 +279,23 @@ export default function GroupDetailsPage() {
 
         // Pad arrays to match currentCourses length to maintain parallel structure
         while (currentGroups.length < currentCourses.length) currentGroups.push('');
-        while (currentPrices.length < currentCourses.length) currentPrices.push('0 UZS');
+        while (currentPrices.length < currentCourses.length) currentPrices.push('0');
         while (currentRegistrations.length < currentCourses.length) currentRegistrations.push(currentRegistrations[0] || '');
         while (currentLastCharged.length < currentCourses.length) currentLastCharged.push(currentLastCharged[0] || '');
 
         const newCourse = group.courses;
         const newGroup = group.name;
-        const courseIndex = currentCourses.indexOf(newCourse);
+        const courseIndex = currentCourses.findIndex((c, i) => c === newCourse && (!currentGroups[i] || currentGroups[i] === ''));
         
         // Only proceed if student is not already in this specific group
         if (!currentGroups.includes(newGroup)) {
           let actualInitialBalance = initialBalance;
-          if (courseIndex !== -1 && (!currentGroups[courseIndex] || currentGroups[courseIndex] === '')) {
+          if (courseIndex !== -1) {
             // Course exists but has no group, update it
             currentGroups[courseIndex] = newGroup;
             
             // Use existing price if no new price is provided
-            if (!formData.coursePrice && currentPrices[courseIndex] && currentPrices[courseIndex] !== '0 UZS') {
+            if (!formData.coursePrice && currentPrices[courseIndex] && currentPrices[courseIndex] !== '0') {
               const existingPrice = parseInt(currentPrices[courseIndex].replace(/[^0-9]/g, ''), 10) || 0;
               actualInitialBalance = -existingPrice;
             } else {
@@ -368,7 +385,7 @@ export default function GroupDetailsPage() {
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('teacher')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('course')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('room')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{displayPrice(groupBalance)}</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -487,7 +504,7 @@ export default function GroupDetailsPage() {
                   {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{student.name}</td>}
                   {visibleColumns.balance && (
                     <td className={`px-6 py-4 ${calculateGroupBalance(student, group.name) < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {calculateGroupBalance(student, group.name) === 0 ? '0' : calculateGroupBalance(student, group.name).toLocaleString()} UZS
+                      {displayPrice(calculateGroupBalance(student, group.name))}
                     </td>
                   )}
                   {visibleColumns.price && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(getGroupPrice(student.group, student.price, group.name))}</td>}
@@ -976,12 +993,14 @@ export default function GroupDetailsPage() {
               const indexToRemove = currentGroups.indexOf(group.name);
               
               if (indexToRemove !== -1) {
-                // Get the price to refund before removing it
-                const removedPriceStr = currentPrices.length > indexToRemove ? currentPrices[indexToRemove] : '0 UZS';
-                const removedPrice = parseInt(removedPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
-
-                // Remove the group but keep the course, price, etc. so they can be reused
-                currentGroups[indexToRemove] = '';
+                const courseToRemove = currentCourses[indexToRemove];
+                
+                // Remove the group, course, price, etc. completely
+                currentGroups.splice(indexToRemove, 1);
+                if (currentCourses.length > indexToRemove) currentCourses.splice(indexToRemove, 1);
+                if (currentPrices.length > indexToRemove) currentPrices.splice(indexToRemove, 1);
+                if (currentRegistrations.length > indexToRemove) currentRegistrations.splice(indexToRemove, 1);
+                if (currentLastCharged.length > indexToRemove) currentLastCharged.splice(indexToRemove, 1);
 
                 updateStudent(studentToDelete, { 
                   ...student,
@@ -989,9 +1008,15 @@ export default function GroupDetailsPage() {
                   courses: currentCourses.join(', '),
                   price: currentPrices.join(', '),
                   registration: currentRegistrations.join(', '),
-                  lastChargedDate: currentLastCharged.join(', '),
-                  balance: student.balance + removedPrice
+                  lastChargedDate: currentLastCharged.join(', ')
                 });
+
+                // Delete associated payments to prevent artificial balance inflation
+                const studentPayments = allPayments.filter(p => 
+                  p.studentId === studentToDelete && 
+                  (p.course === group.name || p.course === courseToRemove)
+                );
+                studentPayments.forEach(p => deletePayment(p.id));
               }
             }
             setStudentToDelete(null);

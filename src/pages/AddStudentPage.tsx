@@ -29,7 +29,7 @@ export default function AddStudentPage() {
     
     const selectedGroup = groups.find(g => g.name === formData.group);
     const selectedCourse = courses.find(c => c.name === (selectedGroup?.courses || formData.course));
-    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
+    const coursePriceStr = selectedCourse ? selectedCourse.price : '0';
     const coursePriceValue = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
     const initialBalance = selectedGroup ? -coursePriceValue : 0;
 

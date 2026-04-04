@@ -21,7 +21,7 @@ export default function StudentPaymentPage() {
     balance: 0,
     courses: '',
     group: '',
-    price: '0 UZS',
+    price: '0',
     registration: ''
   };
 
@@ -90,7 +90,7 @@ export default function StudentPaymentPage() {
       name: courseNameTrimmed,
       group: groupName,
       teacher: group ? group.teachers : 'N/A',
-      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0 UZS' : '0 UZS',
+      price: student.price ? student.price.split(',')[groupIndex]?.trim() || student.price.split(',')[0]?.trim() || '0' : '0',
       nextPayment,
       registration,
       isActive: !!group
@@ -138,7 +138,7 @@ export default function StudentPaymentPage() {
       
       const updatedPayment = {
         course: formData.course || 'Grammar',
-        amount: paymentAmount.toLocaleString() + ' UZS',
+        amount: paymentAmount.toString(),
         type: formData.type || 'Cash',
         date: formData.date || new Date().toISOString().split('T')[0],
         notes: formData.notes,
@@ -155,7 +155,7 @@ export default function StudentPaymentPage() {
       const newPayment = {
         studentId: Number(id),
         course: formData.course || 'Grammar',
-        amount: paymentAmount.toLocaleString() + ' UZS',
+        amount: paymentAmount.toString(),
         type: formData.type || 'Cash',
         date: formData.date || new Date().toISOString().split('T')[0],
         notes: formData.notes,
@@ -205,7 +205,7 @@ export default function StudentPaymentPage() {
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">{t('payment')}</h1>
           <div className="space-y-1 text-sm">
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('student_name')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{student.name}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{student.balance.toLocaleString()} UZS</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('balance')}:</span> <span className={student.balance < 0 ? "text-red-500" : "text-emerald-500"}>{displayPrice(student.balance)}</span></p>
           </div>
         </div>
         <div className="flex items-start h-full">
@@ -355,7 +355,7 @@ export default function StudentPaymentPage() {
                   className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                 >
                   <option value="">{t('select_course')}</option>
-                  {allCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  {courses.map((c, i) => <option key={i} value={c.group !== 'N/A' ? c.group : c.name}>{c.name} {c.group !== 'N/A' ? `(${c.group})` : ''}</option>)}
                 </select>
               </div>
 

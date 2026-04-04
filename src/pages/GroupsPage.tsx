@@ -247,7 +247,7 @@ export default function GroupsPage() {
                 <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">{index + 1}</td>
                 {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{group.name}</td>}
                 {visibleColumns.students && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{stats.count}</td>}
-                {visibleColumns.balance && <td className={cn("px-6 py-4 font-medium", stats.balance < 0 ? "text-red-500" : "text-emerald-500")}>{stats.balance.toLocaleString()} UZS</td>}
+                {visibleColumns.balance && <td className={cn("px-6 py-4 font-medium", stats.balance < 0 ? "text-red-500" : "text-emerald-500")}>{displayPrice(stats.balance)}</td>}
                 {visibleColumns.teachers && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.teachers}</td>}
                 {visibleColumns.courses && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.courses}</td>}
                 {visibleColumns.rooms && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{group.rooms}</td>}

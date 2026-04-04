@@ -80,10 +80,16 @@ export default function TimetablePage() {
     const newStart = parseInt(formData.start.replace(':', ''));
     const newEnd = parseInt(formData.end.replace(':', ''));
 
-    return groups.some(group => {
+    let overlapType: 'room' | 'teacher' | null = null;
+
+    const hasOverlap = groups.some(group => {
       if (!group.days || !group.startTime || !group.endTime) return false;
       if (excludeId && group.id === excludeId) return false;
-      if (group.rooms !== formData.room) return false;
+      
+      const isSameRoom = group.rooms === formData.room;
+      const isSameTeacher = group.teachers === formData.teacher;
+      
+      if (!isSameRoom && !isSameTeacher) return false;
       
       const hasCommonDay = group.days.some(d => formData.days.includes(d));
       if (!hasCommonDay) return false;
@@ -91,15 +97,28 @@ export default function TimetablePage() {
       const eventStart = parseInt(group.startTime.replace(':', ''));
       const eventEnd = parseInt(group.endTime.replace(':', ''));
       
-      return (newStart < eventEnd && newEnd > eventStart);
+      const timeOverlap = (newStart < eventEnd && newEnd > eventStart);
+      if (timeOverlap) {
+        if (isSameTeacher) overlapType = 'teacher';
+        else if (isSameRoom) overlapType = 'room';
+        return true;
+      }
+      return false;
     });
+
+    return { hasOverlap, overlapType };
   };
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (checkOverlap()) {
-      setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+    const overlap = checkOverlap();
+    if (overlap.hasOverlap) {
+      if (overlap.overlapType === 'teacher') {
+        setError(t('teacher_time_conflict_error', 'This teacher is already booked for the selected time and days.'));
+      } else {
+        setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+      }
       return;
     }
     
@@ -121,8 +140,13 @@ export default function TimetablePage() {
     e.preventDefault();
     setError('');
     if (editEventId !== null) {
-      if (checkOverlap(editEventId)) {
-        setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+      const overlap = checkOverlap(editEventId);
+      if (overlap.hasOverlap) {
+        if (overlap.overlapType === 'teacher') {
+          setError(t('teacher_time_conflict_error', 'This teacher is already booked for the selected time and days.'));
+        } else {
+          setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+        }
         return;
       }
       updateItem(editEventId, {

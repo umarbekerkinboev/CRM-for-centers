@@ -43,19 +43,34 @@ export default function AddGroupPage() {
     const newStart = parseInt(formData.startTime.replace(':', ''));
     const newEnd = parseInt(endTime.replace(':', ''));
 
+    let overlapType = '';
     const hasOverlap = groups.some(group => {
       if (!group.days || !group.startTime || !group.endTime) return false;
-      if (group.rooms !== formData.room) return false;
       if (!group.days.includes(formData.days)) return false;
       
       const eventStart = parseInt(group.startTime.replace(':', ''));
       const eventEnd = parseInt(group.endTime.replace(':', ''));
       
-      return (newStart < eventEnd && newEnd > eventStart);
+      const isTimeOverlap = (newStart < eventEnd && newEnd > eventStart);
+      if (!isTimeOverlap) return false;
+
+      if (group.rooms === formData.room) {
+        overlapType = 'room';
+        return true;
+      }
+      if (group.teachers === formData.teacher) {
+        overlapType = 'teacher';
+        return true;
+      }
+      return false;
     });
 
     if (hasOverlap) {
-      setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+      if (overlapType === 'room') {
+        setError(t('room_time_conflict_error', 'This room is already booked for the selected time and days.'));
+      } else {
+        setError(t('teacher_time_conflict_error', 'This teacher is already booked for the selected time and days.'));
+      }
       return;
     }
 

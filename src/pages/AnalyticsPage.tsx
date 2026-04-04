@@ -41,7 +41,12 @@ export default function AnalyticsPage() {
   }).filter(item => item.value > 0);
 
   const studentsByCourseData = courses.map((course, index) => {
-    const count = students.filter(s => s.courses.includes(course.name)).length;
+    const courseGroups = groups.filter(g => g.courses.includes(course.name));
+    const count = students.filter(s => {
+      if (!s.group) return false;
+      const studentGroups = s.group.split(',').map(g => g.trim());
+      return courseGroups.some(cg => studentGroups.includes(cg.name));
+    }).length;
     return {
       name: course.name,
       value: count,
@@ -233,7 +238,7 @@ export default function AnalyticsPage() {
                         <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{courseStudents.length}</td>
                         <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(course.price)}</td>
                         <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">
-                          {estimatedRevenue.toLocaleString()} UZS
+                          {displayPrice(estimatedRevenue)}
                         </td>
                       </tr>
                     );
@@ -241,11 +246,11 @@ export default function AnalyticsPage() {
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 font-bold">
                     <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100" colSpan={3}>{t('total_estimated_revenue')}</td>
                     <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400">
-                      {courses.reduce((acc, course) => {
+                      {displayPrice(courses.reduce((acc, course) => {
                         const courseStudents = students.filter(s => s.courses.includes(course.name));
                         const priceNum = parseFloat(course.price.replace(/[^\d.]/g, '')) || 0;
                         return acc + (courseStudents.length * priceNum);
-                      }, 0).toLocaleString()} UZS
+                      }, 0))}
                     </td>
                   </tr>
                 </tbody>
@@ -271,7 +276,7 @@ export default function AnalyticsPage() {
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.phone}</td>
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{student.parentPhone}</td>
                       <td className="px-6 py-4 text-red-600 dark:text-red-400 font-medium">
-                        {student.balance.toLocaleString()} UZS
+                        {displayPrice(student.balance)}
                       </td>
                     </tr>
                   ))}

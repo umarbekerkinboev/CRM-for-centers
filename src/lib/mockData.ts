@@ -75,39 +75,52 @@ export type Payment = {
 };
 
 const initialMockStudents: Student[] = [
-  { id: 1, name: 'Alice Brown', phone: '+998911112233', courses: 'General English', group: 'GE-101', gender: 'Female', parent: 'Mr. Brown', parentPhone: '+998911112244', dob: '2005-04-12', address: 'Tashkent', balance: 0, price: '300000', registration: '10-01-2024' },
-  { id: 2, name: 'Bob White', phone: '+998912223344', courses: 'General English', group: 'GE-101', gender: 'Male', parent: 'Mrs. White', parentPhone: '+998912223355', dob: '2006-08-22', address: 'Tashkent', balance: 0, price: '300000', registration: '15-01-2024' },
-  { id: 3, name: 'Charlie Green', phone: '+998913334455', courses: 'IELTS Foundation', group: 'IELTS-201', gender: 'Male', parent: 'Mr. Green', parentPhone: '+998913334466', dob: '2004-11-05', address: 'Tashkent', balance: 0, price: '400000', registration: '01-02-2024' },
-  { id: 4, name: 'David Black', phone: '+998914445566', courses: 'Math in English', group: 'MATH-101', gender: 'Male', parent: 'Mrs. Black', parentPhone: '+998914445577', dob: '2007-02-18', address: 'Tashkent', balance: 0, price: '350000', registration: '10-02-2024' },
-  { id: 5, name: 'Eva Gray', phone: '+998915556677', courses: 'IELTS Foundation', group: 'IELTS-201', gender: 'Female', parent: 'Mr. Gray', parentPhone: '+998915556688', dob: '2005-09-30', address: 'Tashkent', balance: 0, price: '400000', registration: '15-02-2024' },
+  { id: 1, name: 'Behruz Ibodullayev', phone: '505043093', courses: '', group: '', gender: 'Male', parent: 'Dilfuza Xudoyberganova', parentPhone: '901234567', dob: '2005-04-12', address: '', balance: 0, price: '', registration: '' },
+  { id: 2, name: 'Jasmina To\'rayeva', phone: '949848177', courses: '', group: '', gender: 'Female', parent: 'Raximova Gulasal', parentPhone: '902345678', dob: '2006-08-22', address: '', balance: 0, price: '', registration: '' },
+  { id: 3, name: 'Shaxnoza Matsapoyeva', phone: '886000421', courses: '', group: '', gender: 'Female', parent: 'Murod Xolmurodov', parentPhone: '903456789', dob: '2004-11-05', address: '', balance: 0, price: '', registration: '' },
+  { id: 4, name: 'Marjona Taganova', phone: '956566131', courses: '', group: '', gender: 'Female', parent: 'Marjona Taganova', parentPhone: '904567890', dob: '2007-02-18', address: '', balance: 0, price: '', registration: '' },
+  { id: 5, name: 'Jadra Umirzoqova', phone: '914342811', courses: '', group: '', gender: 'Female', parent: 'Jadra Umirzoqova', parentPhone: '905678901', dob: '2005-09-30', address: '', balance: 0, price: '', registration: '' },
+  { id: 6, name: 'Shaxzoda Saydullayeva', phone: '507225351', courses: '', group: '', gender: 'Female', parent: 'Ibragimova Dilorom', parentPhone: '906789012', dob: '2008-01-15', address: '', balance: 0, price: '', registration: '' },
+  { id: 7, name: 'Sevinch Xo\'djayeva', phone: '932881846', courses: '', group: '', gender: 'Female', parent: 'Diana Do\'simbetova', parentPhone: '907890123', dob: '2006-05-20', address: '', balance: 0, price: '', registration: '' },
+  { id: 8, name: 'Husinboy Ro\'zimboyev', phone: '938022370', courses: '', group: '', gender: 'Male', parent: 'Durdona Masharipova', parentPhone: '908901234', dob: '2007-10-10', address: '', balance: 0, price: '', registration: '' },
+  { id: 9, name: 'Hasanboy Ro\'zimboyev', phone: '938022370', courses: '', group: '', gender: 'Male', parent: 'Durdona Masharipova', parentPhone: '909012345', dob: '2007-10-10', address: '', balance: 0, price: '', registration: '' },
+  { id: 10, name: 'Amirbek Samandarov', phone: '904307977', courses: '', group: '', gender: 'Male', parent: 'Umrbek Atajanov', parentPhone: '901122334', dob: '2005-12-05', address: '', balance: 0, price: '', registration: '' },
 ];
 
 const initialMockGroups: Group[] = [
-  { id: 1, name: 'GE-101', students: 2, teachers: 'John Doe', courses: 'General English', rooms: 'Room 1', days: ['Mon', 'Wed', 'Fri'], startTime: '14:00', endTime: '15:30' },
-  { id: 2, name: 'IELTS-201', students: 2, teachers: 'Sarah Williams', courses: 'IELTS Foundation', rooms: 'Room 2', days: ['Tue', 'Thu', 'Sat'], startTime: '16:00', endTime: '17:30' },
-  { id: 3, name: 'MATH-101', students: 1, teachers: 'Jane Smith', courses: 'Math in English', rooms: 'Room 3', days: ['Mon', 'Wed', 'Fri'], startTime: '16:00', endTime: '17:30' },
+  { id: 1, name: 'Grammar | E-10:00-Khakimbek', students: 0, teachers: 'Khakimbek Erkinboev', courses: 'Grammar', rooms: 'Room A', days: ['even'], startTime: '10:00', endTime: '11:30' },
+  { id: 2, name: 'General English | O-10:00-Umarbek', students: 0, teachers: 'Umarbek Erkinboev', courses: 'General English', rooms: 'Room C', days: ['odd'], startTime: '10:00', endTime: '11:30' },
+  { id: 3, name: 'Grammar | O-10:00-Umar', students: 0, teachers: 'Umarbek Erkinboev', courses: 'Grammar', rooms: 'Room B', days: ['odd'], startTime: '10:00', endTime: '11:30' },
+  { id: 4, name: 'IELTS | E-14:00-Khakimbek', students: 0, teachers: 'Khakimbek Erkinboev', courses: 'IELTS', rooms: 'Room C', days: ['even'], startTime: '14:00', endTime: '16:30' },
 ];
 
 const initialMockEmployees: Employee[] = [
-  { id: 1, name: 'John Doe', phone: '+998901234567', qualification: 'CELTA', gender: 'Male', exp: 5, dob: '1990-05-15', joined: '2020-08-01', employeeType: 'English Teacher', address: 'Tashkent', salary: '5000000' },
-  { id: 2, name: 'Jane Smith', phone: '+998902345678', qualification: 'BSc Math', gender: 'Female', exp: 3, dob: '1992-10-20', joined: '2021-09-15', employeeType: 'Math Teacher', address: 'Tashkent', salary: '4500000' },
-  { id: 3, name: 'Mike Johnson', phone: '+998903456789', qualification: 'BBA', gender: 'Male', exp: 7, dob: '1988-03-10', joined: '2019-11-01', employeeType: 'Sales Manager', address: 'Tashkent', salary: '6000000' },
-  { id: 4, name: 'Sarah Williams', phone: '+998904567890', qualification: 'IELTS 8.5', gender: 'Female', exp: 2, dob: '1995-07-25', joined: '2022-01-10', employeeType: 'English Teacher', address: 'Tashkent', salary: '4000000' },
+  { id: 1, name: 'Suhrob Shuhratov', phone: '995645648', qualification: 'CEFR C1', gender: 'Male', exp: 1, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 2, name: 'Khakimbek Erkinboev', phone: '943133787', qualification: 'IELTS 8.0', gender: 'Male', exp: 2, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 3, name: 'Gulnur Bobojonova', phone: '970922266', qualification: 'IELTS 7.5', gender: 'Female', exp: 8, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 4, name: 'Quvonchoy Razzakova', phone: '880242112', qualification: 'IELTS 8.0', gender: 'Female', exp: 1, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 5, name: 'Husniya Botirova', phone: '885195353', qualification: 'IELTS 6.5', gender: 'Female', exp: 3, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 6, name: 'Eldor Bohramov', phone: '887327276', qualification: 'Talaba', gender: 'Male', exp: 1, dob: '', joined: '', employeeType: 'Sales Manager' },
+  { id: 7, name: 'Aziza Ro\'zmatova', phone: '932452074', qualification: 'Talaba', gender: 'Female', exp: 2, dob: '', joined: '', employeeType: 'Math Teacher' },
+  { id: 8, name: 'Akmalbek Xandurdiyev', phone: '932848343', qualification: 'IELTS 7.0', gender: 'Male', exp: 1, dob: '', joined: '', employeeType: 'English Teacher' },
+  { id: 9, name: 'Go\'zal Allaberganova', phone: '940447050', qualification: 'Talaba', gender: 'Female', exp: 2, dob: '', joined: '', employeeType: 'Adminstrator' },
 ];
 
 const initialMockCourses: Course[] = [
-  { id: 1, name: 'General English', price: '300000', reference: 'GE', duration: 1.5 },
-  { id: 2, name: 'IELTS Foundation', price: '400000', reference: 'IELTS-F', duration: 1.5 },
-  { id: 3, name: 'IELTS Graduation', price: '500000', reference: 'IELTS-G', duration: 2 },
-  { id: 4, name: 'Math in English', price: '350000', reference: 'MATH-E', duration: 1.5 },
-  { id: 5, name: 'SAT Math', price: '450000', reference: 'SAT-M', duration: 2 },
+  { id: 1, name: 'IELTS', price: '550000', reference: '', duration: 2.5 },
+  { id: 2, name: 'Grammar', price: '450000', reference: '', duration: 1.5 },
+  { id: 3, name: 'Matematika', price: '450000', reference: '', duration: 1.5 },
+  { id: 4, name: 'KID\'s English', price: '400000', reference: '', duration: 1.5 },
+  { id: 5, name: 'CEFR', price: '550000', reference: '', duration: 2 },
+  { id: 6, name: 'Pre-IELTS', price: '450000', reference: '', duration: 2 },
+  { id: 7, name: 'General English', price: '450000', reference: '', duration: 1.5 },
 ];
 
 const initialMockRooms: Room[] = [
-  { id: 1, name: 'Room 1', size: 15 },
-  { id: 2, name: 'Room 2', size: 20 },
-  { id: 3, name: 'Room 3', size: 12 },
-  { id: 4, name: 'Room 4', size: 15 },
+  { id: 1, name: 'Room A', size: 15 },
+  { id: 2, name: 'Room B', size: 20 },
+  { id: 3, name: 'Room C', size: 12 },
+  { id: 4, name: 'Room D', size: 15 },
 ];
 
 const initialMockPayments: Payment[] = [
@@ -119,111 +132,17 @@ const initialMockPayments: Payment[] = [
 ];
 
 // Migration to reset student details and payments
-const migrationKey = 'migration_reset_students_v2';
-if (!localStorage.getItem(migrationKey)) {
-  const storedStudents = localStorage.getItem('mock_students');
-  if (storedStudents) {
-    try {
-      const students = JSON.parse(storedStudents);
-      const resetStudents = students.map((s: any) => ({
-        ...s,
-        courses: '',
-        group: '',
-        balance: 0,
-        price: '',
-        registration: '',
-        lastChargedDate: ''
-      }));
-      localStorage.setItem('mock_students', JSON.stringify(resetStudents));
-    } catch (e) {}
-  }
-  
-  const storedGroups = localStorage.getItem('mock_groups');
-  if (storedGroups) {
-    try {
-      const groups = JSON.parse(storedGroups);
-      const resetGroups = groups.map((g: any) => ({
-        ...g,
-        students: 0
-      }));
-      localStorage.setItem('mock_groups', JSON.stringify(resetGroups));
-    } catch (e) {}
-  }
-
-  localStorage.setItem('mock_payments', JSON.stringify([]));
-  localStorage.setItem(migrationKey, 'true');
-}
-
-const migrationKeyV3 = 'migration_remove_commas_from_prices_v2';
-if (!localStorage.getItem(migrationKeyV3)) {
-  try {
-    const storedCourses = localStorage.getItem('mock_courses');
-    if (storedCourses) {
-      const courses = JSON.parse(storedCourses);
-      const updatedCourses = courses.map((c: any) => ({
-        ...c,
-        price: c.price ? c.price.replace(/(\d),(\d)/g, '$1$2') : c.price
-      }));
-      localStorage.setItem('mock_courses', JSON.stringify(updatedCourses));
-    }
-
-    const storedStudents = localStorage.getItem('mock_students');
-    if (storedStudents) {
-      const students = JSON.parse(storedStudents);
-      const updatedStudents = students.map((s: any) => ({
-        ...s,
-        price: s.price ? s.price.replace(/(\d),(\d)/g, '$1$2') : s.price
-      }));
-      localStorage.setItem('mock_students', JSON.stringify(updatedStudents));
-    }
-  } catch (e) {}
-  localStorage.setItem(migrationKeyV3, 'true');
-}
-
-const migrationKeyV4 = 'migration_reset_students_v5';
-if (!localStorage.getItem(migrationKeyV4)) {
-  try {
-    const storedStudents = localStorage.getItem('mock_students');
-    if (storedStudents) {
-      const students = JSON.parse(storedStudents);
-      const resetStudents = students.map((s: any) => ({
-        ...s,
-        courses: '',
-        group: '',
-        balance: 0,
-        price: '',
-        registration: '',
-        lastChargedDate: ''
-      }));
-      localStorage.setItem('mock_students', JSON.stringify(resetStudents));
-    }
-
-    const storedGroups = localStorage.getItem('mock_groups');
-    if (storedGroups) {
-      const groups = JSON.parse(storedGroups);
-      const resetGroups = groups.map((g: any) => ({
-        ...g,
-        students: 0
-      }));
-      localStorage.setItem('mock_groups', JSON.stringify(resetGroups));
-    }
-    
-    localStorage.setItem('mock_payments', JSON.stringify([]));
-  } catch (e) {}
-  localStorage.setItem(migrationKeyV4, 'true');
-}
-
-const migrationKeyV5 = 'migration_populate_initial_data_v1';
-if (!localStorage.getItem(migrationKeyV5)) {
+const migrationKeyV9 = 'migration_populate_initial_data_v5';
+if (!localStorage.getItem(migrationKeyV9)) {
   try {
     localStorage.setItem('mock_students', JSON.stringify(initialMockStudents));
     localStorage.setItem('mock_groups', JSON.stringify(initialMockGroups));
     localStorage.setItem('mock_employees', JSON.stringify(initialMockEmployees));
     localStorage.setItem('mock_courses', JSON.stringify(initialMockCourses));
     localStorage.setItem('mock_rooms', JSON.stringify(initialMockRooms));
-    localStorage.setItem('mock_payments', JSON.stringify(initialMockPayments));
+    localStorage.setItem('mock_payments', JSON.stringify([]));
   } catch (e) {}
-  localStorage.setItem(migrationKeyV5, 'true');
+  localStorage.setItem(migrationKeyV9, 'true');
 }
 
 function createUseEntityHook<T extends { id: number }>(key: string, initialData: T[]) {
@@ -301,7 +220,7 @@ function createUseEntityHook<T extends { id: number }>(key: string, initialData:
 const useGroupsBase = createUseEntityHook<Group>('mock_groups', initialMockGroups);
 
 export function useGroups() {
-  const { items, setItems, addItem, updateItem: baseUpdateItem, deleteItem } = useGroupsBase();
+  const { items, setItems, addItem, updateItem: baseUpdateItem, deleteItem: baseDeleteItem } = useGroupsBase();
   const { items: students, setItems: setStudents, getItems: getStudents } = useStudentsBase();
 
   const updateItem = (id: number, data: Partial<Group>) => {
@@ -324,11 +243,170 @@ export function useGroups() {
     }
   };
 
+  const deleteItem = (id: number) => {
+    const groupToDelete = items.find(g => g.id === id);
+    baseDeleteItem(id);
+
+    if (groupToDelete) {
+      const currentStudents = getStudents();
+      const newStudents = currentStudents.map(s => {
+        if (!s.group) return s;
+        const groupsArr = s.group.split(',').map(g => g.trim());
+        const index = groupsArr.indexOf(groupToDelete.name);
+        
+        if (index !== -1) {
+          const newGroups = [...groupsArr]; newGroups.splice(index, 1);
+          const newCourses = s.courses ? s.courses.split(',').map(c => c.trim()) : [];
+          if (newCourses.length > index) newCourses.splice(index, 1);
+          const newPrices = s.price ? s.price.split(',').map(p => p.trim()) : [];
+          if (newPrices.length > index) newPrices.splice(index, 1);
+          const newRegs = s.registration ? s.registration.split(',').map(r => r.trim()) : [];
+          if (newRegs.length > index) newRegs.splice(index, 1);
+          const newLast = s.lastChargedDate ? s.lastChargedDate.split(',').map(d => d.trim()) : [];
+          if (newLast.length > index) newLast.splice(index, 1);
+
+          return {
+            ...s,
+            group: newGroups.join(', '),
+            courses: newCourses.join(', '),
+            price: newPrices.join(', '),
+            registration: newRegs.join(', '),
+            lastChargedDate: newLast.join(', ')
+          };
+        }
+        return s;
+      });
+      setStudents(newStudents);
+
+      // Delete payments associated with this group
+      const currentPayments = JSON.parse(localStorage.getItem('mock_payments') || '[]');
+      const newPayments = currentPayments.filter((p: any) => p.course !== groupToDelete.name);
+      localStorage.setItem('mock_payments', JSON.stringify(newPayments));
+      // Force a reload to reflect payment changes if needed, or we can just rely on the next render
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+
   return { items, setItems, addItem, updateItem, deleteItem };
 }
-export const useEmployees = createUseEntityHook<Employee>('mock_employees', initialMockEmployees);
-export const useCourses = createUseEntityHook<Course>('mock_courses', initialMockCourses);
-export const useRooms = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
+
+const useEmployeesBase = createUseEntityHook<Employee>('mock_employees', initialMockEmployees);
+export function useEmployees() {
+  const base = useEmployeesBase();
+  const { items: groups, setItems: setGroups } = useGroupsBase();
+  
+  const updateItem = (id: number, data: Partial<Employee>) => {
+    const oldEmp = base.items.find(e => e.id === id);
+    base.updateItem(id, data);
+    if (oldEmp && data.name && oldEmp.name !== data.name) {
+      setGroups(groups.map(g => g.teachers === oldEmp.name ? { ...g, teachers: data.name! } : g));
+    }
+  };
+
+  const deleteItem = (id: number) => {
+    const emp = base.items.find(e => e.id === id);
+    base.deleteItem(id);
+    if (emp) {
+      setGroups(groups.map(g => g.teachers === emp.name ? { ...g, teachers: '' } : g));
+    }
+  };
+  return { ...base, updateItem, deleteItem };
+}
+
+const useCoursesBase = createUseEntityHook<Course>('mock_courses', initialMockCourses);
+export function useCourses() {
+  const base = useCoursesBase();
+  const { items: groups, setItems: setGroups } = useGroupsBase();
+  const { items: students, setItems: setStudents } = useStudentsBase();
+  
+  const updateItem = (id: number, data: Partial<Course>) => {
+    const oldCourse = base.items.find(c => c.id === id);
+    base.updateItem(id, data);
+    if (oldCourse && data.name && oldCourse.name !== data.name) {
+      setGroups(groups.map(g => g.courses === oldCourse.name ? { ...g, courses: data.name! } : g));
+      
+      const newStudents = students.map(s => {
+        if (!s.courses) return s;
+        const coursesArr = s.courses.split(',').map(c => c.trim());
+        if (coursesArr.includes(oldCourse.name)) {
+          const newCourses = coursesArr.map(c => c === oldCourse.name ? data.name! : c).join(', ');
+          return { ...s, courses: newCourses };
+        }
+        return s;
+      });
+      setStudents(newStudents);
+    }
+  };
+
+  const deleteItem = (id: number) => {
+    const course = base.items.find(c => c.id === id);
+    base.deleteItem(id);
+    if (course) {
+      setGroups(groups.map(g => g.courses === course.name ? { ...g, courses: '' } : g));
+      
+      const newStudents = students.map(s => {
+        if (!s.courses) return s;
+        const coursesArr = s.courses.split(',').map(c => c.trim());
+        const index = coursesArr.indexOf(course.name);
+        
+        if (index !== -1) {
+          const newCourses = [...coursesArr]; newCourses.splice(index, 1);
+          const newGroups = s.group ? s.group.split(',').map(g => g.trim()) : [];
+          if (newGroups.length > index) newGroups.splice(index, 1);
+          const newPrices = s.price ? s.price.split(',').map(p => p.trim()) : [];
+          if (newPrices.length > index) newPrices.splice(index, 1);
+          const newRegs = s.registration ? s.registration.split(',').map(r => r.trim()) : [];
+          if (newRegs.length > index) newRegs.splice(index, 1);
+          const newLast = s.lastChargedDate ? s.lastChargedDate.split(',').map(d => d.trim()) : [];
+          if (newLast.length > index) newLast.splice(index, 1);
+
+          return {
+            ...s,
+            group: newGroups.join(', '),
+            courses: newCourses.join(', '),
+            price: newPrices.join(', '),
+            registration: newRegs.join(', '),
+            lastChargedDate: newLast.join(', ')
+          };
+        }
+        return s;
+      });
+      setStudents(newStudents);
+
+      // Delete payments associated with this course
+      const currentPayments = JSON.parse(localStorage.getItem('mock_payments') || '[]');
+      const groupsForCourse = groups.filter(g => g.courses === course.name).map(g => g.name);
+      const newPayments = currentPayments.filter((p: any) => p.course !== course.name && !groupsForCourse.includes(p.course));
+      localStorage.setItem('mock_payments', JSON.stringify(newPayments));
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+  return { ...base, updateItem, deleteItem };
+}
+
+const useRoomsBase = createUseEntityHook<Room>('mock_rooms', initialMockRooms);
+export function useRooms() {
+  const base = useRoomsBase();
+  const { items: groups, setItems: setGroups } = useGroupsBase();
+  
+  const updateItem = (id: number, data: Partial<Room>) => {
+    const oldRoom = base.items.find(r => r.id === id);
+    base.updateItem(id, data);
+    if (oldRoom && data.name && oldRoom.name !== data.name) {
+      setGroups(groups.map(g => g.rooms === oldRoom.name ? { ...g, rooms: data.name! } : g));
+    }
+  };
+
+  const deleteItem = (id: number) => {
+    const room = base.items.find(r => r.id === id);
+    base.deleteItem(id);
+    if (room) {
+      setGroups(groups.map(g => g.rooms === room.name ? { ...g, rooms: '' } : g));
+    }
+  };
+  return { ...base, updateItem, deleteItem };
+}
+
 export const usePayments = createUseEntityHook<Payment>('mock_payments', initialMockPayments);
 
 export type EmployeeType = {
@@ -348,8 +426,13 @@ export const useEmployeeTypes = createUseEntityHook<EmployeeType>('mock_employee
 
 const useStudentsBase = createUseEntityHook<Student>('mock_students', initialMockStudents);
 export function useStudents() {
-  const { items, setItems, addItem, updateItem, deleteItem } = useStudentsBase();
-  const { items: payments } = usePayments();
+  const { items, setItems, addItem, updateItem, deleteItem: baseDeleteItem } = useStudentsBase();
+  const { items: payments, setItems: setPayments } = usePayments();
+  
+  const deleteItem = (id: number) => {
+    baseDeleteItem(id);
+    setPayments(payments.filter(p => p.studentId !== id));
+  };
   
   const computedStudents = items.map(student => {
     const studentPayments = payments.filter(p => p.studentId === student.id);
@@ -361,6 +444,9 @@ export function useStudents() {
     const courses = student.courses ? student.courses.split(',').map(c => c.trim()) : [];
     const groups = student.group ? student.group.split(',').map(g => g.trim()) : [];
     const groupBalances: { [groupName: string]: number } = {};
+
+    const consumedPaymentIds = new Set<number>();
+    const groupCharges: { [groupName: string]: number } = {};
 
     courses.forEach((course, index) => {
       if (!course) return;
@@ -388,11 +474,29 @@ export function useStudents() {
       }
 
       if (groupName) {
-        const coursePayments = studentPayments
-          .filter(p => p.course?.trim() === groupName?.trim() || p.course?.trim() === course?.trim())
-          .reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
+        groupCharges[groupName] = (groupCharges[groupName] || 0) + courseCharges;
         
-        groupBalances[groupName] = coursePayments - courseCharges;
+        const exactPayments = studentPayments.filter(p => p.course?.trim() === groupName?.trim());
+        const exactPaymentsSum = exactPayments.reduce((sum, p) => {
+          consumedPaymentIds.add(p.id);
+          return sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0);
+        }, 0);
+        
+        groupBalances[groupName] = (groupBalances[groupName] || 0) + exactPaymentsSum - courseCharges;
+      }
+    });
+
+    courses.forEach((course, index) => {
+      const groupName = groups[index];
+      if (groupName) {
+        const courseLevelPayments = studentPayments.filter(p => 
+          p.course?.trim() === course?.trim() && !consumedPaymentIds.has(p.id)
+        );
+        const courseLevelPaymentsSum = courseLevelPayments.reduce((sum, p) => {
+          consumedPaymentIds.add(p.id);
+          return sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0);
+        }, 0);
+        groupBalances[groupName] += courseLevelPaymentsSum;
       }
     });
 
