@@ -232,7 +232,7 @@ export function useGroups() {
       const currentStudents = getStudents();
       const newStudents = currentStudents.map(s => {
         if (!s.group) return s;
-        const currentGroups = s.group.split(', ');
+        const currentGroups = s.group.split(',').map(g => g.trim());
         if (currentGroups.includes(oldGroup.name)) {
           const newGroups = currentGroups.map(g => g === oldGroup.name ? data.name! : g).join(', ');
           return { ...s, group: newGroups };
@@ -240,6 +240,21 @@ export function useGroups() {
         return s;
       });
       setStudents(newStudents);
+
+      // Update payments' course name
+      const currentPayments = JSON.parse(localStorage.getItem('mock_payments') || '[]');
+      let paymentsUpdated = false;
+      const newPayments = currentPayments.map((p: any) => {
+        if (p.course === oldGroup.name) {
+          paymentsUpdated = true;
+          return { ...p, course: data.name };
+        }
+        return p;
+      });
+      if (paymentsUpdated) {
+        localStorage.setItem('mock_payments', JSON.stringify(newPayments));
+        window.dispatchEvent(new Event('mock_payments_updated'));
+      }
     }
   };
 
@@ -282,8 +297,7 @@ export function useGroups() {
       const currentPayments = JSON.parse(localStorage.getItem('mock_payments') || '[]');
       const newPayments = currentPayments.filter((p: any) => p.course !== groupToDelete.name);
       localStorage.setItem('mock_payments', JSON.stringify(newPayments));
-      // Force a reload to reflect payment changes if needed, or we can just rely on the next render
-      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event('mock_payments_updated'));
     }
   };
 
@@ -335,6 +349,21 @@ export function useCourses() {
         return s;
       });
       setStudents(newStudents);
+
+      // Update payments' course name
+      const currentPayments = JSON.parse(localStorage.getItem('mock_payments') || '[]');
+      let paymentsUpdated = false;
+      const newPayments = currentPayments.map((p: any) => {
+        if (p.course === oldCourse.name) {
+          paymentsUpdated = true;
+          return { ...p, course: data.name };
+        }
+        return p;
+      });
+      if (paymentsUpdated) {
+        localStorage.setItem('mock_payments', JSON.stringify(newPayments));
+        window.dispatchEvent(new Event('mock_payments_updated'));
+      }
     }
   };
 
@@ -378,7 +407,7 @@ export function useCourses() {
       const groupsForCourse = groups.filter(g => g.courses === course.name).map(g => g.name);
       const newPayments = currentPayments.filter((p: any) => p.course !== course.name && !groupsForCourse.includes(p.course));
       localStorage.setItem('mock_payments', JSON.stringify(newPayments));
-      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event('mock_payments_updated'));
     }
   };
   return { ...base, updateItem, deleteItem };
@@ -445,14 +474,11 @@ export function useStudents() {
     const groups = student.group ? student.group.split(',').map(g => g.trim()) : [];
     const groupBalances: { [groupName: string]: number } = {};
 
-    const consumedPaymentIds = new Set<number>();
-    const groupCharges: { [groupName: string]: number } = {};
-
     courses.forEach((course, index) => {
       if (!course) return;
       const groupName = groups[index];
-      const regStr = registrationDates[index] || registrationDates[0];
-      const priceStr = prices[index] || prices[0] || '0';
+      const regStr = registrationDates.length > index ? (registrationDates[index] || '') : (registrationDates[0] || '');
+      const priceStr = prices.length > index ? (prices[index] || '0') : (prices[0] || '0');
       const price = parseInt(priceStr.replace(/[^0-9]/g, ''), 10) || 0;
       
       let courseCharges = 0;
@@ -463,7 +489,11 @@ export function useStudents() {
           const now = new Date();
           
           let monthsPassed = (now.getFullYear() - regDate.getFullYear()) * 12 + (now.getMonth() - regDate.getMonth());
-          if (now.getDate() < regDate.getDate()) {
+          
+          const lastDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+          const isEndOfMonth = now.getDate() === lastDayOfCurrentMonth && regDate.getDate() >= lastDayOfCurrentMonth;
+          
+          if (now.getDate() < regDate.getDate() && !isEndOfMonth) {
             monthsPassed--;
           }
           
@@ -474,29 +504,11 @@ export function useStudents() {
       }
 
       if (groupName) {
-        groupCharges[groupName] = (groupCharges[groupName] || 0) + courseCharges;
+        const coursePayments = studentPayments
+          .filter(p => p.course?.trim() === groupName?.trim() || p.course?.trim() === course?.trim())
+          .reduce((sum, p) => sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0), 0);
         
-        const exactPayments = studentPayments.filter(p => p.course?.trim() === groupName?.trim());
-        const exactPaymentsSum = exactPayments.reduce((sum, p) => {
-          consumedPaymentIds.add(p.id);
-          return sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0);
-        }, 0);
-        
-        groupBalances[groupName] = (groupBalances[groupName] || 0) + exactPaymentsSum - courseCharges;
-      }
-    });
-
-    courses.forEach((course, index) => {
-      const groupName = groups[index];
-      if (groupName) {
-        const courseLevelPayments = studentPayments.filter(p => 
-          p.course?.trim() === course?.trim() && !consumedPaymentIds.has(p.id)
-        );
-        const courseLevelPaymentsSum = courseLevelPayments.reduce((sum, p) => {
-          consumedPaymentIds.add(p.id);
-          return sum + (parseInt(p.amount.replace(/[^0-9]/g, ''), 10) || 0);
-        }, 0);
-        groupBalances[groupName] += courseLevelPaymentsSum;
+        groupBalances[groupName] = coursePayments - courseCharges;
       }
     });
 

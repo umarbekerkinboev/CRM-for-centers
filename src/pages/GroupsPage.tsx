@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronsUpDown, MoreVertical, LayoutGrid, Check, X, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cn, calculateGroupBalance } from '../lib/utils.ts';
+import { cn, calculateGroupBalance, displayPrice } from '../lib/utils.ts';
 import { useGroups, Group, useStudents, useEmployees, useCourses } from '../lib/mockData.ts';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.tsx';
 

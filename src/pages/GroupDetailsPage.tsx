@@ -88,7 +88,7 @@ export default function GroupDetailsPage() {
 
       if (groupIndex !== -1) {
         while (registrationsList.length <= groupIndex) registrationsList.push('');
-        while (pricesList.length <= groupIndex) pricesList.push('0');
+        while (pricesList.length <= groupIndex) pricesList.push('0 UZS');
         
         const oldPriceStr = pricesList[groupIndex];
         const oldPriceNum = parseInt(oldPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
@@ -98,7 +98,7 @@ export default function GroupDetailsPage() {
         // Group didn't change, but price might have
         if (editStudentFormData.coursePrice) {
           const num = parseInt(editStudentFormData.coursePrice.replace(/[^0-9]/g, ''), 10) || 0;
-          newPriceStr = `${num}`;
+          newPriceStr = `${num} UZS`;
           const newPriceNum = parseInt(newPriceStr.replace(/[^0-9]/g, ''), 10) || 0;
           
           // Refund old, charge new
@@ -385,7 +385,7 @@ export default function GroupDetailsPage() {
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('teacher')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.teachers}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('course')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.courses}</span></p>
             <p><span className="text-zinc-500 dark:text-zinc-400">{t('room')}:</span> <span className="text-zinc-900 dark:text-zinc-100">{group.rooms}</span></p>
-            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{displayPrice(groupBalance)}</span></p>
+            <p><span className="text-zinc-500 dark:text-zinc-400">{t('group_balance')}:</span> <span className={groupBalance < 0 ? "text-red-500" : "text-emerald-500"}>{groupBalance.toLocaleString()} UZS</span></p>
           </div>
         </div>
         <div className="flex items-start h-full relative">
@@ -504,7 +504,7 @@ export default function GroupDetailsPage() {
                   {visibleColumns.name && <td className="px-6 py-4 text-zinc-900 dark:text-zinc-100 font-medium">{student.name}</td>}
                   {visibleColumns.balance && (
                     <td className={`px-6 py-4 ${calculateGroupBalance(student, group.name) < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {displayPrice(calculateGroupBalance(student, group.name))}
+                      {calculateGroupBalance(student, group.name) === 0 ? '0' : calculateGroupBalance(student, group.name).toLocaleString()} UZS
                     </td>
                   )}
                   {visibleColumns.price && <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{displayPrice(getGroupPrice(student.group, student.price, group.name))}</td>}
@@ -764,41 +764,15 @@ export default function GroupDetailsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_course')}</label>
-                    <div className="relative">
-                      <select
-                        required
-                        value={formData.course}
-                        onChange={e => setFormData({...formData, course: e.target.value, group: ''})}
-                        className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
-                      >
-                        <option value="">{t('select_course')}</option>
-                        {courses.map(c => (
-                          <option key={c.id} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                        <ChevronsUpDown className="w-4 h-4" />
-                      </div>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('course')}</label>
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-700 dark:text-zinc-300">
+                      {formData.course || group.courses}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('select_group')}</label>
-                    <div className="relative">
-                      <select
-                        required
-                        value={formData.group}
-                        onChange={e => setFormData({...formData, group: e.target.value})}
-                        className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors appearance-none"
-                      >
-                        <option value="">{t('select_group')}</option>
-                        {groups.filter(g => g.courses === formData.course).map(g => (
-                          <option key={g.id} value={g.name}>{g.name}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                        <ChevronsUpDown className="w-4 h-4" />
-                      </div>
+                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('group')}</label>
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-700 dark:text-zinc-300">
+                      {formData.group || group.name}
                     </div>
                   </div>
                 </div>
@@ -1048,7 +1022,7 @@ export default function GroupDetailsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
-                <input type="text" value="Student" disabled className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
+                <input type="text" value={t('student')} disabled className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

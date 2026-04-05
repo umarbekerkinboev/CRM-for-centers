@@ -305,7 +305,7 @@ export default function StudentsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('role')}</label>
-                <input type="text" value="Student" disabled className="w-full bg-zinc-100 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
+                <input type="text" value={t('student')} disabled className="w-full bg-zinc-100 dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-500 focus:outline-none transition-colors cursor-not-allowed" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

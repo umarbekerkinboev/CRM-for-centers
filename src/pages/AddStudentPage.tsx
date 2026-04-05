@@ -29,21 +29,21 @@ export default function AddStudentPage() {
     
     const selectedGroup = groups.find(g => g.name === formData.group);
     const selectedCourse = courses.find(c => c.name === (selectedGroup?.courses || formData.course));
-    const coursePriceStr = selectedCourse ? selectedCourse.price : '0';
+    const coursePriceStr = selectedCourse ? selectedCourse.price : '0 UZS';
     const coursePriceValue = parseInt(coursePriceStr.replace(/[^0-9]/g, ''), 10) || 0;
     const initialBalance = selectedGroup ? -coursePriceValue : 0;
 
     addStudent({
       name: `${formData.firstName} ${formData.lastName}`,
       phone: formData.phone,
-      courses: formData.course,
+      courses: selectedGroup?.courses || formData.course,
       group: formData.group,
       gender: formData.gender,
       parent: formData.parentName,
       parentPhone: formData.parentPhone,
       dob: formData.dob,
       address: formData.address,
-      balance: 0,
+      balance: initialBalance,
       price: selectedGroup ? coursePriceStr : '',
       registration: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
       globalRegistrationDate: formData.courseRegistrationDate ? formData.courseRegistrationDate.split('-').reverse().join('-') : new Date().toISOString().split('T')[0].split('-').reverse().join('-'),
@@ -135,7 +135,7 @@ export default function AddStudentPage() {
                 max={new Date().toISOString().split('T')[0]}
                 value={formData.dob}
                 onChange={e => setFormData({...formData, dob: e.target.value})}
-                className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+                className="w-full bg-zinc-50 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors dark:[color-scheme:dark]"
               />
             </div>
             <div className="space-y-2">
